@@ -1,38 +1,38 @@
 # Kconecta CRM - Tasks
 
-## Contexto
-- Proyecto migrado de DameloDamelo a Kconecta.
-- Stack principal: Laravel + MySQL + Docker Compose.
-- Objetivo inmediato: publicar/sincronizar repositorio en GitHub como `kconecta-crm`.
-- Objetivo siguiente: desplegar y sincronizar en Dokploy (Hostinger).
+## Session Checkpoint (2026-03-01)
 
-## Estado Actual
-- [x] Docker funcional en local (`kconecta`, `kconecta-mysql-1`).
-- [x] Branding principal migrado a Kconecta.
-- [x] Import SQL base en contenedor MySQL.
-- [x] Fix de columna `user.password` a `VARCHAR(255)`.
-- [x] Login validado tras fix de esquema.
+### Done
+- [x] Proyecto migrado de DameloDamelo a Kconecta (branding y referencias principales).
+- [x] Docker local operativo:
+- [x] App: `kconecta`
+- [x] DB: `kconecta-mysql-1`
+- [x] URL local: `http://localhost:8010`
+- [x] Import SQL legacy en MySQL de Docker (`damelodamelo_damelo.sql`).
+- [x] Fix de esquema para login:
+- [x] `user.password` cambiado a `VARCHAR(255)`.
+- [x] Login validado despues del fix.
+- [x] Tabla `migrations` compatible con Laravel para evitar fallo de `artisan migrate`.
+- [x] Repo GitHub creado y sincronizado:
+- [x] `https://github.com/digitalbitsolutions/kconecta-crm`
+- [x] `main` publicado.
+- [x] remoto final: `origin` (unico remoto).
 
-## Pendiente - GitHub
-- [ ] Crear repo `kconecta-crm` en la cuenta GitHub.
-- [ ] Vincular remoto `origin` al nuevo repo.
-- [ ] Subir rama principal y validar visibilidad.
-- [ ] Definir estrategia de ramas (`main`, `develop`, feature branches).
-
-## Pendiente - Dokploy (Hostinger)
-- [ ] Preparar server y proyecto en Dokploy.
-- [ ] Configurar despliegue desde repo GitHub.
-- [ ] Cargar variables de entorno de producción (sin secretos hardcodeados).
-- [ ] Configurar base de datos de producción y migraciones.
+### Next - Dokploy (Hostinger)
+- [ ] Crear proyecto en Dokploy y conectar repo `digitalbitsolutions/kconecta-crm`.
+- [ ] Definir estrategia de deploy (build desde Dockerfile o compose).
+- [ ] Cargar variables de entorno de produccion.
+- [ ] Configurar base de datos de produccion.
+- [ ] Ejecutar migraciones en entorno remoto.
 - [ ] Configurar dominio, SSL y health checks.
-- [ ] Validar deploy inicial y rollback básico.
+- [ ] Probar login, panel y rutas criticas en entorno remoto.
 
-## Seguridad Prioritaria
-- [ ] Rotar secretos (`APP_KEY`, API keys, credenciales DB).
-- [ ] Eliminar contraseñas por defecto y forzar cambio en usuarios administrativos.
-- [ ] Desactivar fallback de login con password en texto plano (legacy).
-- [ ] Revisar `.gitignore` para evitar subir secretos reales.
+### Security Backlog
+- [ ] Rotar secretos actuales (`APP_KEY`, API keys, credenciales DB).
+- [ ] Forzar actualizacion de passwords por defecto.
+- [ ] Eliminar fallback de login legacy que acepta password en texto plano.
+- [ ] Verificar que no se suban secretos reales al repo.
 
-## Nota Operativa
-- No sobrescribir cambios del usuario sin confirmación explícita.
-- Registrar en este archivo cada avance relevante de infraestructura/deploy.
+### Notes
+- Mantener este archivo como fuente de verdad para estado y proximos pasos.
+- No reimportar dumps legacy en produccion sin validacion de esquema.

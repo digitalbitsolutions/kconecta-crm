@@ -1,6 +1,11 @@
 # Kconecta CRM
 
-CRM inmobiliario de Kconecta, migrado desde un proyecto legacy de DameloDamelo.
+CRM inmobiliario de Kconecta migrado desde un proyecto legacy.
+
+## Repository
+- GitHub: `https://github.com/digitalbitsolutions/kconecta-crm`
+- Branch principal: `main`
+- Remote activo: `origin`
 
 ## Stack
 - Laravel 12
@@ -8,7 +13,7 @@ CRM inmobiliario de Kconecta, migrado desde un proyecto legacy de DameloDamelo.
 - MySQL 8
 - Docker Compose
 
-## Arranque Local (Docker)
+## Local Run
 ```powershell
 cd D:\still\kconecta.com\web
 docker compose -p kconecta up -d --build
@@ -17,33 +22,29 @@ docker compose -p kconecta up -d --build
 App local:
 - `http://localhost:8010`
 
-## Base de Datos
-Esquema de Docker:
-- `kconecta_schema`
+## Database
+- Schema local docker: `kconecta_schema`
 
-Import SQL manual (si aplica):
+Import manual de SQL legacy (si se necesita):
 ```powershell
 docker cp D:\still\kconecta.com\assets\damelodamelo_damelo.sql kconecta-mysql-1:/tmp/damelodamelo_damelo.sql
 docker exec kconecta-mysql-1 mysql -uroot -psecret -e "DROP DATABASE IF EXISTS kconecta_schema; CREATE DATABASE kconecta_schema CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
 docker exec kconecta-mysql-1 sh -lc "mysql -uroot -psecret kconecta_schema < /tmp/damelodamelo_damelo.sql"
 ```
 
-## Migraciones
-```powershell
-docker exec kconecta php artisan migrate --force
-```
+## Migration Note
+Se agrego una migracion para asegurar compatibilidad de hashes de password:
+- `database/migrations/2026_03_01_010900_expand_user_password_column.php`
 
-## Estado de Repositorio
-Nombre objetivo del repo GitHub:
-- `kconecta-crm`
+## Next Phase
+Deploy y sincronizacion en Dokploy (Hostinger):
+- conectar repo
+- configurar env vars
+- configurar DB de produccion
+- ejecutar migraciones
+- configurar dominio y SSL
+- validar health checks
 
-## Próximo objetivo
-Sincronizar este repo en Dokploy (Hostinger), con:
-- conexión a GitHub,
-- variables de entorno seguras,
-- base de datos configurada,
-- deploy y validación de salud.
-
-## Documentos de control
-- Plan y estado de trabajo: [tasks.md](./tasks.md)
-- Guía operativa del agente: [agent.md](./agent.md)
+## Project Control Files
+- Estado y plan: [tasks.md](./tasks.md)
+- Contexto operativo: [agent.md](./agent.md)

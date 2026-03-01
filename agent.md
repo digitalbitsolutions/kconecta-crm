@@ -1,35 +1,43 @@
-# AGENT.md - Operación del Agente para Kconecta CRM
+# AGENT.md - Kconecta CRM
 
-## Objetivo
-Mantener y evolucionar `kconecta-crm` con foco en:
-- estabilidad local con Docker,
-- sincronización con GitHub,
-- despliegue continuo en Dokploy (Hostinger),
-- seguridad de credenciales y datos.
+## Goal
+Operate and evolve `kconecta-crm` with focus on:
+- stable local Docker workflow,
+- sync with GitHub,
+- deployment in Dokploy (Hostinger),
+- security hardening.
 
-## Reglas de Trabajo
-- Priorizar cambios reproducibles y verificables.
-- No usar credenciales hardcodeadas en código.
-- Mantener `.env` fuera del repositorio remoto.
-- Documentar cualquier cambio de infraestructura en `tasks.md`.
-- Antes de tocar despliegue, validar localmente (`docker compose`, login, rutas críticas).
+## Current Repo Context
+- GitHub repo: `https://github.com/digitalbitsolutions/kconecta-crm`
+- Active remote: `origin` only
+- Main branch: `main`
 
-## Flujo Recomendado
-1. Revisar `tasks.md` y elegir tarea prioritaria.
-2. Implementar cambio mínimo necesario.
-3. Validar con comandos y/o pruebas rápidas.
-4. Actualizar `tasks.md` con estado real.
-5. Preparar commit claro y atómico.
+## Working Rules
+- Prefer minimal, testable changes.
+- Do not hardcode secrets.
+- Keep `.env` out of remote history.
+- Record infra and deployment progress in `tasks.md`.
+- Validate critical flow locally before remote deploy:
+- container up
+- DB connection
+- login
 
-## Checklist de Deploy Dokploy
-- Repo GitHub accesible y actualizado.
-- Variables de entorno cargadas en Dokploy.
-- DB de destino creada y accesible.
-- Migraciones ejecutadas sin error.
-- App accesible por dominio con SSL.
-- Logs limpios en arranque y login.
+## Local Runtime Baseline
+- App URL: `http://localhost:8010`
+- Containers:
+- `kconecta`
+- `kconecta-mysql-1`
+- DB schema: `kconecta_schema`
 
-## Riesgos Conocidos
-- Dumps legacy pueden romper esquema esperado de Laravel (ej. tabla `migrations`).
-- Datos importados pueden incluir contraseñas sin hash.
-- Cambios de branding pueden dejar referencias residuales si no se audita globalmente.
+## Dokploy Execution Checklist
+- Connect Dokploy project to GitHub repo.
+- Set runtime env vars in Dokploy.
+- Configure remote MySQL and credentials.
+- Run migrations safely.
+- Configure domain + SSL.
+- Validate health checks and login flow.
+
+## Known Risks
+- Legacy dumps may override expected Laravel schema.
+- Imported users may include plaintext passwords.
+- Existing fallback login logic accepts plaintext and rehashes on login.
