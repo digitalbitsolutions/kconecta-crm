@@ -34,9 +34,11 @@ RUN composer install --prefer-dist --no-interaction --no-progress --no-scripts -
 COPY . .
 
 COPY --from=node-build /app/public/build /var/www/html/public/build
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
-    && chown -R www-data:www-data storage bootstrap/cache
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
-CMD ["apache2-foreground"]
+CMD ["/usr/local/bin/entrypoint.sh"]
