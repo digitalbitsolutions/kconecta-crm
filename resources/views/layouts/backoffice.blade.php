@@ -39,7 +39,7 @@
                 </nav>
                 <div class="sidebar-footer">
                     <a href="{{ url('/') }}">Ir al sitio</a>
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form class="sidebar-logout-form" method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit">Cerrar sesi&oacute;n</button>
                     </form>

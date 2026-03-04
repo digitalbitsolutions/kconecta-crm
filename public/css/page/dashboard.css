@@ -126,6 +126,15 @@ body {
   border-color: rgba(255, 255, 255, 0.4);
 }
 
+.sidebar-footer .sidebar-logout-form {
+  width: 100%;
+}
+
+.sidebar-footer .sidebar-logout-form button {
+  width: 100%;
+  display: block;
+}
+
 .dashboard-main {
   flex: 1;
   padding: 2.4rem;
