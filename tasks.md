@@ -1,5 +1,59 @@
 # Kconecta CRM - Tasks
 
+## Mobile API Contract v1 (Start: 2026-03-19)
+
+### Branch + Safety
+- [x] Create branch `feat/mobile-api-contract-v1`.
+- [x] Keep `package-lock.json` out of scope for this initiative.
+- [ ] Commit changes in slices (auth -> providers -> manager-properties -> tests/docs).
+
+### Auth + Session (Priority P0)
+- [x] Add routes in `routes/api.php`:
+- [x] `POST /api/auth/login`
+- [x] `POST /api/auth/refresh`
+- [x] `GET /api/auth/me`
+- [x] Add `AuthController` mobile contract methods.
+- [x] Add session/auth service for deterministic token lifecycle.
+- [x] Return stable envelopes (`auth-session-v1`).
+- [ ] Add feature tests for login success/failure, refresh invalid/expired, me unauthorized/forbidden.
+
+### Providers Domain (Priority P1)
+- [x] Add routes:
+- [x] `GET /api/providers`
+- [x] `GET /api/providers/{id}`
+- [x] `GET /api/providers/{id}/availability`
+- [x] `PATCH /api/providers/{id}/availability`
+- [x] Add/extend provider service (DB-first + deterministic fallback if required).
+- [x] Enforce role/identity checks for provider availability writes.
+- [x] Add validation and revision-conflict behavior for availability updates.
+- [ ] Add feature tests for list/detail/availability success + 401/403/404/409/422 paths.
+
+### Manager Properties Domain (Priority P2)
+- [x] Add routes:
+- [x] `GET /api/properties/summary`
+- [x] `GET /api/properties/priorities/queue`
+- [x] `POST /api/properties/priorities/queue/{queueItemId}/complete`
+- [x] `GET /api/properties/{id}`
+- [x] `POST /api/properties/{id}/reserve`
+- [x] `POST /api/properties/{id}/release`
+- [x] `GET /api/properties/{id}/provider-candidates`
+- [x] `POST /api/properties/{id}/assign-provider`
+- [x] `GET /api/properties/{id}/assignment-context`
+- [x] Add deterministic conflict/validation/error envelopes.
+- [ ] Add feature tests for happy path + guardrail matrix.
+
+### Integration Validation (Priority P0 after endpoint delivery)
+- [x] Smoke via Docker local runtime (`http://localhost:8010/api`).
+- [ ] Validate from React Native emulators:
+- [ ] manager login/session + dashboard bootstrap paths
+- [ ] provider list/detail/availability paths
+- [x] Capture endpoint evidence (request, status, payload shape).
+
+### Release Readiness
+- [ ] Document final endpoint contract in repo docs.
+- [ ] Define versioning/change policy for mobile API contract.
+- [ ] Open PR with checklist evidence and rollback notes.
+
 ## Session Checkpoint (2026-03-04)
 
 ### Done
