@@ -7,12 +7,11 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory;
-    use MustVerifyEmailTrait;
-    use Notifiable;
+    use HasApiTokens, HasFactory, MustVerifyEmailTrait, Notifiable;
 
     public const LEVEL_ADMIN = 1;
     public const LEVEL_FREE = 2;
@@ -89,5 +88,13 @@ class User extends Authenticatable implements MustVerifyEmail
     public function canManageServices(): bool
     {
         return $this->isAdmin() || $this->isServiceProvider();
+    }
+
+    /**
+     * Agent properties relation.
+     */
+    public function properties()
+    {
+        return $this->hasMany(Property::class, 'user_id');
     }
 }
