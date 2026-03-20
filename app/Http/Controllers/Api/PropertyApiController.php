@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Property;
 use App\Models\PropertyAddress;
 use App\Models\Type;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -31,9 +32,33 @@ class PropertyApiController extends Controller
         }
 
         $properties = $query->paginate($perPage);
+        $propertyItems = collect($properties->items());
+        $propertyIds = $propertyItems->pluck('id')->filter()->map(fn ($id) => (int) $id)->values()->all();
+        $typeIds = $propertyItems->pluck('type_id')->filter()->map(fn ($id) => (int) $id)->unique()->values()->all();
+        $categoryIds = $propertyItems->pluck('category_id')->filter()->map(fn ($id) => (int) $id)->unique()->values()->all();
+        $ownerIds = $propertyItems->pluck('user_id')->filter()->map(fn ($id) => (int) $id)->unique()->values()->all();
+
+        $typeMap = empty($typeIds) ? [] : Type::query()->whereIn('id', $typeIds)->pluck('name', 'id')->all();
+        $categoryMap = empty($categoryIds) ? [] : Category::query()->whereIn('id', $categoryIds)->pluck('name', 'id')->all();
+        $addressMap = empty($propertyIds)
+            ? []
+            : PropertyAddress::query()->whereIn('property_id', $propertyIds)->get()->keyBy('property_id')->all();
+        $ownerMap = empty($ownerIds)
+            ? []
+            : User::query()->whereIn('id', $ownerIds)->get()->keyBy('id')->all();
+
+        $data = $propertyItems->map(
+            fn (Property $property) => $this->formatProperty(
+                $property,
+                $typeMap,
+                $categoryMap,
+                $addressMap[(int) $property->id] ?? null,
+                $ownerMap[(int) $property->user_id] ?? null
+            )
+        )->values()->all();
 
         return response()->json([
-            'data' => $properties->items(),
+            'data' => $data,
             'meta' => [
                 'current_page' => $properties->currentPage(),
                 'total' => $properties->total(),
@@ -63,7 +88,16 @@ class PropertyApiController extends Controller
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
-        return response()->json($property, 200);
+        $typeMap = $property->type_id
+            ? Type::query()->where('id', (int) $property->type_id)->pluck('name', 'id')->all()
+            : [];
+        $categoryMap = $property->category_id
+            ? Category::query()->where('id', (int) $property->category_id)->pluck('name', 'id')->all()
+            : [];
+        $address = PropertyAddress::query()->where('property_id', (int) $property->id)->first();
+        $owner = User::query()->find((int) $property->user_id);
+
+        return response()->json($this->formatProperty($property, $typeMap, $categoryMap, $address, $owner), 200);
     }
 
     public function propertyTypes(Request $request)
@@ -311,6 +345,30 @@ class PropertyApiController extends Controller
         }
 
         $category = Category::query()->where('name', 'like', $raw . '%')->first();
+        if ($category) {
+            return (int) $category->id;
+        }
+
+        $normalized = Str::lower($raw);
+        if (str_contains($normalized, 'venta') || str_contains($normalized, 'buy')) {
+            $category = Category::query()
+                ->where('name', 'like', '%venta%')
+                ->orWhere('name', 'like', '%compra%')
+                ->first();
+            if ($category) {
+                return (int) $category->id;
+            }
+        }
+
+        if (str_contains($normalized, 'alquiler') || str_contains($normalized, 'rent')) {
+            $category = Category::query()
+                ->where('name', 'like', '%alquiler%')
+                ->first();
+            if ($category) {
+                return (int) $category->id;
+            }
+        }
+
         return $category ? (int) $category->id : null;
     }
 
@@ -376,5 +434,39 @@ class PropertyApiController extends Controller
                 'longitude' => (string) $request->input('longitude', ''),
             ]
         );
+    }
+
+    private function formatProperty(
+        Property $property,
+        array $typeMap = [],
+        array $categoryMap = [],
+        ?PropertyAddress $address = null,
+        ?User $owner = null
+    ): array {
+        $item = $property->toArray();
+        $item['type_name'] = $typeMap[(int) ($property->type_id ?? 0)] ?? null;
+        $item['category_name'] = $categoryMap[(int) ($property->category_id ?? 0)] ?? null;
+
+        $item['address'] = $address?->address ?: ($item['address'] ?? null);
+        $item['city'] = $address?->city ?: ($item['city'] ?? null);
+        $item['province'] = $address?->province ?: ($item['province'] ?? null);
+        $item['country'] = $address?->country ?: ($item['country'] ?? null);
+        $item['postal_code'] = $address?->postal_code ?: ($item['postal_code'] ?? null);
+        $item['latitude'] = $address?->latitude ?: ($item['latitude'] ?? null);
+        $item['longitude'] = $address?->longitude ?: ($item['longitude'] ?? null);
+
+        if ($owner) {
+            $ownerName = trim((string) (($owner->first_name ?? '') . ' ' . ($owner->last_name ?? '')));
+            if ($ownerName === '') {
+                $ownerName = (string) ($owner->user_name ?? '');
+            }
+
+            $item['owner_name'] = $ownerName ?: null;
+            $item['user_name'] = $ownerName ?: null;
+            $item['user_first_name'] = $owner->first_name ?? null;
+            $item['user_last_name'] = $owner->last_name ?? null;
+        }
+
+        return $item;
     }
 }
