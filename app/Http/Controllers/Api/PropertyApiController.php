@@ -490,10 +490,27 @@ class PropertyApiController extends Controller
 
     private function persistMediaUploads(Request $request, Property $property): void
     {
+        $coverImage = $request->file('cover_image');
+        $moreImages = $request->file('more_images', $request->file('more_images[]', []));
+        $video = $request->file('video');
+
+        $hasCoverImage = $coverImage && $coverImage->isValid();
+        $hasMoreImages = false;
+        foreach ((array) $moreImages as $file) {
+            if ($file && $file->isValid()) {
+                $hasMoreImages = true;
+                break;
+            }
+        }
+        $hasVideo = $video && $video->isValid();
+
+        if (! $hasCoverImage && ! $hasMoreImages && ! $hasVideo) {
+            return;
+        }
+
         [$imagePath, $videoPath] = $this->ensureMediaDirectories();
         $propertyId = (int) $property->id;
 
-        $coverImage = $request->file('cover_image');
         if ($coverImage && $coverImage->isValid()) {
             $filename = $this->persistImageAsWebp($coverImage, $imagePath);
             CoverImage::updateOrCreate(
@@ -502,7 +519,6 @@ class PropertyApiController extends Controller
             );
         }
 
-        $moreImages = $request->file('more_images', $request->file('more_images[]', []));
         foreach ((array) $moreImages as $file) {
             if (! $file || ! $file->isValid()) {
                 continue;
@@ -515,7 +531,6 @@ class PropertyApiController extends Controller
             ]);
         }
 
-        $video = $request->file('video');
         if ($video && $video->isValid()) {
             $filename = $this->persistVideoFile($video, $videoPath);
             Video::updateOrCreate(
