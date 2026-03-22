@@ -473,11 +473,20 @@ class PropertyApiController extends Controller
         $video = $request->file('video');
         if ($video) {
             if (! $video->isValid()) {
-                return 'El video no es valido.';
+                $errorCode = method_exists($video, 'getError') ? (int) $video->getError() : 0;
+                return match ($errorCode) {
+                    \UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE => 'El video excede el limite permitido por el servidor.',
+                    \UPLOAD_ERR_PARTIAL => 'El video se subio de forma incompleta.',
+                    \UPLOAD_ERR_NO_FILE => 'No se recibio el archivo de video.',
+                    default => 'El video no es valido.',
+                };
             }
 
-            if (! $this->isSupportedVideoMime($video->getMimeType())) {
-                return 'El video no es valido.';
+            $videoMimeType = strtolower(trim((string) $video->getMimeType()));
+            if (! $this->isSupportedVideoMime($videoMimeType)) {
+                return $videoMimeType !== ''
+                    ? 'Formato de video no soportado: ' . $videoMimeType
+                    : 'El video no es valido.';
             }
 
             if ($video->getSize() > 51200 * 1024) {
