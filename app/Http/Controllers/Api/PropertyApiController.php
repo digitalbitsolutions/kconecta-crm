@@ -207,6 +207,11 @@ class PropertyApiController extends Controller
             return response()->json(['message' => 'No autenticado'], 401);
         }
 
+        $mediaValidationError = $this->validateMediaUploads($request);
+        if ($mediaValidationError) {
+            return response()->json(['message' => $mediaValidationError], 422);
+        }
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:150',
             'type_id' => 'required|integer|exists:type,id',
@@ -262,6 +267,13 @@ class PropertyApiController extends Controller
         $property = Property::create($this->cleanData($propertyData));
         $this->syncAdvancedPropertyData($request, $property);
         $this->upsertAddress($request, (int) $property->id);
+        try {
+            $this->persistMediaUploads($request, $property);
+        } catch (\RuntimeException $error) {
+            $this->deletePropertyGraph($property);
+
+            return response()->json(['message' => $error->getMessage()], 500);
+        }
 
         return response()->json([
             'message' => 'Propiedad creada',
@@ -286,6 +298,11 @@ class PropertyApiController extends Controller
         $isAdmin = (int) $user->user_level_id === 1;
         if (! $isAdmin && (int) $property->user_id !== (int) $user->id) {
             return response()->json(['message' => 'No autorizado'], 403);
+        }
+
+        $mediaValidationError = $this->validateMediaUploads($request);
+        if ($mediaValidationError) {
+            return response()->json(['message' => $mediaValidationError], 422);
         }
 
         $validator = Validator::make($request->all(), [
@@ -364,6 +381,11 @@ class PropertyApiController extends Controller
 
         $this->syncAdvancedPropertyData($request, $property, $typeChanged);
         $this->upsertAddress($request, (int) $property->id);
+        try {
+            $this->persistMediaUploads($request, $property);
+        } catch (\RuntimeException $error) {
+            return response()->json(['message' => $error->getMessage()], 500);
+        }
 
         return response()->json([
             'message' => 'Propiedad actualizada',
@@ -388,18 +410,7 @@ class PropertyApiController extends Controller
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
-        DB::transaction(function () use ($property) {
-            $propertyId = (int) $property->id;
-            DB::table('cover_image')->where('property_id', $propertyId)->delete();
-            DB::table('more_image')->where('property_id', $propertyId)->delete();
-            DB::table('video')->where('property_id', $propertyId)->delete();
-            DB::table('property_address')->where('property_id', $propertyId)->delete();
-            DB::table('features')->where('property_id', $propertyId)->delete();
-            DB::table('equipments')->where('property_id', $propertyId)->delete();
-            DB::table('orientations')->where('property_id', $propertyId)->delete();
-            DB::table('types_floors')->where('property_id', $propertyId)->delete();
-            $property->delete();
-        });
+        $this->deletePropertyGraph($property);
 
         return response()->json(['message' => 'Propiedad eliminada'], 200);
     }
@@ -429,6 +440,206 @@ class PropertyApiController extends Controller
         $image->delete();
 
         return response()->json(['message' => 'Imagen eliminada'], 200);
+    }
+
+    private function validateMediaUploads(Request $request): ?string
+    {
+        $coverImage = $request->file('cover_image');
+        if ($coverImage) {
+            if (! $coverImage->isValid()) {
+                return 'La imagen de portada no es valida.';
+            }
+
+            if (! $this->isSupportedImageMime($coverImage->getMimeType())) {
+                return 'Formato de imagen de portada no soportado.';
+            }
+        }
+
+        $moreImages = $request->file('more_images', $request->file('more_images[]', []));
+        foreach ((array) $moreImages as $file) {
+            if (! $file) {
+                continue;
+            }
+
+            if (! $file->isValid()) {
+                return 'Una imagen de la galeria no es valida.';
+            }
+
+            if (! $this->isSupportedImageMime($file->getMimeType())) {
+                return 'Formato de imagen de galeria no soportado.';
+            }
+        }
+
+        $video = $request->file('video');
+        if ($video) {
+            if (! $video->isValid()) {
+                return 'El video no es valido.';
+            }
+
+            if (! $this->isSupportedVideoMime($video->getMimeType())) {
+                return 'El video no es valido.';
+            }
+
+            if ($video->getSize() > 51200 * 1024) {
+                return 'El video excede el limite permitido.';
+            }
+        }
+
+        return null;
+    }
+
+    private function persistMediaUploads(Request $request, Property $property): void
+    {
+        [$imagePath, $videoPath] = $this->ensureMediaDirectories();
+        $propertyId = (int) $property->id;
+
+        $coverImage = $request->file('cover_image');
+        if ($coverImage && $coverImage->isValid()) {
+            $filename = $this->persistImageAsWebp($coverImage, $imagePath);
+            CoverImage::updateOrCreate(
+                ['property_id' => $propertyId],
+                ['url' => $filename]
+            );
+        }
+
+        $moreImages = $request->file('more_images', $request->file('more_images[]', []));
+        foreach ((array) $moreImages as $file) {
+            if (! $file || ! $file->isValid()) {
+                continue;
+            }
+
+            $filename = $this->persistImageAsWebp($file, $imagePath);
+            MoreImage::create([
+                'url' => $filename,
+                'property_id' => $propertyId,
+            ]);
+        }
+
+        $video = $request->file('video');
+        if ($video && $video->isValid()) {
+            $filename = $this->persistVideoFile($video, $videoPath);
+            Video::updateOrCreate(
+                ['property_id' => $propertyId],
+                ['url' => $filename]
+            );
+        }
+    }
+
+    private function ensureMediaDirectories(): array
+    {
+        $imagePath = public_path('img/uploads');
+        $videoPath = public_path('video/uploads');
+
+        if (! is_dir($imagePath)) {
+            @mkdir($imagePath, 0755, true);
+        }
+
+        if (! is_dir($videoPath)) {
+            @mkdir($videoPath, 0755, true);
+        }
+
+        return [$imagePath, $videoPath];
+    }
+
+    private function persistImageAsWebp($file, string $imagePath): string
+    {
+        $randomName = bin2hex(random_bytes(16)) . '.webp';
+        $mimeType = strtolower(trim((string) $file->getMimeType()));
+
+        if ($mimeType === 'image/webp') {
+            if (! $file->move($imagePath, $randomName)) {
+                throw new \RuntimeException('Error al guardar la imagen WebP.');
+            }
+
+            return $randomName;
+        }
+
+        $tempPath = $file->getRealPath();
+        $image = $this->createImageResource($mimeType, $tempPath);
+        if (! $image) {
+            throw new \RuntimeException('No se pudo procesar la imagen subida.');
+        }
+
+        $webpPath = $imagePath . DIRECTORY_SEPARATOR . $randomName;
+        $converted = imagewebp($image, $webpPath, 80);
+        imagedestroy($image);
+
+        if (! $converted) {
+            throw new \RuntimeException('Error al convertir la imagen a WebP.');
+        }
+
+        return $randomName;
+    }
+
+    private function persistVideoFile($file, string $videoPath): string
+    {
+        $extension = strtolower(trim((string) $file->getClientOriginalExtension()));
+        if ($extension === '') {
+            $extension = $this->resolveVideoExtension((string) $file->getMimeType());
+        }
+
+        $randomName = bin2hex(random_bytes(16)) . '.' . $extension;
+        if (! $file->move($videoPath, $randomName)) {
+            throw new \RuntimeException('Error al guardar el video.');
+        }
+
+        return $randomName;
+    }
+
+    private function resolveVideoExtension(string $mimeType): string
+    {
+        return match (strtolower(trim($mimeType))) {
+            'video/webm' => 'webm',
+            'video/quicktime' => 'mov',
+            'video/x-msvideo', 'video/avi' => 'avi',
+            'video/mpeg' => 'mpeg',
+            'video/x-matroska' => 'mkv',
+            default => 'mp4',
+        };
+    }
+
+    private function createImageResource(string $mimeType, string $tempPath)
+    {
+        return match ($mimeType) {
+            'image/jpeg', 'image/jpg' => @imagecreatefromjpeg($tempPath),
+            'image/png' => @imagecreatefrompng($tempPath),
+            'image/gif' => @imagecreatefromgif($tempPath),
+            default => null,
+        };
+    }
+
+    private function isSupportedImageMime(?string $mimeType): bool
+    {
+        return in_array(
+            strtolower(trim((string) $mimeType)),
+            ['image/webp', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif'],
+            true
+        );
+    }
+
+    private function isSupportedVideoMime(?string $mimeType): bool
+    {
+        return in_array(
+            strtolower(trim((string) $mimeType)),
+            ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/avi', 'video/mpeg', 'video/x-matroska'],
+            true
+        );
+    }
+
+    private function deletePropertyGraph(Property $property): void
+    {
+        DB::transaction(function () use ($property) {
+            $propertyId = (int) $property->id;
+            DB::table('cover_image')->where('property_id', $propertyId)->delete();
+            DB::table('more_images')->where('property_id', $propertyId)->delete();
+            DB::table('video')->where('property_id', $propertyId)->delete();
+            DB::table('property_address')->where('property_id', $propertyId)->delete();
+            DB::table('features')->where('property_id', $propertyId)->delete();
+            DB::table('equipments')->where('property_id', $propertyId)->delete();
+            DB::table('orientations')->where('property_id', $propertyId)->delete();
+            DB::table('types_floors')->where('property_id', $propertyId)->delete();
+            $property->delete();
+        });
     }
 
     private function generateReference(): string
