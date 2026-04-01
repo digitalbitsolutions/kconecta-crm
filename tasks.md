@@ -46,8 +46,9 @@
 - [x] Ejecutar migraciones en entorno remoto.
 - [x] Configurar dominio, SSL y health checks.
 - [ ] Probar login, panel y rutas criticas en entorno remoto (validacion manual UI end-to-end pendiente).
-- [ ] Definir politica de sync local->produccion para evitar sobreescrituras accidentales.
+- [x] Definir politica simple de trabajo `commit -> push -> autodeploy -> verify`.
 - [x] Configurar deploy automatizado con redeploy inmediato tras `push` para evitar drift entre repo y runtime.
+- [x] Definir politica inicial de versionado con tags anotados (`vMAJOR.MINOR.PATCH`).
 - [ ] Siguiente hito mobile: igualar formulario de propiedades (campos por tipo) entre CRM web y app movil.
 - [ ] Siguiente hito mobile: definir y soportar pipeline de imagenes WebP para alta/edicion desde app movil.
 

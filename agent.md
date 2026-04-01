@@ -23,8 +23,9 @@ Operate and evolve `kconecta-crm` with focus on:
 - container up
 - DB connection
 - login
-- For production updates: first `commit + push` and wait for automatic Dokploy deploy.
+- For production updates: use `commit -> push -> autodeploy -> verify`.
 - Use manual redeploy only if health checks/endpoints fail after push.
+- Create annotated release tags on important `main` milestones following `VERSIONING.md`.
 
 ## Local Runtime Baseline
 - App URL: `http://localhost:8010`
@@ -40,6 +41,7 @@ Operate and evolve `kconecta-crm` with focus on:
 - DB service pattern: `kconecta-crm-*`
 - DB schema: `kconecta-mysql`
 - Deploy mode: automatic redeploy on `push` to `main`.
+- Release tag policy: annotated tags on important stable commits in `main`.
 
 ## Recent Operations (2026-03-04)
 - Password reset applied for `user.id=1` (`info@sttil.com`) with bcrypt hash.

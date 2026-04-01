@@ -3,8 +3,7 @@
 CRM inmobiliario de Kconecta migrado desde un proyecto legacy.
 
 ## Repository
-- GitHub: `https://github.com/digitalbitsolutions/kconecta-crm`
-- Moved-to (reported by GitHub): `https://github.com/sttildeveloper/kconecta-crm`
+- GitHub: `https://github.com/sttildeveloper/kconecta-crm`
 - Branch principal: `main`
 - Remote activo: `origin`
 
@@ -56,6 +55,24 @@ Se agrego una migracion para asegurar compatibilidad de hashes de password:
 - Backup previo de produccion y dump usado para sync guardados fuera del repo:
 - `D:\still\kconecta.com\backups\prod_kconecta_mysql_before_sync_20260304_180633.sql`
 - `D:\still\kconecta.com\backups\local_kconecta_schema_sync_20260304_180659.sql`
+
+## Deployment Workflow
+Politica operativa para cambios que afecten el CRM:
+1. Validar el cambio en local.
+2. Crear `commit` en `main`.
+3. Hacer `push` a `origin/main`.
+4. Esperar el `autodeploy` de Dokploy.
+5. Verificar rutas criticas y login en el entorno desplegado.
+
+Notas:
+- Evitar `manual redeploy` salvo que el despliegue automatico falle o queden endpoints caidos.
+- No subir dumps, backups ni secretos al repo.
+
+## Version Tags
+- Usar tags anotados sobre commits importantes ya listos en `main`.
+- Esquema inicial: `vMAJOR.MINOR.PATCH`.
+- Punto de partida de versionado: `v0.1.0`.
+- Guia detallada: [VERSIONING.md](./VERSIONING.md)
 
 ## Next Phase
 Operaciones y hardening:
