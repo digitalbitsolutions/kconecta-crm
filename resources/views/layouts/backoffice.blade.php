@@ -22,7 +22,7 @@
                         $navCanManageProperties = $authUser?->canManageProperties() ?? false;
                         $navCanManageServices = $authUser?->canManageServices() ?? false;
                     @endphp
-                    <a class="{{ ($activeNav ?? '') === 'dashboard' ? 'active' : '' }}" href="{{ route('dashboard') }}">Dashboard</a>
+                    <a class="{{ ($activeNav ?? '') === 'dashboard' ? 'active' : '' }}" href="{{ route('dashboard') }}">Escritorio</a>
                     @if ($navCanManageProperties)
                         <a class="{{ ($activeNav ?? '') === 'properties' ? 'active' : '' }}" href="{{ url('/post/my_posts') }}">Mis propiedades</a>
                     @endif
