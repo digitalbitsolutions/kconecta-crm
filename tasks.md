@@ -47,7 +47,9 @@
 - [x] Configurar dominio, SSL y health checks.
 - [ ] Probar login, panel y rutas criticas en entorno remoto (validacion manual UI end-to-end pendiente).
 - [ ] Definir politica de sync local->produccion para evitar sobreescrituras accidentales.
-- [ ] Configurar deploy automatizado con redeploy inmediato tras `push` para evitar drift entre repo y runtime.
+- [x] Configurar deploy automatizado con redeploy inmediato tras `push` para evitar drift entre repo y runtime.
+- [ ] Siguiente hito mobile: igualar formulario de propiedades (campos por tipo) entre CRM web y app movil.
+- [ ] Siguiente hito mobile: definir y soportar pipeline de imagenes WebP para alta/edicion desde app movil.
 
 ### Security Backlog
 - [ ] Rotar secretos actuales (`APP_KEY`, API keys, credenciales DB).

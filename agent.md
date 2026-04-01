@@ -23,6 +23,8 @@ Operate and evolve `kconecta-crm` with focus on:
 - container up
 - DB connection
 - login
+- For production updates: first `commit + push` and wait for automatic Dokploy deploy.
+- Use manual redeploy only if health checks/endpoints fail after push.
 
 ## Local Runtime Baseline
 - App URL: `http://localhost:8010`
@@ -37,6 +39,7 @@ Operate and evolve `kconecta-crm` with focus on:
 - App service pattern: `kconecta-kconectacrm-*`
 - DB service pattern: `kconecta-crm-*`
 - DB schema: `kconecta-mysql`
+- Deploy mode: automatic redeploy on `push` to `main`.
 
 ## Recent Operations (2026-03-04)
 - Password reset applied for `user.id=1` (`info@sttil.com`) with bcrypt hash.
@@ -62,6 +65,8 @@ Operate and evolve `kconecta-crm` with focus on:
 - Rotate exposed or weak credentials and keys.
 - Remove legacy plaintext password fallback in auth flow.
 - Define recurring backup and restore drill for production DB.
+- Mobile integration next step: parity of property form fields with CRM web forms.
+- Mobile integration next step: define image pipeline (convert to WebP before upload and persist media on server).
 
 ## Known Risks
 - Legacy dumps may override expected Laravel schema.
