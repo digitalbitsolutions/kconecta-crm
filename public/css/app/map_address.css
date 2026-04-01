@@ -60,6 +60,54 @@
     align-items: center;
     column-gap: .4rem;
 }
+.google-autocomplete-field{
+    position: relative;
+    flex: 1 1 auto;
+}
+.google-autocomplete-field .input{
+    width: 100%;
+}
+.google-autocomplete-panel{
+    position: absolute;
+    top: calc(100% + .35rem);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #d9e2f1;
+    border-radius: 1rem;
+    box-shadow: 0 20px 40px rgba(11, 19, 36, 0.16);
+    overflow: hidden;
+    z-index: 20;
+}
+.google-autocomplete-panel.is-hidden{
+    display: none;
+}
+.google-autocomplete-brand{
+    font-size: .95rem;
+    font-weight: 700;
+    color: #5b677a;
+    padding: .75rem 1rem .25rem;
+}
+.google-autocomplete-list{
+    list-style: none;
+    margin: 0;
+    padding: 0 0 .35rem;
+}
+.google-autocomplete-option{
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: #0b1324;
+    text-align: left;
+    font-size: .95rem;
+    padding: .75rem 1rem;
+    cursor: pointer;
+}
+.google-autocomplete-option:hover,
+.google-autocomplete-option:focus-visible{
+    background: #eef6fb;
+    outline: none;
+}
 .container-google-maps-required-tags button{
     display: flex;
     justify-content: center;

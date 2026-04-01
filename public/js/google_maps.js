@@ -1,10 +1,22 @@
 let map = null;
 let marker = null;
 let geocoder = null;
-let autocomplete = null;
+let legacyAutocomplete = null;
+let placesLibraryPromise = null;
+let autocompleteSessionToken = null;
+let autocompletePanel = null;
+let autocompleteFieldWrapper = null;
+let autocompleteRequestTimeout = null;
+let latestAutocompleteRequestId = 0;
+let autocompleteMode = "none";
+let addressInputEventsBound = false;
+let documentClickListenerBound = false;
 
 const DEFAULT_COORDINATES = { lat: 41.3728156, lng: 2.1335788 };
 const ADDRESS_VALIDATION_MESSAGE = "Selecciona una direccion valida de las sugerencias de Google Maps antes de guardar.";
+const GOOGLE_RESULTS_LABEL = "Google";
+const AUTOCOMPLETE_DEBOUNCE_MS = 250;
+const AUTOCOMPLETE_MIN_CHARACTERS = 3;
 
 const myLocationButton = document.getElementById("my-location");
 const mapElement = document.getElementById("map");
@@ -28,8 +40,28 @@ function hasGoogleMaps() {
     return typeof window.google !== "undefined" && !!window.google.maps;
 }
 
-function hasPlacesLibrary() {
-    return hasGoogleMaps() && !!window.google.maps.places;
+function hasPlacesSupport() {
+    return hasGoogleMaps() && (!!window.google.maps.importLibrary || !!window.google.maps.places);
+}
+
+async function getPlacesLibrary() {
+    if (!hasPlacesSupport()) {
+        return null;
+    }
+
+    if (!window.google.maps.importLibrary) {
+        return window.google.maps.places ?? null;
+    }
+
+    if (!placesLibraryPromise) {
+        placesLibraryPromise = window.google.maps.importLibrary("places").catch(() => null);
+    }
+
+    return placesLibraryPromise;
+}
+
+function hasLegacyAutocompleteSupport() {
+    return hasGoogleMaps() && !!window.google.maps.places && !!window.google.maps.places.Autocomplete;
 }
 
 function setInputValue(input, value) {
@@ -104,6 +136,19 @@ function getAddressComponent(components, candidateTypes) {
     const component = components.find((item) => types.some((type) => item.types.includes(type)));
 
     return component ? component.long_name : "";
+}
+
+function getCoordinateValue(location, axis) {
+    if (!location) {
+        return null;
+    }
+
+    const coordinate = location[axis];
+    if (typeof coordinate === "function") {
+        return coordinate.call(location);
+    }
+
+    return typeof coordinate === "number" ? coordinate : null;
 }
 
 function updateMapLocation(position) {
@@ -235,18 +280,276 @@ function geocodeTypedAddress() {
     );
 }
 
-function initAutocompleteAddress() {
-    if (!addressInput || !hasPlacesLibrary()) {
+function createAutocompletePanel() {
+    if (!addressInput || autocompletePanel) {
         return;
     }
 
-    autocomplete = new google.maps.places.Autocomplete(addressInput, {
+    const container = addressInput.parentElement;
+    if (!container) {
+        return;
+    }
+
+    autocompleteFieldWrapper = document.createElement("div");
+    autocompleteFieldWrapper.className = "google-autocomplete-field";
+    container.insertBefore(autocompleteFieldWrapper, addressInput);
+    autocompleteFieldWrapper.appendChild(addressInput);
+
+    autocompletePanel = document.createElement("div");
+    autocompletePanel.className = "google-autocomplete-panel is-hidden";
+    autocompleteFieldWrapper.appendChild(autocompletePanel);
+}
+
+function hideAutocompletePanel() {
+    latestAutocompleteRequestId += 1;
+
+    if (!autocompletePanel) {
+        return;
+    }
+
+    autocompletePanel.classList.add("is-hidden");
+    autocompletePanel.replaceChildren();
+}
+
+function showAutocompletePanel() {
+    if (!autocompletePanel || autocompletePanel.childElementCount === 0) {
+        return;
+    }
+
+    autocompletePanel.classList.remove("is-hidden");
+}
+
+function renderAutocompleteSuggestions(suggestions) {
+    if (!autocompletePanel) {
+        return;
+    }
+
+    autocompletePanel.replaceChildren();
+
+    if (!Array.isArray(suggestions) || suggestions.length === 0) {
+        hideAutocompletePanel();
+        return;
+    }
+
+    const brand = document.createElement("div");
+    brand.className = "google-autocomplete-brand";
+    brand.textContent = GOOGLE_RESULTS_LABEL;
+    autocompletePanel.appendChild(brand);
+
+    const list = document.createElement("ul");
+    list.className = "google-autocomplete-list";
+
+    suggestions.slice(0, 6).forEach((suggestion) => {
+        const placePrediction = suggestion?.placePrediction;
+        if (!placePrediction) {
+            return;
+        }
+
+        const optionItem = document.createElement("li");
+        const optionButton = document.createElement("button");
+        optionButton.type = "button";
+        optionButton.className = "google-autocomplete-option";
+        optionButton.textContent = placePrediction.text ? placePrediction.text.toString() : "";
+        optionButton.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+        });
+        optionButton.addEventListener("click", async () => {
+            await handleSuggestionSelection(suggestion);
+        });
+
+        optionItem.appendChild(optionButton);
+        list.appendChild(optionItem);
+    });
+
+    if (!list.childElementCount) {
+        hideAutocompletePanel();
+        return;
+    }
+
+    autocompletePanel.appendChild(list);
+    showAutocompletePanel();
+}
+
+async function handleSuggestionSelection(suggestion) {
+    const placePrediction = suggestion?.placePrediction;
+    hideAutocompletePanel();
+
+    if (!placePrediction) {
+        markAddressInvalid("Selecciona una direccion valida de las sugerencias.");
+        addressInput?.reportValidity();
+        return;
+    }
+
+    try {
+        const place = placePrediction.toPlace();
+        await place.fetchFields({
+            fields: ["formattedAddress", "location"],
+        });
+
+        const lat = getCoordinateValue(place.location, "lat");
+        const lng = getCoordinateValue(place.location, "lng");
+
+        if (lat === null || lng === null) {
+            throw new Error("Place location is not available.");
+        }
+
+        setResolvedAddressValue(place.formattedAddress || addressInput.value);
+        setInputValue(latitudeInput, String(lat));
+        setInputValue(longitudeInput, String(lng));
+        updateMapLocation({ lat, lng });
+        reverseGeocode(lat, lng, true);
+        autocompleteSessionToken = null;
+    } catch (error) {
+        clearResolvedAddressData();
+        markAddressInvalid("No se pudo validar la direccion seleccionada.");
+        addressInput?.reportValidity();
+        console.error("Google Maps Places selection error:", error);
+    }
+}
+
+async function fetchAutocompleteSuggestions(query) {
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery.length < AUTOCOMPLETE_MIN_CHARACTERS) {
+        hideAutocompletePanel();
+        return;
+    }
+
+    const placesLibrary = await getPlacesLibrary();
+    if (!placesLibrary || !placesLibrary.AutocompleteSuggestion) {
+        hideAutocompletePanel();
+        return;
+    }
+
+    const requestId = ++latestAutocompleteRequestId;
+
+    if (!autocompleteSessionToken && placesLibrary.AutocompleteSessionToken) {
+        autocompleteSessionToken = new placesLibrary.AutocompleteSessionToken();
+    }
+
+    try {
+        const request = {
+            input: trimmedQuery,
+            includedRegionCodes: ["es"],
+            language: "es",
+            region: "es",
+        };
+
+        if (autocompleteSessionToken) {
+            request.sessionToken = autocompleteSessionToken;
+        }
+
+        const response = await placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+        if (requestId !== latestAutocompleteRequestId) {
+            return;
+        }
+
+        renderAutocompleteSuggestions(response?.suggestions ?? []);
+    } catch (error) {
+        if (requestId !== latestAutocompleteRequestId) {
+            return;
+        }
+
+        hideAutocompletePanel();
+        console.error("Google Maps Autocomplete Data API error:", error);
+    }
+}
+
+function queueAutocompleteSuggestions(query) {
+    if (autocompleteRequestTimeout) {
+        window.clearTimeout(autocompleteRequestTimeout);
+    }
+
+    autocompleteRequestTimeout = window.setTimeout(() => {
+        fetchAutocompleteSuggestions(query);
+    }, AUTOCOMPLETE_DEBOUNCE_MS);
+}
+
+function bindAddressInputEvents() {
+    if (!addressInput || addressInputEventsBound) {
+        return;
+    }
+
+    addressInputEventsBound = true;
+
+    addressInput.addEventListener("input", () => {
+        if (isProgrammaticAddressChange) {
+            return;
+        }
+
+        const currentValue = addressInput.value.trim();
+
+        if (currentValue === "") {
+            clearResolvedAddressData();
+            hideAutocompletePanel();
+            addressInput.setCustomValidity("");
+            lastResolvedAddressValue = "";
+            autocompleteSessionToken = null;
+            return;
+        }
+
+        if (currentValue !== lastResolvedAddressValue) {
+            clearResolvedAddressData();
+            markAddressInvalid();
+        }
+
+        if (autocompleteMode === "new") {
+            queueAutocompleteSuggestions(currentValue);
+        }
+    });
+
+    addressInput.addEventListener("focus", () => {
+        if (autocompleteMode === "new" && autocompletePanel && autocompletePanel.childElementCount > 0) {
+            showAutocompletePanel();
+        }
+    });
+
+    addressInput.addEventListener("blur", () => {
+        if (autocompleteMode !== "new") {
+            return;
+        }
+
+        window.setTimeout(() => {
+            hideAutocompletePanel();
+        }, 150);
+    });
+
+    addressInput.addEventListener("keydown", (event) => {
+        if (autocompleteMode !== "new" || event.key !== "Enter" || !autocompletePanel || autocompletePanel.classList.contains("is-hidden")) {
+            return;
+        }
+
+        const firstOption = autocompletePanel.querySelector(".google-autocomplete-option");
+        if (!firstOption) {
+            return;
+        }
+
+        event.preventDefault();
+        firstOption.click();
+    });
+
+    if (!documentClickListenerBound) {
+        documentClickListenerBound = true;
+        document.addEventListener("click", (event) => {
+            if (!autocompleteFieldWrapper || !autocompleteFieldWrapper.contains(event.target)) {
+                hideAutocompletePanel();
+            }
+        });
+    }
+}
+
+function initLegacyAutocompleteAddress() {
+    if (!addressInput || !hasLegacyAutocompleteSupport()) {
+        return;
+    }
+
+    legacyAutocomplete = new google.maps.places.Autocomplete(addressInput, {
         componentRestrictions: { country: "ES" },
         fields: ["address_components", "formatted_address", "geometry", "name"],
     });
 
-    autocomplete.addListener("place_changed", () => {
-        const place = autocomplete.getPlace();
+    legacyAutocomplete.addListener("place_changed", () => {
+        const place = legacyAutocomplete.getPlace();
         if (!place || !place.geometry || !place.geometry.location) {
             clearResolvedAddressData();
             markAddressInvalid("Selecciona una direccion valida de las sugerencias.");
@@ -260,26 +563,26 @@ function initAutocompleteAddress() {
             lng: place.geometry.location.lng(),
         });
     });
+}
 
-    addressInput.addEventListener("input", () => {
-        if (isProgrammaticAddressChange) {
-            return;
-        }
+async function initAutocompleteAddress() {
+    if (!addressInput || !hasPlacesSupport()) {
+        return;
+    }
 
-        const currentValue = addressInput.value.trim();
+    const placesLibrary = await getPlacesLibrary();
+    if (placesLibrary && placesLibrary.AutocompleteSuggestion) {
+        autocompleteMode = "new";
+        createAutocompletePanel();
+        bindAddressInputEvents();
+        return;
+    }
 
-        if (currentValue === "") {
-            clearResolvedAddressData();
-            addressInput.setCustomValidity("");
-            lastResolvedAddressValue = "";
-            return;
-        }
-
-        if (currentValue !== lastResolvedAddressValue) {
-            clearResolvedAddressData();
-            markAddressInvalid();
-        }
-    });
+    if (hasLegacyAutocompleteSupport()) {
+        autocompleteMode = "legacy";
+        bindAddressInputEvents();
+        initLegacyAutocompleteAddress();
+    }
 }
 
 function getMyLocation() {
@@ -348,7 +651,7 @@ function initFormValidation() {
     });
 }
 
-function initGoogleMapsAddressControls() {
+async function initGoogleMapsAddressControls() {
     if (!addressInput) {
         return;
     }
@@ -365,7 +668,7 @@ function initGoogleMapsAddressControls() {
     const initialLongitude = longitudeInput && longitudeInput.value ? parseFloat(longitudeInput.value) : DEFAULT_COORDINATES.lng;
 
     updateMapLocation({ lat: initialLatitude, lng: initialLongitude });
-    initAutocompleteAddress();
+    await initAutocompleteAddress();
 
     if (myLocationButton) {
         myLocationButton.addEventListener("click", getMyLocation);
@@ -383,7 +686,9 @@ function initGoogleMapsAddressControls() {
 }
 
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initGoogleMapsAddressControls);
+    document.addEventListener("DOMContentLoaded", () => {
+        initGoogleMapsAddressControls();
+    });
 } else {
     initGoogleMapsAddressControls();
 }
