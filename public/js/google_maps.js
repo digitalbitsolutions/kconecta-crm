@@ -1,200 +1,389 @@
-let map, marker, geocoder;
-const my_location = document.getElementById("my-location");
+let map = null;
+let marker = null;
+let geocoder = null;
+let autocomplete = null;
 
-geocoder = new google.maps.Geocoder();
-// Autocompletado de inputs
+const DEFAULT_COORDINATES = { lat: 41.3728156, lng: 2.1335788 };
+const ADDRESS_VALIDATION_MESSAGE = "Selecciona una direccion valida de las sugerencias de Google Maps antes de guardar.";
+
+const myLocationButton = document.getElementById("my-location");
+const mapElement = document.getElementById("map");
+const addressInput = document.getElementById("address");
+const latitudeInput = document.getElementById("latitude");
+const longitudeInput = document.getElementById("longitude");
+const cityInput = document.getElementById("city");
+const provinceInput = document.getElementById("province");
+const postalCodeInput = document.getElementById("postal_code");
+const countryInput = document.getElementById("country");
+const routeMapLabel = document.getElementById("route-map");
+const cityMapLabel = document.getElementById("city-map");
+const stateMapLabel = document.getElementById("state-map");
+const countryMapLabel = document.getElementById("country-map");
+const formElement = addressInput ? addressInput.closest("form") : null;
+
+let lastResolvedAddressValue = addressInput ? addressInput.value.trim() : "";
+let isProgrammaticAddressChange = false;
+
+function hasGoogleMaps() {
+    return typeof window.google !== "undefined" && !!window.google.maps;
+}
+
+function hasPlacesLibrary() {
+    return hasGoogleMaps() && !!window.google.maps.places;
+}
+
+function setInputValue(input, value) {
+    if (!input) {
+        return;
+    }
+
+    input.value = value ?? "";
+}
+
+function setLabelText(label, value) {
+    if (!label) {
+        return;
+    }
+
+    label.textContent = value ?? "";
+}
+
+function markAddressValid() {
+    if (!addressInput) {
+        return;
+    }
+
+    addressInput.dataset.addressValidated = "1";
+    addressInput.setCustomValidity("");
+    lastResolvedAddressValue = addressInput.value.trim();
+}
+
+function markAddressInvalid(message = ADDRESS_VALIDATION_MESSAGE) {
+    if (!addressInput) {
+        return;
+    }
+
+    addressInput.dataset.addressValidated = "0";
+    addressInput.setCustomValidity(message);
+}
+
+function setResolvedAddressValue(value) {
+    if (!addressInput) {
+        return;
+    }
+
+    isProgrammaticAddressChange = true;
+    addressInput.value = value;
+    markAddressValid();
+
+    window.setTimeout(() => {
+        isProgrammaticAddressChange = false;
+    }, 0);
+}
+
+function clearResolvedAddressData() {
+    setInputValue(cityInput, "");
+    setInputValue(provinceInput, "");
+    setInputValue(postalCodeInput, "");
+    setInputValue(countryInput, "");
+    setInputValue(latitudeInput, "");
+    setInputValue(longitudeInput, "");
+
+    setLabelText(routeMapLabel, "");
+    setLabelText(cityMapLabel, "");
+    setLabelText(stateMapLabel, "");
+    setLabelText(countryMapLabel, "");
+}
+
+function buildStreet(route, streetNumber) {
+    return [route, streetNumber].filter(Boolean).join(" ").trim();
+}
+
+function getAddressComponent(components, candidateTypes) {
+    const types = Array.isArray(candidateTypes) ? candidateTypes : [candidateTypes];
+    const component = components.find((item) => types.some((type) => item.types.includes(type)));
+
+    return component ? component.long_name : "";
+}
+
+function updateMapLocation(position) {
+    if (!mapElement || !hasGoogleMaps()) {
+        return;
+    }
+
+    if (!map) {
+        map = new google.maps.Map(mapElement, {
+            center: position,
+            zoom: 16,
+            streetViewControl: false,
+            styles: [
+                {
+                    featureType: "poi",
+                    stylers: [{ visibility: "off" }],
+                },
+                {
+                    featureType: "transit",
+                    stylers: [{ visibility: "off" }],
+                },
+            ],
+        });
+
+        marker = new google.maps.Marker({
+            position,
+            map,
+            draggable: true,
+        });
+
+        marker.addListener("dragend", () => {
+            const markerPosition = marker.getPosition();
+            if (!markerPosition) {
+                return;
+            }
+
+            reverseGeocode(markerPosition.lat(), markerPosition.lng(), true);
+        });
+
+        return;
+    }
+
+    map.setCenter(position);
+    marker.setPosition(position);
+}
+
+function applyResolvedPlace(place, updateTextInput = true) {
+    if (!place || !place.geometry || !place.geometry.location) {
+        return;
+    }
+
+    const components = Array.isArray(place.address_components) ? place.address_components : [];
+    const route = getAddressComponent(components, "route");
+    const streetNumber = getAddressComponent(components, "street_number");
+    const city = getAddressComponent(components, ["locality", "postal_town", "administrative_area_level_3", "sublocality_level_1"]);
+    const province = getAddressComponent(components, ["administrative_area_level_2", "administrative_area_level_1"]);
+    const postalCode = getAddressComponent(components, "postal_code");
+    const country = getAddressComponent(components, "country");
+    const street = buildStreet(route, streetNumber);
+
+    setLabelText(routeMapLabel, street);
+    setLabelText(cityMapLabel, city);
+    setLabelText(stateMapLabel, province);
+    setLabelText(countryMapLabel, country);
+
+    setInputValue(cityInput, city);
+    setInputValue(provinceInput, province);
+    setInputValue(postalCodeInput, postalCode);
+    setInputValue(countryInput, country);
+    setInputValue(latitudeInput, String(place.geometry.location.lat()));
+    setInputValue(longitudeInput, String(place.geometry.location.lng()));
+
+    if (updateTextInput && addressInput) {
+        const fallbackAddress = place.formatted_address || place.name || addressInput.value;
+        const normalizedAddress = [street, city, province].filter(Boolean).join(", ").trim();
+        setResolvedAddressValue(normalizedAddress !== "" ? normalizedAddress : fallbackAddress);
+    } else {
+        markAddressValid();
+    }
+}
+
+function reverseGeocode(lat, lng, updateTextInput = false) {
+    if (!geocoder) {
+        return;
+    }
+
+    geocoder.geocode(
+        {
+            location: { lat, lng },
+            language: "es",
+        },
+        (results, status) => {
+            if (status === "OK" && Array.isArray(results) && results[0]) {
+                applyResolvedPlace(results[0], updateTextInput);
+                updateMapLocation({ lat, lng });
+                return;
+            }
+
+            markAddressInvalid("No se pudo validar la direccion seleccionada.");
+        }
+    );
+}
+
+function geocodeTypedAddress() {
+    if (!geocoder || !addressInput) {
+        return;
+    }
+
+    const typedAddress = addressInput.value.trim();
+    if (typedAddress === "") {
+        return;
+    }
+
+    geocoder.geocode(
+        {
+            address: typedAddress,
+            componentRestrictions: { country: "ES" },
+            language: "es",
+        },
+        (results, status) => {
+            if (status === "OK" && Array.isArray(results) && results[0]) {
+                applyResolvedPlace(results[0], true);
+                updateMapLocation({
+                    lat: results[0].geometry.location.lat(),
+                    lng: results[0].geometry.location.lng(),
+                });
+            }
+        }
+    );
+}
+
 function initAutocompleteAddress() {
-    let localidadInput = document.getElementById("address");
+    if (!addressInput || !hasPlacesLibrary()) {
+        return;
+    }
 
-    // Autocomplete solo para localidades en Barcelona
-    let localidadAutocomplete = new google.maps.places.Autocomplete(localidadInput, {
-        // types: ["(cities)"], // Solo localidades
-        componentRestrictions: { country: "ES" } // Solo España
+    autocomplete = new google.maps.places.Autocomplete(addressInput, {
+        componentRestrictions: { country: "ES" },
+        fields: ["address_components", "formatted_address", "geometry", "name"],
     });
 
-    localidadAutocomplete.addListener("place_changed", function () {
-        let place = localidadAutocomplete.getPlace();
-        if (!place.geometry) {
-            alert("No se encontró la localidad.");
+    autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (!place || !place.geometry || !place.geometry.location) {
+            clearResolvedAddressData();
+            markAddressInvalid("Selecciona una direccion valida de las sugerencias.");
+            addressInput.reportValidity();
             return;
         }
 
-        lat = place.geometry.location.lat();
-        lng = place.geometry.location.lng();
-        initMap({ lat: lat, lng: lng });
-        getAddress(lat, lng); 
-
-    });
-}
-
-
-function initMap(initial_position) {
-    
-    // Coordenadas iniciales (puedes cambiarlo)
-    let initialPosition = initial_position; 
-
-    // Crear el mapa
-    map = new google.maps.Map(document.getElementById("map"), {
-        center: initialPosition,
-        zoom: 12,
-        streetViewControl: false,
-        styles: [
-            {
-                featureType: "poi", // Oculta todos los puntos de interés
-                stylers: [{ visibility: "off" }]
-            },
-            {
-                featureType: "transit", // Oculta las estaciones de transporte público
-                stylers: [{ visibility: "off" }]
-            }
-        ]
+        applyResolvedPlace(place, true);
+        updateMapLocation({
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng(),
+        });
     });
 
-    // Crear el marcador movible
-    marker = new google.maps.Marker({
-        position: initialPosition,
-        map: map,
-        draggable: true
-    });
+    addressInput.addEventListener("input", () => {
+        if (isProgrammaticAddressChange) {
+            return;
+        }
 
-    // Detectar cuando se mueve el marcador
-    google.maps.event.addListener(marker, 'dragend', function () {
-        let position = marker.getPosition();
-        getAddress(position.lat(), position.lng(), "ui");
-    });
+        const currentValue = addressInput.value.trim();
 
-    // Obtener dirección inicial
-    // getAddress(initialPosition.lat, initialPosition.lng);
-}
+        if (currentValue === "") {
+            clearResolvedAddressData();
+            addressInput.setCustomValidity("");
+            lastResolvedAddressValue = "";
+            return;
+        }
 
-// mi ubicacion
-function getMyLocation() {
-    if ("geolocation" in navigator) {
-        const content_button = my_location.innerHTML;
-        my_location.textContent = "Espere ...";
-        my_location.disabled = true;
-        navigator.geolocation.getCurrentPosition(
-            function (position) {
-                let lat = position.coords.latitude;
-                let lng = position.coords.longitude;
-                initMap({ lat: lat, lng: lng });
-                getAddress(lat, lng, "ui");
-                my_location.innerHTML = content_button;
-                my_location.disabled = false;
-            },
-            function (error) {
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        alert("Permiso denegado por el usuario.");
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        alert("Información de ubicación no disponible.");
-                        break;
-                    case error.TIMEOUT:
-                        alert("La solicitud tardó demasiado.");
-                        break;
-                    default:
-                        alert("Error desconocido.");
-                }
-
-                my_location.innerHTML = content_button;
-                my_location.disabled = false;
-            },
-            {
-                enableHighAccuracy: true, // Usa GPS si está disponible
-                timeout: 10000, // Espera hasta 10 segundos antes de fallar
-                maximumAge: 0 // No usa ubicaciones almacenadas en caché
-            }
-        );
-    } else {
-        alert("Geolocalización no es compatible con tu navegador.");
-    }
-}
-// Función para obtener la dirección a partir de lat y lng
-function getAddress(lat, lng, mode = "nui") {
-    let latlng = { lat: lat, lng: lng };
-
-    geocoder.geocode({ location: latlng }, function (results, status) {
-        if (status === "OK") {
-            if (results[0]) {
-                let components = results[0].address_components;
-
-                let via = "";
-                let numero = "";
-                let ciudad = "";
-                let comunidad_autonoma = "";
-                let provincia = "";
-                let distrito = "";
-                let codigoPostal = "";
-                let pais = "";
-                let lat = "";
-                let lng = "";
-
-                // Recorrer componentes para encontrar ciudad, provincia y país
-                components.forEach(component => {
-                    if (component.types.includes("route")) {
-                        via = component.long_name; // Nombre de la vía
-                    }
-                    if (component.types.includes("street_number")) {
-                        numero = component.long_name; // Número de la vía
-                    }
-                    if (component.types.includes("locality")) {
-                        ciudad = component.long_name; // Ciudad - municipio en españa
-                    }
-                    if (component.types.includes("administrative_area_level_1")) {
-                        comunidad_autonoma = component.long_name; // Comunidad autonónoma - region o departamento
-                    }
-                    if (component.types.includes("administrative_area_level_2")) {
-                        provincia = component.long_name; // Provincia
-                    }
-                    if (component.types.includes("administrative_area_level_3") || component.types.includes("sublocality_level_1")) {
-                        distrito = component.long_name; // distrito
-                    }
-                    if (component.types.includes("postal_code")) {
-                        codigoPostal = component.long_name; // Código Postal
-                    }
-                    if (component.types.includes("country")) {
-                        pais = component.long_name; // País
-                    }
-                });
-                const lat_val_ = results[0].geometry.location.lat();
-                const lng_val_ = results[0].geometry.location.lng();
-                // Mostrar en la interfaz
-
-                document.getElementById("route-map").textContent = via;
-                document.getElementById("city-map").textContent = ciudad;
-                document.getElementById("state-map").textContent = provincia;
-                document.getElementById("country-map").textContent = pais;
-                if (mode === "ui"){
-                    document.getElementById("address").value = via+ ", " + ciudad +", "+ provincia;
-                }
-                document.getElementById("city").value = ciudad;
-                document.getElementById("province").value = provincia;
-                document.getElementById("postal_code").value = codigoPostal;
-                document.getElementById("country").value = pais;
-                document.getElementById("latitude").value = lat_val_;
-                document.getElementById("longitude").value = lng_val_;
-            }
-        } else {
-            alert("No se pudo obtener la dirección: " + status);
+        if (currentValue !== lastResolvedAddressValue) {
+            clearResolvedAddressData();
+            markAddressInvalid();
         }
     });
 }
 
+function getMyLocation() {
+    if (!("geolocation" in navigator)) {
+        window.alert("Geolocalizacion no compatible con tu navegador.");
+        return;
+    }
 
+    if (!myLocationButton) {
+        return;
+    }
 
-if (my_location){
-    my_location.addEventListener("click", ()=>{
-        getMyLocation();
-    })
+    const originalContent = myLocationButton.innerHTML;
+    myLocationButton.textContent = "Espere ...";
+    myLocationButton.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            reverseGeocode(position.coords.latitude, position.coords.longitude, true);
+            myLocationButton.innerHTML = originalContent;
+            myLocationButton.disabled = false;
+        },
+        (error) => {
+            const message = {
+                [error.PERMISSION_DENIED]: "Permiso denegado por el usuario.",
+                [error.POSITION_UNAVAILABLE]: "Informacion de ubicacion no disponible.",
+                [error.TIMEOUT]: "La solicitud tardo demasiado.",
+            }[error.code] || "Error desconocido.";
+
+            window.alert(message);
+            myLocationButton.innerHTML = originalContent;
+            myLocationButton.disabled = false;
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+        }
+    );
 }
-const coord_init = { lat: 41.3728156, lng: 2.1335788 };
-const lat_init = document.getElementById("latitude");
-const lng_init = document.getElementById("longitude");
-if (lat_init && lng_init && lat_init.value && lng_init.value){
-    coord_init.lat = parseFloat(lat_init.value);
-    coord_init.lng = parseFloat(lng_init.value);
+
+function initFormValidation() {
+    if (!formElement || !addressInput) {
+        return;
+    }
+
+    formElement.addEventListener("submit", (event) => {
+        if (!addressInput.value.trim()) {
+            return;
+        }
+
+        if (!latitudeInput || !longitudeInput || !latitudeInput.value || !longitudeInput.value) {
+            event.preventDefault();
+
+            if (!hasGoogleMaps()) {
+                markAddressInvalid("No se pudo cargar Google Maps. Verifica la API key configurada.");
+            } else {
+                markAddressInvalid();
+            }
+
+            addressInput.reportValidity();
+            addressInput.focus();
+        } else {
+            markAddressValid();
+        }
+    });
 }
-// Inicializar el mapa cuando la página se cargue
-window.onload = initMap(coord_init);
-window.onload = initAutocompleteAddress();
+
+function initGoogleMapsAddressControls() {
+    if (!addressInput) {
+        return;
+    }
+
+    initFormValidation();
+
+    if (!hasGoogleMaps()) {
+        return;
+    }
+
+    geocoder = new google.maps.Geocoder();
+
+    const initialLatitude = latitudeInput && latitudeInput.value ? parseFloat(latitudeInput.value) : DEFAULT_COORDINATES.lat;
+    const initialLongitude = longitudeInput && longitudeInput.value ? parseFloat(longitudeInput.value) : DEFAULT_COORDINATES.lng;
+
+    updateMapLocation({ lat: initialLatitude, lng: initialLongitude });
+    initAutocompleteAddress();
+
+    if (myLocationButton) {
+        myLocationButton.addEventListener("click", getMyLocation);
+    }
+
+    if (latitudeInput && longitudeInput && latitudeInput.value && longitudeInput.value) {
+        reverseGeocode(initialLatitude, initialLongitude, false);
+        markAddressValid();
+        return;
+    }
+
+    if (addressInput.value.trim() !== "") {
+        geocodeTypedAddress();
+    }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initGoogleMapsAddressControls);
+} else {
+    initGoogleMapsAddressControls();
+}

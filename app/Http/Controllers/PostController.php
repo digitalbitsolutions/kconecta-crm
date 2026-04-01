@@ -48,8 +48,10 @@ use App\Models\UserLevel;
 use App\Models\Video;
 use App\Models\VisibilityInPortals;
 use App\Models\WheeledAccess;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -362,7 +364,45 @@ class PostController extends Controller
 
     public function create(Request $request)
     {
-        return redirect()->back();
+        $user = Auth::user();
+        if (! $user) {
+            return redirect()->route('login');
+        }
+
+        if ($addressValidation = $this->validateResolvedPropertyAddress($request)) {
+            return $addressValidation;
+        }
+
+        $title = trim((string) $request->input('title', ''));
+        $typeId = (int) ($request->input('type_id') ?: $request->input('type'));
+        $categoryId = $request->filled('category') ? (int) $request->input('category') : null;
+        $pageUrl = trim((string) $request->input('page_url', ''));
+
+        if ($title === '' || $typeId <= 0) {
+            return redirect()
+                ->back()
+                ->with('error', 'Completa los campos obligatorios de la propiedad.')
+                ->withInput();
+        }
+
+        $property = Property::create([
+            'reference' => $this->generatePropertyReference(),
+            'title' => $title,
+            'type_id' => $typeId,
+            'category_id' => $categoryId > 0 ? $categoryId : null,
+            'state_id' => 4,
+            'user_id' => (int) $user->id,
+            'address' => trim((string) $request->input('address', '')) ?: null,
+            'page_url' => $pageUrl !== '' ? $pageUrl : null,
+        ]);
+
+        $request->merge([
+            'property_id' => (int) $property->id,
+            'type' => $typeId,
+        ]);
+        $request->attributes->set('success_status', 'Creado correctamente');
+
+        return $this->update($request);
     }
 
     public function update(Request $request)
@@ -387,6 +427,10 @@ class PostController extends Controller
             return redirect()
                 ->to('/post/my_posts')
                 ->with('status', 'Ocurrio un error interno');
+        }
+
+        if ($addressValidation = $this->validateResolvedPropertyAddress($request)) {
+            return $addressValidation;
         }
 
         $dataForDb = [];
@@ -854,7 +898,7 @@ class PostController extends Controller
 
         return redirect()
             ->to('/post/my_posts')
-            ->with('status', 'Actualizado correctamente');
+            ->with('status', $request->attributes->get('success_status', 'Actualizado correctamente'));
     }
 
     public function updateForm(string $id)
@@ -1711,5 +1755,44 @@ class PostController extends Controller
     public function createService(Request $request)
     {
         return redirect()->back();
+    }
+
+    private function validateResolvedPropertyAddress(Request $request): ?RedirectResponse
+    {
+        $address = trim((string) $request->input('address', ''));
+        $latitude = trim((string) $request->input('latitude', ''));
+        $longitude = trim((string) $request->input('longitude', ''));
+
+        if ($address === '') {
+            return redirect()
+                ->back()
+                ->with('error', 'La direccion es obligatoria.')
+                ->withInput();
+        }
+
+        if ($latitude === '' || $longitude === '') {
+            return redirect()
+                ->back()
+                ->with('error', 'Selecciona una direccion valida desde las sugerencias de Google Maps antes de guardar.')
+                ->withInput();
+        }
+
+        if (! is_numeric($latitude) || ! is_numeric($longitude)) {
+            return redirect()
+                ->back()
+                ->with('error', 'La direccion seleccionada no devolvio coordenadas validas.')
+                ->withInput();
+        }
+
+        return null;
+    }
+
+    private function generatePropertyReference(): string
+    {
+        do {
+            $reference = Str::lower(Str::random(8));
+        } while (Property::where('reference', $reference)->exists());
+
+        return $reference;
     }
 }

@@ -326,6 +326,18 @@ body {
   font-size: 0.92rem;
 }
 
+.alert-card.is-success {
+  background: #ebfbf6;
+  border-color: #b8ecdb;
+  color: #0f6c57;
+}
+
+.alert-card.is-error {
+  background: #fff0f2;
+  border-color: #f7c5cd;
+  color: #a12838;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

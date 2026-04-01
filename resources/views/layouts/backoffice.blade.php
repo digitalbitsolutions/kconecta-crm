@@ -59,6 +59,28 @@
                     @endif
                 </header>
 
+                @if (session('status') || session('error') || $errors->any())
+                    <div class="alert-stack">
+                        @if (session('status'))
+                            <div class="alert-card is-success" role="status">
+                                {{ session('status') }}
+                            </div>
+                        @endif
+
+                        @if (session('error'))
+                            <div class="alert-card is-error" role="alert">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+
+                        @if ($errors->any())
+                            <div class="alert-card is-error" role="alert">
+                                {{ $errors->first() }}
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
                 @yield('content')
             </main>
         </div>
