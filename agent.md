@@ -5,14 +5,14 @@ Operate and evolve `kconecta-crm` with focus on:
 - stable local Docker workflow,
 - sync with GitHub,
 - deployment in Dokploy (Hostinger),
-- security hardening.
+- security hardening,
+- parity between web CRM and future mobile flows.
 
 ## Current Repo Context
-- GitHub repo: `https://github.com/digitalbitsolutions/kconecta-crm`
-- Active remote: `origin` only
+- Active GitHub repo: `https://github.com/sttildeveloper/kconecta-crm`
+- Active remote: `origin`
 - Main branch: `main`
-- Last operational update: `2026-03-04`
-- GitHub reports repository move to: `https://github.com/sttildeveloper/kconecta-crm`
+- Last operational update: `2026-04-02`
 
 ## Working Rules
 - Prefer minimal, testable changes.
@@ -33,45 +33,65 @@ Operate and evolve `kconecta-crm` with focus on:
 - `kconecta`
 - `kconecta-mysql-1`
 - DB schema: `kconecta_schema`
+- Local office workspace: `C:\MeegDev\kconecta-crm\web`
 
 ## Production Runtime Baseline
-- Platform: Dokploy (Hostinger)
+- Platform: Dokploy on Hostinger VPS
 - App URL: `https://kconecta.com/`
 - App service pattern: `kconecta-kconectacrm-*`
 - DB service pattern: `kconecta-crm-*`
 - DB schema: `kconecta-mysql`
-- Deploy mode: automatic redeploy on `push` to `main`.
-- Release tag policy: annotated tags on important stable commits in `main`.
+- Deploy mode: automatic redeploy on `push` to `main`
+- Release tags published:
+- `v0.1.0`
+- `v0.1.1`
+- Production env includes `GOOGLE_MAPS_API_KEY`
+- Google Cloud project `kconectacrm` currently requires these APIs enabled:
+- `Maps JavaScript API`
+- `Places API`
+- `Places API (New)`
+- `Geocoding API`
 
-## Recent Operations (2026-03-04)
-- Password reset applied for `user.id=1` (`info@sttil.com`) with bcrypt hash.
-- Password validation on server via Laravel `Hash::check(...)` returned `true`.
-- Migration state verified in production:
-- `php artisan migrate --force` => `Nothing to migrate`
-- Production data populated from local snapshot (`kconecta_schema` -> `kconecta-mysql`).
-- Runtime incident fixed in production:
-- app service was crashing with SQL error on missing table `cache`.
-- created `cache`, `cache_locks` and `sessions` tables in production DB.
-- service recovered and web responded `HTTP 200` on home/login.
-- Branding cleanup completed in runtime:
-- favicon updated to `ico.png`.
-- dashboard logout button rendered full width.
-- legacy `Dámelo Dámelo` OG metadata replaced with `Kconecta`.
-- Safety backup created before sync in local machine path:
-- `D:\still\kconecta.com\backups\prod_kconecta_mysql_before_sync_20260304_180633.sql`
-- Imported snapshot stored in local machine path:
-- `D:\still\kconecta.com\backups\local_kconecta_schema_sync_20260304_180659.sql`
+## Recent Operations (2026-04-01 to 2026-04-02)
+- Office workstation autonomy restored:
+- Hostinger access validated
+- Dokploy access validated
+- SSH access to VPS host validated from this machine
+- Production data imported into local Docker DB for parity testing
+- Local login validated using production credentials
+- Deploy workflow and versioning policy documented:
+- `commit -> push -> autodeploy -> verify`
+- release tagging policy active
+- Apache startup warning fixed in production:
+- `AH00558` removed by setting global `ServerName`
+- Backoffice navigation label changed:
+- `Dashboard` -> `Escritorio`
+- Property create flow no longer stops at a stub redirect:
+- `POST /post/create` now creates the base property and reuses update flow
+- Backend validation now requires:
+- non-empty property address
+- numeric latitude
+- numeric longitude
+- Shared Google Maps address JS migrated away from legacy autocomplete to a `Places API (New)` compatible flow
+- Production Google Cloud config updated and verified so address suggestions render again in `/post/create_form/1`
+- Manual production validation completed for:
+- home
+- login
+- authenticated panel access
+- property create route with live address suggestions
 
 ## Next Operational Focus
-- Validate full browser login flow on production.
+- Complete an end-to-end manual property save in production after selecting a suggested address.
+- Decide whether service create flow should receive the same backend hardening as property create flow.
+- Continue mobile integration:
+- parity of property form fields with CRM web forms
+- image pipeline to convert uploads to WebP before persistence
 - Rotate exposed or weak credentials and keys.
 - Remove legacy plaintext password fallback in auth flow.
 - Define recurring backup and restore drill for production DB.
-- Mobile integration next step: parity of property form fields with CRM web forms.
-- Mobile integration next step: define image pipeline (convert to WebP before upload and persist media on server).
 
 ## Known Risks
-- Legacy dumps may override expected Laravel schema.
-- Imported users may include plaintext passwords.
-- Existing fallback login logic accepts plaintext and rehashes on login.
+- Existing fallback login logic still accepts plaintext and rehashes on login.
+- Google Maps address UX depends on keeping both Dokploy env and Google Cloud API enablement aligned.
+- Legacy dumps may override expected Laravel schema if imported without review.
 - Production data can drift from local if sync is repeated without controls.
