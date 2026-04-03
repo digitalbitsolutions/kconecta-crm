@@ -400,6 +400,8 @@ class PostController extends Controller
             'property_id' => (int) $property->id,
             'type' => $typeId,
         ]);
+        $request->attributes->set('property_id', (int) $property->id);
+        $request->attributes->set('property_model', $property);
         $request->attributes->set('success_status', 'Creado correctamente');
 
         return $this->update($request);
@@ -412,17 +414,25 @@ class PostController extends Controller
             return redirect()->route('login');
         }
 
-        $propertyId = (int) $request->input('property_id');
+        $propertyFromAttributes = $request->attributes->get('property_model');
+        $propertyId = (int) ($request->input('property_id') ?: $request->attributes->get('property_id'));
         if (! $propertyId) {
             return redirect()->back();
         }
 
         $isAdmin = (int) $user->user_level_id === 1;
-        $propertyQuery = Property::where('id', $propertyId);
-        if (! $isAdmin) {
-            $propertyQuery->where('user_id', $user->id);
+        if ($propertyFromAttributes instanceof Property && (int) $propertyFromAttributes->id === $propertyId) {
+            $property = $propertyFromAttributes;
+            if (! $isAdmin && (int) $property->user_id !== (int) $user->id) {
+                $property = null;
+            }
+        } else {
+            $propertyQuery = Property::where('id', $propertyId);
+            if (! $isAdmin) {
+                $propertyQuery->where('user_id', $user->id);
+            }
+            $property = $propertyQuery->first();
         }
-        $property = $propertyQuery->first();
         if (! $property) {
             return redirect()
                 ->to('/post/my_posts')
@@ -467,12 +477,12 @@ class PostController extends Controller
         $bathrooms = $request->input('bathrooms');
         $parking = $request->input('parking');
         $feature = $request->input('feature');
-        $countryId = $request->input('country');
-        $cityId = $request->input('city');
-        $provinceId = $request->input('province');
+        $countryId = $request->input('country_id', $request->input('country'));
+        $cityId = $request->input('city_id', $request->input('city'));
+        $provinceId = $request->input('province_id', $request->input('province'));
         $addressValue = $request->input('address');
         $closeTo = $request->input('close_to');
-        $zipCode = $request->input('zip_code');
+        $zipCode = $request->input('zip_code', $request->input('postal_code'));
         $rentalTypeId = $request->input('rental_type');
         $contactOptionId = $request->input('contact_option');
         $powerConsumptionRatingId = $request->input('power_consumption_rating');
@@ -694,14 +704,14 @@ class PostController extends Controller
         if (! empty($parking)) {
             $dataForDb['parking'] = $parking;
         }
-        if (! empty($countryId)) {
-            $dataForDb['country_id'] = $countryId;
+        if (is_numeric($countryId) && (int) $countryId > 0) {
+            $dataForDb['country_id'] = (int) $countryId;
         }
-        if (! empty($cityId)) {
-            $dataForDb['city_id'] = $cityId;
+        if (is_numeric($cityId) && (int) $cityId > 0) {
+            $dataForDb['city_id'] = (int) $cityId;
         }
-        if (! empty($provinceId)) {
-            $dataForDb['province_id'] = $provinceId;
+        if (is_numeric($provinceId) && (int) $provinceId > 0) {
+            $dataForDb['province_id'] = (int) $provinceId;
         }
         if (! empty($addressValue)) {
             $dataForDb['address'] = $addressValue;
