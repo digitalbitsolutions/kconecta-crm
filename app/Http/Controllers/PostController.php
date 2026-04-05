@@ -55,6 +55,61 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
+    private function storeUploadedImage($file, string $imagePath): array
+    {
+        if (! $file || ! $file->isValid()) {
+            return ['success' => false, 'error' => 'La imagen no es valida.'];
+        }
+
+        $mimeType = $file->getMimeType();
+        if ($mimeType === 'image/webp') {
+            $fileName = bin2hex(random_bytes(16)) . '.webp';
+            if (! $file->move($imagePath, $fileName)) {
+                return ['success' => false, 'error' => 'Error al mover la imagen WebP.'];
+            }
+
+            return ['success' => true, 'file_name' => $fileName];
+        }
+
+        if (! in_array($mimeType, ['image/jpeg', 'image/png'], true)) {
+            return ['success' => false, 'error' => 'Formato de imagen no soportado.'];
+        }
+
+        $canConvertToWebp = function_exists('imagewebp')
+            && (($mimeType !== 'image/jpeg') || function_exists('imagecreatefromjpeg'))
+            && (($mimeType !== 'image/png') || function_exists('imagecreatefrompng'));
+
+        if ($canConvertToWebp) {
+            $fileName = bin2hex(random_bytes(16)) . '.webp';
+            $tempPath = $file->getRealPath();
+            $image = $mimeType === 'image/jpeg'
+                ? imagecreatefromjpeg($tempPath)
+                : imagecreatefrompng($tempPath);
+
+            if (! $image) {
+                return ['success' => false, 'error' => 'Error al procesar la imagen.'];
+            }
+
+            $webpPath = $imagePath . DIRECTORY_SEPARATOR . $fileName;
+            $converted = imagewebp($image, $webpPath, 80);
+            imagedestroy($image);
+
+            if (! $converted) {
+                return ['success' => false, 'error' => 'Error al convertir la imagen a WebP.'];
+            }
+
+            return ['success' => true, 'file_name' => $fileName];
+        }
+
+        $extension = $mimeType === 'image/jpeg' ? 'jpg' : 'png';
+        $fileName = bin2hex(random_bytes(16)) . '.' . $extension;
+        if (! $file->move($imagePath, $fileName)) {
+            return ['success' => false, 'error' => 'Error al guardar la imagen.'];
+        }
+
+        return ['success' => true, 'file_name' => $fileName];
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -798,43 +853,15 @@ class PostController extends Controller
 
         $coverImage = $request->file('cover_image');
         if ($coverImage && $coverImage->isValid()) {
-            $randomName = bin2hex(random_bytes(16)) . '.webp';
-            $tempPath = $coverImage->getRealPath();
-            $image = null;
-            $isWebp = false;
-            switch ($coverImage->getMimeType()) {
-                case 'image/webp':
-                    $isWebp = true;
-                    if (! $coverImage->move($imagePath, $randomName)) {
-                        return redirect()->back()->with('error', 'Error al mover la imagen WebP.');
-                    }
-                    break;
-                case 'image/jpeg':
-                    $image = imagecreatefromjpeg($tempPath);
-                    break;
-                case 'image/png':
-                    $image = imagecreatefrompng($tempPath);
-                    break;
-                default:
-                    return redirect()->back()->with('error', 'Formato de imagen no soportado.');
+            $storedImage = $this->storeUploadedImage($coverImage, $imagePath);
+            if (! $storedImage['success']) {
+                return redirect()->back()->with('error', $storedImage['error']);
             }
-            if (! $isWebp) {
-                $webpPath = $imagePath . DIRECTORY_SEPARATOR . $randomName;
-                if (imagewebp($image, $webpPath, 80)) {
-                    CoverImage::updateOrCreate(
-                        ['property_id' => $propertyId],
-                        ['url' => $randomName]
-                    );
-                } else {
-                    return redirect()->back()->with('error', 'Error al convertir la imagen a WebP.');
-                }
-                imagedestroy($image);
-            } else {
-                CoverImage::updateOrCreate(
-                    ['property_id' => $propertyId],
-                    ['url' => $randomName]
-                );
-            }
+
+            CoverImage::updateOrCreate(
+                ['property_id' => $propertyId],
+                ['url' => $storedImage['file_name']]
+            );
         }
 
         $moreImages = $request->file('more_images', []);
@@ -844,43 +871,15 @@ class PostController extends Controller
                     continue;
                 }
 
-                $randomName = bin2hex(random_bytes(16)) . '.webp';
-                $tempPath = $file->getRealPath();
-                $image = null;
-                $isWebp = false;
-                switch ($file->getMimeType()) {
-                    case 'image/webp':
-                        $isWebp = true;
-                        if (! $file->move($imagePath, $randomName)) {
-                            return redirect()->back()->with('error', 'Error al mover la imagen WebP.');
-                        }
-                        break;
-                    case 'image/jpeg':
-                        $image = imagecreatefromjpeg($tempPath);
-                        break;
-                    case 'image/png':
-                        $image = imagecreatefrompng($tempPath);
-                        break;
-                    default:
-                        return redirect()->back()->with('error', 'Formato de imagen no soportado.');
+                $storedImage = $this->storeUploadedImage($file, $imagePath);
+                if (! $storedImage['success']) {
+                    return redirect()->back()->with('error', $storedImage['error']);
                 }
-                if (! $isWebp) {
-                    $webpPath = $imagePath . DIRECTORY_SEPARATOR . $randomName;
-                    if (imagewebp($image, $webpPath, 80)) {
-                        MoreImage::create([
-                            'url' => $randomName,
-                            'property_id' => $propertyId,
-                        ]);
-                    } else {
-                        return redirect()->back()->with('error', 'Error al convertir la imagen a WebP.');
-                    }
-                    imagedestroy($image);
-                } else {
-                    MoreImage::create([
-                        'url' => $randomName,
-                        'property_id' => $propertyId,
-                    ]);
-                }
+
+                MoreImage::create([
+                    'url' => $storedImage['file_name'],
+                    'property_id' => $propertyId,
+                ]);
             }
         }
 
@@ -1649,43 +1648,15 @@ class PostController extends Controller
 
         $coverImage = $request->file('cover_image');
         if ($coverImage && $coverImage->isValid()) {
-            $randomName = bin2hex(random_bytes(16)) . '.webp';
-            $tempPath = $coverImage->getRealPath();
-            $image = null;
-            $isWebp = false;
-            switch ($coverImage->getMimeType()) {
-                case 'image/webp':
-                    $isWebp = true;
-                    if (! $coverImage->move($imagePath, $randomName)) {
-                        return redirect()->back()->with('error', 'Error al mover la imagen WebP.');
-                    }
-                    break;
-                case 'image/jpeg':
-                    $image = imagecreatefromjpeg($tempPath);
-                    break;
-                case 'image/png':
-                    $image = imagecreatefrompng($tempPath);
-                    break;
-                default:
-                    return redirect()->back()->with('error', 'Formato de imagen no soportado.');
+            $storedImage = $this->storeUploadedImage($coverImage, $imagePath);
+            if (! $storedImage['success']) {
+                return redirect()->back()->with('error', $storedImage['error']);
             }
-            if (! $isWebp) {
-                $webpPath = $imagePath . DIRECTORY_SEPARATOR . $randomName;
-                if (imagewebp($image, $webpPath, 80)) {
-                    CoverImage::updateOrCreate(
-                        ['service_id' => $serviceId],
-                        ['url' => $randomName]
-                    );
-                } else {
-                    return redirect()->back()->with('error', 'Error al convertir la imagen a WebP.');
-                }
-                imagedestroy($image);
-            } else {
-                CoverImage::updateOrCreate(
-                    ['service_id' => $serviceId],
-                    ['url' => $randomName]
-                );
-            }
+
+            CoverImage::updateOrCreate(
+                ['service_id' => $serviceId],
+                ['url' => $storedImage['file_name']]
+            );
         }
 
         $moreImages = $request->file('more_images', []);
@@ -1695,43 +1666,15 @@ class PostController extends Controller
                     continue;
                 }
 
-                $randomName = bin2hex(random_bytes(16)) . '.webp';
-                $tempPath = $file->getRealPath();
-                $image = null;
-                $isWebp = false;
-                switch ($file->getMimeType()) {
-                    case 'image/webp':
-                        $isWebp = true;
-                        if (! $file->move($imagePath, $randomName)) {
-                            return redirect()->back()->with('error', 'Error al mover la imagen WebP.');
-                        }
-                        break;
-                    case 'image/jpeg':
-                        $image = imagecreatefromjpeg($tempPath);
-                        break;
-                    case 'image/png':
-                        $image = imagecreatefrompng($tempPath);
-                        break;
-                    default:
-                        return redirect()->back()->with('error', 'Formato de imagen no soportado.');
+                $storedImage = $this->storeUploadedImage($file, $imagePath);
+                if (! $storedImage['success']) {
+                    return redirect()->back()->with('error', $storedImage['error']);
                 }
-                if (! $isWebp) {
-                    $webpPath = $imagePath . DIRECTORY_SEPARATOR . $randomName;
-                    if (imagewebp($image, $webpPath, 80)) {
-                        MoreImage::create([
-                            'url' => $randomName,
-                            'service_id' => $serviceId,
-                        ]);
-                    } else {
-                        return redirect()->back()->with('error', 'Error al convertir la imagen a WebP.');
-                    }
-                    imagedestroy($image);
-                } else {
-                    MoreImage::create([
-                        'url' => $randomName,
-                        'service_id' => $serviceId,
-                    ]);
-                }
+
+                MoreImage::create([
+                    'url' => $storedImage['file_name'],
+                    'service_id' => $serviceId,
+                ]);
             }
         }
 
