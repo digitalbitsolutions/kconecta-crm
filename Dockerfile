@@ -15,8 +15,8 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
     APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 RUN apt-get update && apt-get install -y \
-    git unzip libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    git unzip libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev libwebp-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j$(nproc) pdo_mysql mbstring zip bcmath exif gd \
     && a2enmod rewrite \
     && printf "ServerName localhost\n" > /etc/apache2/conf-available/servername.conf \

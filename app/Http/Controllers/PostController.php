@@ -79,32 +79,34 @@ class PostController extends Controller
             && (($mimeType !== 'image/jpeg') || function_exists('imagecreatefromjpeg'))
             && (($mimeType !== 'image/png') || function_exists('imagecreatefrompng'));
 
-        if ($canConvertToWebp) {
-            $fileName = bin2hex(random_bytes(16)) . '.webp';
-            $tempPath = $file->getRealPath();
-            $image = $mimeType === 'image/jpeg'
-                ? imagecreatefromjpeg($tempPath)
-                : imagecreatefrompng($tempPath);
-
-            if (! $image) {
-                return ['success' => false, 'error' => 'Error al procesar la imagen.'];
-            }
-
-            $webpPath = $imagePath . DIRECTORY_SEPARATOR . $fileName;
-            $converted = imagewebp($image, $webpPath, 80);
-            imagedestroy($image);
-
-            if (! $converted) {
-                return ['success' => false, 'error' => 'Error al convertir la imagen a WebP.'];
-            }
-
-            return ['success' => true, 'file_name' => $fileName];
+        if (! $canConvertToWebp) {
+            return ['success' => false, 'error' => 'El servidor no puede convertir imagenes a WebP en este momento.'];
         }
 
-        $extension = $mimeType === 'image/jpeg' ? 'jpg' : 'png';
-        $fileName = bin2hex(random_bytes(16)) . '.' . $extension;
-        if (! $file->move($imagePath, $fileName)) {
-            return ['success' => false, 'error' => 'Error al guardar la imagen.'];
+        $fileName = bin2hex(random_bytes(16)) . '.webp';
+        $tempPath = $file->getRealPath();
+        $image = $mimeType === 'image/jpeg'
+            ? imagecreatefromjpeg($tempPath)
+            : imagecreatefrompng($tempPath);
+
+        if (! $image) {
+            return ['success' => false, 'error' => 'Error al procesar la imagen.'];
+        }
+
+        if ($mimeType === 'image/png') {
+            if (function_exists('imagepalettetotruecolor') && ! imageistruecolor($image)) {
+                imagepalettetotruecolor($image);
+            }
+            imagealphablending($image, true);
+            imagesavealpha($image, true);
+        }
+
+        $webpPath = $imagePath . DIRECTORY_SEPARATOR . $fileName;
+        $converted = imagewebp($image, $webpPath, 80);
+        imagedestroy($image);
+
+        if (! $converted) {
+            return ['success' => false, 'error' => 'Error al convertir la imagen a WebP.'];
         }
 
         return ['success' => true, 'file_name' => $fileName];
