@@ -55,6 +55,13 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
+    private function setPositiveIntegerField(array &$dataForDb, string $column, mixed $value): void
+    {
+        if (is_numeric($value) && (int) $value > 0) {
+            $dataForDb[$column] = (int) $value;
+        }
+    }
+
     private function storeUploadedImage($file, string $imagePath): array
     {
         if (! $file || ! $file->isValid()) {
@@ -547,7 +554,7 @@ class PostController extends Controller
         $rooms = $request->input('rooms');
         $elevator = $request->input('elevator');
         $plantId = $request->input('plant');
-        $doorId = $request->input('door');
+        $doorId = $request->input('door_id');
         $typeFloor = $request->input('type_floor');
         $appropriateForChildren = $request->input('appropriate_for_children');
         $petFriendly = $request->input('pet_friendly');
@@ -587,31 +594,21 @@ class PostController extends Controller
         if (! empty($garagePrice)) {
             $dataForDb['garage_price'] = $garagePrice;
         }
-        $dataForDb['garage_price_category_id'] = $garagePriceCategoryId;
-        if (! empty($locationPremisesId)) {
-            $dataForDb['location_premises_id'] = $locationPremisesId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'garage_price_category_id', $garagePriceCategoryId);
+        $this->setPositiveIntegerField($dataForDb, 'location_premises_id', $locationPremisesId);
         if (! empty($mLong)) {
             $dataForDb['m_long'] = str_replace('.', '', $mLong);
         }
         if (! empty($mWide)) {
             $dataForDb['m_wide'] = str_replace('.', '', $mWide);
         }
-        if (! empty($heatingFuelId)) {
-            $dataForDb['heating_fuel_id'] = $heatingFuelId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'heating_fuel_id', $heatingFuelId);
         if (! empty($landSize)) {
             $dataForDb['land_size'] = str_replace('.', '', $landSize);
         }
-        if (! empty($nearestMunicipalityDistanceId)) {
-            $dataForDb['nearest_municipality_distance_id'] = $nearestMunicipalityDistanceId;
-        }
-        if (! empty($wheeledAccessId)) {
-            $dataForDb['wheeled_access_id'] = $wheeledAccessId;
-        }
-        if (! empty($typeOfTerrainId)) {
-            $dataForDb['type_of_terrain_id'] = $typeOfTerrainId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'nearest_municipality_distance_id', $nearestMunicipalityDistanceId);
+        $this->setPositiveIntegerField($dataForDb, 'wheeled_access_id', $wheeledAccessId);
+        $this->setPositiveIntegerField($dataForDb, 'type_of_terrain_id', $typeOfTerrainId);
         if (! empty($linearMetersOfFacade)) {
             $dataForDb['linear_meters_of_facade'] = $linearMetersOfFacade;
         }
@@ -624,9 +621,7 @@ class PostController extends Controller
         if (! empty($hasTenants)) {
             $dataForDb['has_tenants'] = $hasTenants;
         }
-        if (! empty($plazaCapacityId)) {
-            $dataForDb['plaza_capacity_id'] = $plazaCapacityId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'plaza_capacity_id', $plazaCapacityId);
         if (! empty($appropriateForChildren)) {
             $dataForDb['appropriate_for_children'] = $appropriateForChildren;
         }
@@ -651,24 +646,16 @@ class PostController extends Controller
         if (! empty($wheelchairAccessibleElevator)) {
             $dataForDb['wheelchair_accessible_elevator'] = $wheelchairAccessibleElevator;
         }
-        if (! empty($facadeId)) {
-            $dataForDb['facade_id'] = $facadeId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'facade_id', $facadeId);
         if (! empty($rooms)) {
             $dataForDb['rooms'] = str_replace('.', '', $rooms);
         }
         if (! empty($elevator)) {
             $dataForDb['elevator'] = $elevator;
         }
-        if (! empty($plantId)) {
-            $dataForDb['plant_id'] = $plantId;
-        }
-        if (! empty($doorId)) {
-            $dataForDb['door_id'] = $doorId;
-        }
-        if (! empty($typeId)) {
-            $dataForDb['type_id'] = $typeId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'plant_id', $plantId);
+        $this->setPositiveIntegerField($dataForDb, 'door_id', $doorId);
+        $this->setPositiveIntegerField($dataForDb, 'type_id', $typeId);
         if (! empty($locality)) {
             $dataForDb['locality'] = $locality;
         }
@@ -686,42 +673,30 @@ class PostController extends Controller
         if (! empty($nameUrbanization)) {
             $dataForDb['name_urbanization'] = $nameUrbanization;
         }
-        if (! empty($visibilityInPortalsId)) {
-            $dataForDb['visibility_in_portals_id'] = $visibilityInPortalsId;
-        }
-        if (! empty($typologyId)) {
-            $dataForDb['typology_id'] = $typologyId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'visibility_in_portals_id', $visibilityInPortalsId);
+        $this->setPositiveIntegerField($dataForDb, 'typology_id', $typologyId);
         if (! empty($plotMeters)) {
             $dataForDb['plot_meters'] = str_replace('.', '', $plotMeters);
         }
         if (! empty($numberOfPlants)) {
             $dataForDb['number_of_plants'] = str_replace('.', '', $numberOfPlants);
         }
-        if (! empty($energyClassId)) {
-            $dataForDb['energy_class_id'] = $energyClassId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'energy_class_id', $energyClassId);
         if (! empty($energyConsumption)) {
             $dataForDb['energy_consumption'] = $energyConsumption;
         }
-        if (! empty($emissionsRatingId)) {
-            $dataForDb['emissions_rating_id'] = $emissionsRatingId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'emissions_rating_id', $emissionsRatingId);
         if (! empty($emissionsConsumption)) {
             $dataForDb['emissions_consumption'] = $emissionsConsumption;
         }
-        if (! empty($stateConservationId)) {
-            $dataForDb['state_conservation_id'] = $stateConservationId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'state_conservation_id', $stateConservationId);
         if (! empty($outdoorWheelchair)) {
             $dataForDb['outdoor_wheelchair'] = $outdoorWheelchair;
         }
         if (! empty($interiorWheelchair)) {
             $dataForDb['interior_wheelchair'] = $interiorWheelchair;
         }
-        if (! empty($typeHeatingId)) {
-            $dataForDb['type_heating_id'] = $typeHeatingId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'type_heating_id', $typeHeatingId);
         if (! empty($pageUrl)) {
             $dataForDb['page_url'] = $pageUrl;
         }
@@ -731,9 +706,7 @@ class PostController extends Controller
         if (! empty($description)) {
             $dataForDb['description'] = $description;
         }
-        if (! empty($categoryId)) {
-            $dataForDb['category_id'] = $categoryId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'category_id', $categoryId);
         if (! empty($metersBuilt)) {
             $dataForDb['meters_built'] = str_replace('.', '', $metersBuilt);
         }
@@ -761,15 +734,9 @@ class PostController extends Controller
         if (! empty($parking)) {
             $dataForDb['parking'] = $parking;
         }
-        if (is_numeric($countryId) && (int) $countryId > 0) {
-            $dataForDb['country_id'] = (int) $countryId;
-        }
-        if (is_numeric($cityId) && (int) $cityId > 0) {
-            $dataForDb['city_id'] = (int) $cityId;
-        }
-        if (is_numeric($provinceId) && (int) $provinceId > 0) {
-            $dataForDb['province_id'] = (int) $provinceId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'country_id', $countryId);
+        $this->setPositiveIntegerField($dataForDb, 'city_id', $cityId);
+        $this->setPositiveIntegerField($dataForDb, 'province_id', $provinceId);
         if (! empty($addressValue)) {
             $dataForDb['address'] = $addressValue;
         }
@@ -779,18 +746,10 @@ class PostController extends Controller
         if (! empty($zipCode)) {
             $dataForDb['zip_code'] = $zipCode;
         }
-        if (! empty($rentalTypeId)) {
-            $dataForDb['rental_type_id'] = $rentalTypeId;
-        }
-        if (! empty($contactOptionId)) {
-            $dataForDb['contact_option_id'] = $contactOptionId;
-        }
-        if (! empty($powerConsumptionRatingId)) {
-            $dataForDb['power_consumption_rating_id'] = $powerConsumptionRatingId;
-        }
-        if (! empty($reasonForSaleId)) {
-            $dataForDb['reason_for_sale_id'] = $reasonForSaleId;
-        }
+        $this->setPositiveIntegerField($dataForDb, 'rental_type_id', $rentalTypeId);
+        $this->setPositiveIntegerField($dataForDb, 'contact_option_id', $contactOptionId);
+        $this->setPositiveIntegerField($dataForDb, 'power_consumption_rating_id', $powerConsumptionRatingId);
+        $this->setPositiveIntegerField($dataForDb, 'reason_for_sale_id', $reasonForSaleId);
 
         Property::where('id', $propertyId)->update($dataForDb);
 

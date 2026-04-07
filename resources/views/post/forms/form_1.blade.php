@@ -269,7 +269,7 @@
                 <span class="title-label">Clase energética *</span>
                 <div class="select">
                     <select name="energy_class" required>
-                        <option>Seleccione</option>
+                        <option value="" selected disabled>Seleccione</option>
                         <?php foreach($energyClass as $enclass){ ?>
                         <option value="<?= $enclass["id"] ?>"><?= $enclass["name"] ?></option>
                         <?php } ?>
@@ -435,7 +435,7 @@
                     <span class="title-label">Calificación de emisiones</span>
                     <div class="select">
                         <select name="emissions_rating">
-                            <option>Seleccione</option>
+                            <option value="" selected disabled>Seleccione</option>
                             <?php foreach($emissionsRating as $er){ ?>
                             <option value="<?= $er["id"] ?>"><?= $er["name"] ?></option>
                             <?php } ?>
