@@ -147,7 +147,7 @@
                                 {{ $property['address'] }}{{ $property['city'] ? ', ' . $property['city'] : '' }}
                             </span>
                             <span class="pill">
-                                {{ $property['price'] ? number_format($property['price']) . ' &euro;' : 'Sin precio' }}
+                                {{ $property['price'] ? number_format($property['price']) . ' ' . html_entity_decode('&euro;', ENT_QUOTES, 'UTF-8') : 'Sin precio' }}
                             </span>
                         </div>
                     @empty
@@ -216,5 +216,4 @@
         @endif
     </section>
 @endsection
-
 

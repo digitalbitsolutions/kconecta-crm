@@ -110,7 +110,7 @@
                     </p>
                     <div class="entity-stats">
                         <span>{{ $property['meters'] ? $property['meters'] . ' m2' : 'Sin metraje' }}</span>
-                        <span>{{ $property['price'] ? number_format($property['price']) . ' &euro;' : 'Sin precio' }}</span>
+                        <span>{{ $property['price'] ? number_format($property['price']) . ' ' . html_entity_decode('&euro;', ENT_QUOTES, 'UTF-8') : 'Sin precio' }}</span>
                     </div>
                     @if ($isAdmin && $property['owner'])
                         <div class="entity-owner">Usuario: {{ $property['owner'] }}</div>
