@@ -896,13 +896,16 @@ class PostController extends Controller
 
         $existingVideo = Video::where('property_id', $propertyId)->first();
         $video = $request->file('video');
+        if ($video && ! $video->isValid()) {
+            return redirect()->back()->with('error', 'El video supera el limite permitido de 32MB por archivo o no se pudo subir correctamente.');
+        }
         if ($video && $video->isValid()) {
             $allowedMime = ['video/mp4', 'video/avi', 'video/mov', 'video/mpeg'];
             if (! in_array($video->getMimeType(), $allowedMime, true)) {
                 return redirect()->back()->with('error', 'El video no es valido.');
             }
-            if ($video->getSize() > 51200 * 1024) {
-                return redirect()->back()->with('error', 'El video excede el limite permitido.');
+            if ($video->getSize() > 32768 * 1024) {
+                return redirect()->back()->with('error', 'El video excede el limite permitido de 32MB por archivo.');
             }
 
             $extension = $video->getClientOriginalExtension();
@@ -1703,13 +1706,16 @@ class PostController extends Controller
 
         $existingVideo = Video::where('service_id', $serviceId)->first();
         $video = $request->file('video');
+        if ($video && ! $video->isValid()) {
+            return redirect()->back()->with('error', 'El video supera el limite permitido de 32MB por archivo o no se pudo subir correctamente.');
+        }
         if ($video && $video->isValid()) {
             $allowedMime = ['video/mp4', 'video/avi', 'video/mov', 'video/mpeg'];
             if (! in_array($video->getMimeType(), $allowedMime, true)) {
                 return redirect()->back()->with('error', 'El video no es valido.');
             }
-            if ($video->getSize() > 51200 * 1024) {
-                return redirect()->back()->with('error', 'El video excede el limite permitido.');
+            if ($video->getSize() > 32768 * 1024) {
+                return redirect()->back()->with('error', 'El video excede el limite permitido de 32MB por archivo.');
             }
 
             $extension = $video->getClientOriginalExtension();
