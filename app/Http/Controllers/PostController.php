@@ -62,6 +62,51 @@ class PostController extends Controller
         }
     }
 
+    private function deleteStoredFile(string $directory, ?string $fileName): void
+    {
+        if (! $fileName) {
+            return;
+        }
+
+        $filePath = public_path(trim($directory, '/') . '/' . ltrim($fileName, '/'));
+        if (is_file($filePath)) {
+            @unlink($filePath);
+        }
+    }
+
+    private function normalizePositiveIds(mixed $values): array
+    {
+        if (! is_array($values)) {
+            $values = [$values];
+        }
+
+        $normalized = [];
+        foreach ($values as $value) {
+            if (is_numeric($value) && (int) $value > 0) {
+                $normalized[] = (int) $value;
+            }
+        }
+
+        return array_values(array_unique($normalized));
+    }
+
+    private function deleteOwnedMoreImages(string $ownerColumn, int $ownerId, mixed $imageIds): void
+    {
+        $normalizedIds = $this->normalizePositiveIds($imageIds);
+        if (empty($normalizedIds)) {
+            return;
+        }
+
+        $images = MoreImage::where($ownerColumn, $ownerId)
+            ->whereIn('id', $normalizedIds)
+            ->get();
+
+        foreach ($images as $image) {
+            $this->deleteStoredFile('img/uploads', $image->url);
+            $image->delete();
+        }
+    }
+
     private function storeUploadedImage($file, string $imagePath): array
     {
         if (! $file || ! $file->isValid()) {
@@ -812,6 +857,7 @@ class PostController extends Controller
             @mkdir($videoPath, 0755, true);
         }
 
+        $existingCoverImage = CoverImage::where('property_id', $propertyId)->first();
         $coverImage = $request->file('cover_image');
         if ($coverImage && $coverImage->isValid()) {
             $storedImage = $this->storeUploadedImage($coverImage, $imagePath);
@@ -823,6 +869,10 @@ class PostController extends Controller
                 ['property_id' => $propertyId],
                 ['url' => $storedImage['file_name']]
             );
+
+            if ($existingCoverImage && $existingCoverImage->url !== $storedImage['file_name']) {
+                $this->deleteStoredFile('img/uploads', $existingCoverImage->url);
+            }
         }
 
         $moreImages = $request->file('more_images', []);
@@ -844,6 +894,7 @@ class PostController extends Controller
             }
         }
 
+        $existingVideo = Video::where('property_id', $propertyId)->first();
         $video = $request->file('video');
         if ($video && $video->isValid()) {
             $allowedMime = ['video/mp4', 'video/avi', 'video/mov', 'video/mpeg'];
@@ -864,7 +915,13 @@ class PostController extends Controller
                 ['property_id' => $propertyId],
                 ['url' => $randomName]
             );
+
+            if ($existingVideo && $existingVideo->url !== $randomName) {
+                $this->deleteStoredFile('video/uploads', $existingVideo->url);
+            }
         }
+
+        $this->deleteOwnedMoreImages('property_id', $propertyId, $request->input('delete_more_images', []));
 
         return redirect()
             ->to('/post/my_posts')
@@ -1607,6 +1664,7 @@ class PostController extends Controller
             @mkdir($videoPath, 0755, true);
         }
 
+        $existingCoverImage = CoverImage::where('service_id', $serviceId)->first();
         $coverImage = $request->file('cover_image');
         if ($coverImage && $coverImage->isValid()) {
             $storedImage = $this->storeUploadedImage($coverImage, $imagePath);
@@ -1618,6 +1676,10 @@ class PostController extends Controller
                 ['service_id' => $serviceId],
                 ['url' => $storedImage['file_name']]
             );
+
+            if ($existingCoverImage && $existingCoverImage->url !== $storedImage['file_name']) {
+                $this->deleteStoredFile('img/uploads', $existingCoverImage->url);
+            }
         }
 
         $moreImages = $request->file('more_images', []);
@@ -1639,6 +1701,7 @@ class PostController extends Controller
             }
         }
 
+        $existingVideo = Video::where('service_id', $serviceId)->first();
         $video = $request->file('video');
         if ($video && $video->isValid()) {
             $allowedMime = ['video/mp4', 'video/avi', 'video/mov', 'video/mpeg'];
@@ -1659,7 +1722,13 @@ class PostController extends Controller
                 ['service_id' => $serviceId],
                 ['url' => $randomName]
             );
+
+            if ($existingVideo && $existingVideo->url !== $randomName) {
+                $this->deleteStoredFile('video/uploads', $existingVideo->url);
+            }
         }
+
+        $this->deleteOwnedMoreImages('service_id', $serviceId, $request->input('delete_more_images', []));
 
         return redirect()
             ->to('/post/services')
