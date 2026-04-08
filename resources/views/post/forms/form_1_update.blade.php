@@ -534,7 +534,11 @@ if (!function_exists('site_url')) {
         <div class="container-row-form-images box">
             <div class="container-main-template-input-simple">
                 <div class="container-image">
-                    <img src="<?= base_url("img/uploads/").$coverImage[0]["url"] ?>" alt="Placeholder image" id="preview_cover_image">
+                    <?php if(!empty($coverImage)){ ?>
+                        <img src="<?= base_url("img/uploads/").$coverImage[0]["url"] ?>" alt="Placeholder image" id="preview_cover_image">
+                    <?php }else{ ?>
+                        <img src="<?= base_url("img/image-icon-1280x960.png") ?>" alt="Placeholder image" id="preview_cover_image">
+                    <?php } ?>
                 </div>
                 <label for="cover_image">
                     <div class="btn-upload-image">
@@ -863,5 +867,4 @@ if (!function_exists('site_url')) {
 <script src="<?= base_url("js/google_maps.js") ?>"></script>
 
 @endsection
-
 

@@ -7,6 +7,7 @@
 @endsection
 
 @section('css')
+    <?php $coverImageUrl = !empty($property["cover_image"]["url"]) ? base_url()."img/uploads/".$property["cover_image"]["url"] : base_url()."img/image-icon-1280x960.png"; ?>
     <link rel="stylesheet" href="<?= base_url()."css/libraries/swiper-bundle.min.css" ?>">
     <script src="<?= base_url()."js/libraries/swiper-bundle.min.js" ?>"></script>
     <script src="<?= base_url()."js/libraries/bulma.modal.min.js" ?>"></script>
@@ -20,7 +21,7 @@
             <div class="swiper">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide">
-                        <img src="<?= base_url()."img/uploads/".$property["cover_image"]["url"] ?>" alt="Placeholder image" />
+                        <img src="<?= $coverImageUrl ?>" alt="Placeholder image" />
                     </div>
                     <?php foreach($property["more_images"] as $im){ ?>
                     <div class="swiper-slide">
@@ -305,5 +306,4 @@
     }
 </script>
 @endsection
-
 

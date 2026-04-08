@@ -165,7 +165,7 @@
                     <a href="<?= site_url("result/".$pr["reference"]) ?>">
                     <div class="card">
                         <div class="card-image">
-                            <img src="<?= base_url()."img/uploads/".$pr["cover_image"]["url"] ?>" alt="">
+                            <img src="<?= !empty($pr["cover_image"]["url"]) ? base_url()."img/uploads/".$pr["cover_image"]["url"] : base_url()."img/image-icon-1280x960.png" ?>" alt="">
                         </div>
                         <div class="badge-container">
                             <span class="badge"><?= $pr["type_name"] ?></span>
@@ -773,6 +773,5 @@
 </script>
 <script src="<?= base_url("js/autocomplet.js") ?>"></script>
 @endsection
-
 
 

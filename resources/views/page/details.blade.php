@@ -7,6 +7,7 @@
 @endsection
 
 @section('css')
+    <?php $coverImageUrl = !empty($property["cover_image"]["url"]) ? base_url()."img/uploads/".$property["cover_image"]["url"] : base_url()."img/image-icon-1280x960.png"; ?>
     <link rel="stylesheet" href="<?= base_url()."css/libraries/swiper-bundle.min.css" ?>">
     <script src="<?= base_url()."js/libraries/swiper-bundle.min.js" ?>"></script>
     <script src="<?= base_url()."js/libraries/bulma.modal.min.js" ?>"></script>
@@ -16,7 +17,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="<?= $property["title"] ?>">
     <meta property="og:description" content="<?= $property["description"] ?>">
-    <meta property="og:image" content="<?= base_url()."img/uploads/".$property["cover_image"]["url"] ?>">
+    <meta property="og:image" content="<?= $coverImageUrl ?>">
     <meta property="og:url" content="<?= base_url()."result/".$property["reference"] ?>">
     <meta property="og:site_name" content="<?= base_url() ?>">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9259257545893744" crossorigin="anonymous"></script>
@@ -30,7 +31,7 @@
             <div class="swiper">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide">
-                        <img src="<?= base_url()."img/uploads/".$property["cover_image"]["url"] ?>" alt="Placeholder image" />
+                        <img src="<?= $coverImageUrl ?>" alt="Placeholder image" />
                     </div>
                     <?php foreach($property["more_images"] as $im){ ?>
                     <div class="swiper-slide">
@@ -1083,4 +1084,3 @@
     }
 </script>
 @endsection
-

@@ -196,7 +196,7 @@
                 <a class="redirect-to-details-link" href="<?= site_url("result/".$pr["reference"]) ?>" aria-label="Propiedad Kconecta">
                 <div class="card">
                     <div class="card-image">
-                        <img src="<?= base_url()."img/uploads/".$pr["cover_image"]["url"] ?>" alt="kconecta">
+                        <img src="<?= !empty($pr["cover_image"]["url"]) ? base_url()."img/uploads/".$pr["cover_image"]["url"] : base_url()."img/image-icon-1280x960.png" ?>" alt="kconecta">
                     </div>
                     <div class="badge-container">
                         <span class="badge"><?= $pr["type_name"] ?></span>
