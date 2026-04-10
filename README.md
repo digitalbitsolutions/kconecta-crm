@@ -4,8 +4,8 @@ CRM inmobiliario de Kconecta migrado desde un proyecto legacy.
 
 ## Repository
 - GitHub: `https://github.com/sttildeveloper/kconecta-crm`
-- Branch principal: `main`
-- Remote activo: `origin`
+- Main branch: `main`
+- Active remote: `origin`
 
 ## Stack
 - Laravel 12
@@ -19,64 +19,90 @@ cd C:\MeegDev\kconecta-crm\web
 docker compose -p kconecta up -d --build
 ```
 
-App local:
+Local app:
 - `http://localhost:8010`
 
 ## Database
-- Schema local docker: `kconecta_schema`
-- Schema productivo: `kconecta-mysql`
+- Local docker schema: `kconecta_schema`
+- Production schema: `kconecta-mysql`
 
 ## Migration Note
-Se agregó una migración para asegurar compatibilidad de hashes de password:
+- Password hash compatibility migration:
 - `database/migrations/2026_03_01_010900_expand_user_password_column.php`
 
-## Production Status (2026-04-02)
-- Entorno productivo activo en Dokploy.
+## Production Status (2026-04-10)
+- Production runs on Dokploy.
 - URL: `https://kconecta.com/`
-- Deploy automático activo sobre `main`.
-- Home y login responden `HTTP 200`.
-- Login y panel autenticado validados manualmente en producción.
-- Warning de Apache `ServerName` ya resuelto.
-- Las altas/ediciones de propiedades requieren dirección válida resuelta por Google Maps.
-- El formulario web de propiedades ya usa un flujo compatible con `Places API (New)`.
+- Autodeploy is active on `main`.
+- Home and login are operational.
+- Authenticated panel was manually validated in production.
+- Apache `ServerName` warning is resolved.
+- Property create/edit flows require a valid Google-resolved address.
+- Property forms use a `Places API (New)` compatible flow.
+- Non-WebP image uploads are converted to `.webp` before persistence.
+- Main property create flows by type were validated online in production.
+- Property edit with media replacement was validated online in production.
+- Views tolerate missing cover images and show a safe placeholder.
+- The browser-side video optimization and hardened upload flow was pushed to GitHub `main` in commit `6e80a54`.
+- Explicit post-deploy verification of the new video flow is still pending.
+
+## Production Validation Snapshot
+Validated create flows:
+- `Casa o chalet`
+- `Piso`
+- `Local o nave`
+- `Garaje`
+- `Terreno`
+- `Casa rustica`
+
+Validated edit flows:
+- edit of `Piso`
+- replace cover image
+- add extra images
+- deferred delete of extra images
+- replace video
 
 ## Google Maps Requirements
-Para que el flujo de direcciones funcione en local y producción:
-- Variable de entorno:
+- Env var:
 - `GOOGLE_MAPS_API_KEY`
-- APIs requeridas en Google Cloud:
+- Required Google Cloud APIs:
 - `Maps JavaScript API`
 - `Places API`
 - `Places API (New)`
 - `Geocoding API`
 
 ## Deployment Workflow
-Política operativa para cambios que afecten el CRM:
-1. Validar el cambio en local.
-2. Crear `commit` en `main`.
-3. Hacer `push` a `origin/main`.
-4. Esperar el `autodeploy` de Dokploy.
-5. Verificar rutas críticas y login en el entorno desplegado.
+Operational policy for CRM changes:
+1. Validate the change locally.
+2. Review local and remote repo state before `commit` and `push`.
+3. Create the `commit` on `main`.
+4. Push to `origin/main`.
+5. Wait for Dokploy autodeploy.
+6. Verify critical routes, login, and the touched flow in production.
 
-Notas:
-- Evitar `manual redeploy` salvo que el despliegue automático falle o queden endpoints caídos.
-- No subir dumps, backups ni secretos al repo.
+Notes:
+- Avoid manual redeploy unless autodeploy fails or health checks remain broken.
+- Do not commit dumps, backups, or secrets.
+- Before `commit` or `push`, review `git status` and compare local `main` with the real remote head.
+- If `origin/main` may be stale or local SSH is failing, verify the remote with:
+- `git ls-remote https://github.com/sttildeveloper/kconecta-crm.git HEAD refs/heads/main`
 
 ## Version Tags
-- Usar tags anotados sobre commits importantes ya listos en `main`.
-- Esquema: `vMAJOR.MINOR.PATCH`.
-- Tags publicados:
+- Use annotated tags for important stable commits already on `main`.
+- Format: `vMAJOR.MINOR.PATCH`
+- Published tags:
 - `v0.1.0`
 - `v0.1.1`
-- Guía detallada: [VERSIONING.md](./VERSIONING.md)
+- Detailed guide: [VERSIONING.md](./VERSIONING.md)
 
 ## Current Priorities
-- completar prueba end-to-end de alta de propiedad en producción
-- endurecer seguridad del flujo de autenticación legacy
-- igualar formularios web y móvil
-- definir pipeline consistente de imágenes WebP
+- close the short audit before Gala tests online
+- harden the legacy auth flow
+- verify the new video optimization/upload flow in production after the `main` push
+- keep web and mobile forms aligned
+- define a consistent image/video pipeline for web and mobile
 
 ## Project Control Files
-- Estado y plan: [tasks.md](./tasks.md)
-- Contexto operativo: [agent.md](./agent.md)
-- Roadmap operativo: [roadmap.md](./roadmap.md)
+- State and next steps: [tasks.md](./tasks.md)
+- Operational context: [agent.md](./agent.md)
+- Operational roadmap: [roadmap.md](./roadmap.md)

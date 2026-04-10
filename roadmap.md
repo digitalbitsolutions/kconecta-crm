@@ -1,36 +1,45 @@
 # Kconecta CRM - Roadmap
 
-## Baseline (2026-04-02)
-- Repository conectado y desplegado en Dokploy.
-- Producción operativa con autodeploy sobre `main`.
-- Home, login y panel autenticado verificados.
-- Flujo de dirección de propiedades migrado a `Places API (New)` y funcionando en producción.
+## Baseline (2026-04-10)
+- Repository connected and deployed on Dokploy.
+- Production is operational with autodeploy on `main`.
+- Home, login, panel, and main listings were verified.
+- Property address flow uses `Places API (New)` in production.
+- Property create flows by type were validated online.
+- Property edit with media replacement was validated online.
+- Views are protected against missing cover images.
+- The hardened video flow is published on GitHub `main`, pending explicit post-deploy verification.
 
 ## Phase 1 - Stabilize Production
-- Completar prueba end-to-end guardando una propiedad real desde el navegador.
-- Extender el mismo endurecimiento del flujo de direcciones al alta de servicios si aplica.
-- Añadir checklist simple por deploy:
-- build
-- env
-- smoke test
-- rollback pointer
+- Close the short audit before Gala tests online.
+- Execute a guided test with Gala for:
+- property create
+- property edit
+- placeholder behavior when cover image is missing
+- Verify the already-published video UX:
+- real payload summary
+- browser optimization and auto-trim
+- final backend validation
+- Review whether service create needs the same hardening as property create.
 
 ## Phase 2 - Security Hardening
-- Rotar credenciales productivas y secrets de aplicación.
-- Eliminar fallback legacy de password en texto plano.
-- Forzar actualización de passwords por defecto o importados.
+- Rotate production credentials and application secrets.
+- Remove legacy plaintext password fallback.
+- Force updates of imported/default passwords.
 
 ## Phase 3 - Data Governance
-- Definir fuente de verdad para seed de datos (`seeders` vs snapshots SQL).
-- Evitar sobrescrituras local -> producción sin aprobación explícita.
-- Formalizar procedimiento de backup y restore drill.
+- Define the source of truth for seeded data (`seeders` vs SQL snapshots).
+- Avoid local-to-production overwrites without explicit approval.
+- Formalize backup and restore drills.
 
 ## Phase 4 - Web/Mobile Parity
-- Igualar formularios de propiedades por tipo entre CRM web y app móvil.
-- Definir pipeline de imágenes WebP compatible para web y móvil.
-- Revisar si el contrato del API móvil cubre todos los campos legacy del CRM.
+- Keep property forms aligned by type between web CRM and mobile app.
+- Maintain a compatible WebP image pipeline for web and mobile.
+- Define a compatible video pipeline for web and mobile.
+- Review whether the mobile API contract covers all legacy CRM fields.
 
 ## Phase 5 - Operational Reliability
-- Mejorar health checks y observabilidad de app + DB.
-- Vigilar drift entre migraciones del repo y runtime productivo.
-- Documentar incidente response y rollback operativo.
+- Improve health checks and observability for app and DB.
+- Watch for drift between repo migrations and production runtime.
+- Document incident response and rollback.
+- Keep the habit of reviewing local and remote repo state before every `commit` and `push`.

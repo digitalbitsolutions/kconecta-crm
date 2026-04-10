@@ -1,43 +1,63 @@
 # Versioning
 
 ## Goal
-Definir una política simple y estable para releases del CRM sin romper el flujo actual con Dokploy.
+Define a simple and stable release policy for the CRM without breaking the current Dokploy flow.
 
 ## Deployment Policy
-Para cambios normales del proyecto:
-1. Validar localmente.
-2. Crear `commit` en `main`.
-3. Hacer `push` a `origin/main`.
-4. Esperar `autodeploy` en Dokploy.
-5. Verificar login, panel y rutas críticas.
+For normal project changes:
+1. Validate locally.
+2. Review local and remote repo state before `commit` and `push`.
+3. Create the `commit` on `main`.
+4. Push to `origin/main`.
+5. Wait for Dokploy autodeploy.
+6. Verify login, panel, and the affected functional flow.
 
-Usar redeploy manual solo si el despliegue automático falla o queda algún endpoint inestable.
+Use manual redeploy only if autodeploy fails or an endpoint remains unstable.
+
+Remote verification note:
+- If `origin/main` may be stale or SSH is failing on the current machine, compare against the real remote with:
+- `git ls-remote https://github.com/sttildeveloper/kconecta-crm.git HEAD refs/heads/main`
 
 ## Tag Policy
-- Tipo de tag: anotado (`git tag -a`)
-- Rama base: `main`
-- Formato: `vMAJOR.MINOR.PATCH`
+- Tag type: annotated (`git tag -a`)
+- Base branch: `main`
+- Format: `vMAJOR.MINOR.PATCH`
 
 ## Current Baseline
-- `v0.1.0`: baseline operativo inicial con flujo `commit -> push -> autodeploy`
-- `v0.1.1`: fix de producción para suprimir warning de Apache `ServerName`
+- `v0.1.0`: initial stable production baseline
+- `v0.1.1`: production fix for Apache `ServerName`
+
+## Current State
+- Since `v0.1.1`, several production-facing fixes were shipped without a new tag:
+- robust property create flow
+- `Places API (New)` migration
+- WebP image conversion
+- placeholder hardening for `Seleccione`
+- media cleanup on edit
+- fallback for missing cover images
+- euro symbol render fix
+- browser-side video optimization and backend upload guards (`6e80a54`)
 
 ## Version Meaning
-- `PATCH`: fixes chicos o ajustes sin cambio funcional amplio
-- `MINOR`: cambios funcionales importantes compatibles
-- `MAJOR`: cambios grandes o incompatibles
+- `PATCH`: small fixes or narrow adjustments
+- `MINOR`: important compatible functional changes
+- `MAJOR`: large or incompatible changes
 
 ## When To Create A Tag
-Crear tag cuando el commit represente uno de estos hitos:
-- baseline estable de producción
-- cambio sensible en autenticación o base de datos
-- entrega funcional importante
-- punto seguro de rollback antes de una tanda grande de cambios
+Create a tag when the commit represents one of these milestones:
+- stable production baseline
+- sensitive auth or database change
+- important functional delivery
+- safe rollback point before a large change set
+
+Before creating a tag:
+- verify the local tree is in the expected state
+- verify the real remote head matches what you think is deployed
 
 ## Suggested Commands
 ```bash
 git commit -m "Describe change"
 git push origin main
-git tag -a v0.1.1 -m "Stable production fix"
-git push origin v0.1.1
+git tag -a v0.1.2 -m "Stable production milestone"
+git push origin v0.1.2
 ```
