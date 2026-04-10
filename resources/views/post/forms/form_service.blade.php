@@ -191,7 +191,7 @@
                     </div>
                     <label for="video">
                         <div class="btn-upload-image">
-                            Subir video (max: 32MB por archivo / 40MB total) (opcional)
+                            Subir video (max. 200MB antes de optimizar) (opcional)
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
                                 <g fill="none">
                                     <path fill="#ffffff" d="M44 24a2 2 0 1 0-4 0zM24 8a2 2 0 1 0 0-4zm15 32H9v4h30zM8 39V9H4v30zm32-15v15h4V24zM9 8h15V4H9zm0 32a1 1 0 0 1-1-1H4a5 5 0 0 0 5 5zm30 4a5 5 0 0 0 5-5h-4a1 1 0 0 1-1 1zM8 9a1 1 0 0 1 1-1V4a5 5 0 0 0-5 5z"/>
@@ -199,7 +199,7 @@
                                 </g>
                             </svg>
                         </div>
-                        <input type="file" name="video" id="video" class="input-simple-main-template" accept="video/*">
+                        <input type="file" name="video" id="video" class="input-simple-main-template" accept=".mp4,.mov,.avi,.mpeg,video/mp4,video/quicktime,video/x-msvideo,video/mpeg">
                     </label>
                 </div>
             </div>

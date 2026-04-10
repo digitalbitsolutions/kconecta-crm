@@ -4,6 +4,11 @@ const mediaForm = imagesContainer && imagesContainer.closest
     ? imagesContainer.closest("form")
     : document.querySelector("form[enctype='multipart/form-data']");
 
+const notifyMediaChange = () => {
+    const target = mediaForm || imagesContainer || document;
+    target.dispatchEvent(new CustomEvent("kconecta:media-change", { bubbles: true }));
+};
+
 const appendPendingDeleteInput = (imageId) => {
     if (!mediaForm || !imageId) {
         return;
@@ -49,6 +54,7 @@ if (imagesContainer && inputImagen) {
             // Resetear input original
             inputImagen.value = "";
             cont_img += 1;
+            notifyMediaChange();
         }
     });
 }
@@ -100,6 +106,7 @@ btns_delete_img.forEach((btn) => {
 
         appendPendingDeleteInput(btn.dataset.id);
         btn.parentElement.parentElement.remove();
+        notifyMediaChange();
     });
 });
 
@@ -113,5 +120,6 @@ document.addEventListener("click", (event) => {
             d.remove();
         });
         event.target.parentElement.parentElement.remove();
+        notifyMediaChange();
     }
 });

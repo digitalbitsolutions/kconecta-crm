@@ -55,6 +55,68 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
+    private const MAX_VIDEO_UPLOAD_BYTES = 32768 * 1024;
+
+    private const ALLOWED_VIDEO_MIME_TYPES = [
+        'video/mp4',
+        'video/quicktime',
+        'video/x-msvideo',
+        'video/mpeg',
+    ];
+
+    private function normalizeLegacyLabel(?string $value): ?string
+    {
+        if (! is_string($value) || $value === '') {
+            return $value;
+        }
+
+        $normalized = strtr($value, [
+            'ÃƒÂ¡' => 'á',
+            'ÃƒÂ©' => 'é',
+            'ÃƒÂ­' => 'í',
+            'ÃƒÂ³' => 'ó',
+            'ÃƒÂº' => 'ú',
+            'ÃƒÂ±' => 'ñ',
+            'Ãƒâ€˜' => 'Ñ',
+            'Ãƒâ€°' => 'É',
+            'ÃƒÂ' => 'Á',
+            'ÃƒÂ“' => 'Ó',
+            'ÃƒÅ¡' => 'Ú',
+            'Ã‚Â¿' => '¿',
+            'Ã‚Â¡' => '¡',
+            'Ã‚Â' => '',
+            'Ã¢â€šÂ¬' => '€',
+        ]);
+
+        return match ($normalized) {
+            'S?tano' => 'Sótano',
+            'Semi-s?tano' => 'Semi-sótano',
+            '?tico' => 'Ático',
+            'Direcci?n exacta' => 'Dirección exacta',
+            'Ocultar direcci?n' => 'Ocultar dirección',
+            default => $normalized,
+        };
+    }
+
+    private function normalizeLegacyCatalog(iterable $records): array
+    {
+        $normalized = [];
+
+        foreach ($records as $record) {
+            $row = is_array($record) ? $record : $record->toArray();
+
+            array_walk_recursive($row, function (&$value): void {
+                if (is_string($value)) {
+                    $value = $this->normalizeLegacyLabel($value);
+                }
+            });
+
+            $normalized[] = $row;
+        }
+
+        return $normalized;
+    }
+
     private function setPositiveIntegerField(array &$dataForDb, string $column, mixed $value): void
     {
         if (is_numeric($value) && (int) $value > 0) {
@@ -164,6 +226,56 @@ class PostController extends Controller
         return ['success' => true, 'file_name' => $fileName];
     }
 
+    private function validateUploadedVideo($video): ?string
+    {
+        if (! $video) {
+            return null;
+        }
+
+        if (! $video->isValid()) {
+            return 'El video no se pudo subir correctamente o supera el limite permitido de 32MB por archivo.';
+        }
+
+        if (! in_array($video->getMimeType(), self::ALLOWED_VIDEO_MIME_TYPES, true)) {
+            return 'El video no es valido. Solo se permiten MP4, MOV, AVI o MPEG.';
+        }
+
+        if ($video->getSize() > self::MAX_VIDEO_UPLOAD_BYTES) {
+            return 'El video excede el limite permitido de 32MB por archivo.';
+        }
+
+        return null;
+    }
+
+    private function storeUploadedVideo($video, string $videoPath): array
+    {
+        if ($validationError = $this->validateUploadedVideo($video)) {
+            return ['success' => false, 'error' => $validationError];
+        }
+
+        if (! is_dir($videoPath)) {
+            @mkdir($videoPath, 0755, true);
+        }
+
+        $extension = strtolower((string) $video->getClientOriginalExtension());
+        if ($extension === '') {
+            $extension = match ($video->getMimeType()) {
+                'video/mp4' => 'mp4',
+                'video/quicktime' => 'mov',
+                'video/x-msvideo' => 'avi',
+                'video/mpeg' => 'mpeg',
+                default => 'mp4',
+            };
+        }
+
+        $randomName = bin2hex(random_bytes(16)) . '.' . $extension;
+        if (! $video->move($videoPath, $randomName)) {
+            return ['success' => false, 'error' => 'Error al guardar el video.'];
+        }
+
+        return ['success' => true, 'file_name' => $randomName];
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -256,56 +368,56 @@ class PostController extends Controller
             ]);
         }
 
-        $category = Category::all();
-        $contactOption = ContactOption::all();
-        $visibilityInPortals = VisibilityInPortals::all();
-        $rentalType = RentalType::all();
-        $reasonForSale = ReasonForSale::all();
-        $typology = Typology::where('type_id', 1)->get();
-        $orientation = Orientation::all();
-        $typeHeating = TypeHeating::all();
-        $heatingFuel = HeatingFuel::all();
-        $energyClass = EnergyClass::all();
-        $powerConsumptionRating = PowerConsumptionRating::all();
-        $emissionsRating = EmissionsRating::all();
-        $stateConservation = StateConservation::all();
-        $plant = Plant::all();
-        $typeFloor = TypeFloor::all();
-        $facade = Facade::all();
-        $feature = Feature::all();
-        $equipment = Equipment::all();
-        $plazaCapacity = PlazaCapacity::all();
-        $typeOfTerrain = TypeOfTerrain::all();
-        $wheeledAccess = WheeledAccess::all();
-        $nearestMunicipalityDistance = NearestMunicipalityDistance::all();
-        $locationPremises = LocationPremises::all();
-        $garagePriceCategory = GaragePriceCategory::all();
+        $category = $this->normalizeLegacyCatalog(Category::all());
+        $contactOption = $this->normalizeLegacyCatalog(ContactOption::all());
+        $visibilityInPortals = $this->normalizeLegacyCatalog(VisibilityInPortals::all());
+        $rentalType = $this->normalizeLegacyCatalog(RentalType::all());
+        $reasonForSale = $this->normalizeLegacyCatalog(ReasonForSale::all());
+        $typology = $this->normalizeLegacyCatalog(Typology::where('type_id', 1)->get());
+        $orientation = $this->normalizeLegacyCatalog(Orientation::all());
+        $typeHeating = $this->normalizeLegacyCatalog(TypeHeating::all());
+        $heatingFuel = $this->normalizeLegacyCatalog(HeatingFuel::all());
+        $energyClass = $this->normalizeLegacyCatalog(EnergyClass::all());
+        $powerConsumptionRating = $this->normalizeLegacyCatalog(PowerConsumptionRating::all());
+        $emissionsRating = $this->normalizeLegacyCatalog(EmissionsRating::all());
+        $stateConservation = $this->normalizeLegacyCatalog(StateConservation::all());
+        $plant = $this->normalizeLegacyCatalog(Plant::all());
+        $typeFloor = $this->normalizeLegacyCatalog(TypeFloor::all());
+        $facade = $this->normalizeLegacyCatalog(Facade::all());
+        $feature = $this->normalizeLegacyCatalog(Feature::all());
+        $equipment = $this->normalizeLegacyCatalog(Equipment::all());
+        $plazaCapacity = $this->normalizeLegacyCatalog(PlazaCapacity::all());
+        $typeOfTerrain = $this->normalizeLegacyCatalog(TypeOfTerrain::all());
+        $wheeledAccess = $this->normalizeLegacyCatalog(WheeledAccess::all());
+        $nearestMunicipalityDistance = $this->normalizeLegacyCatalog(NearestMunicipalityDistance::all());
+        $locationPremises = $this->normalizeLegacyCatalog(LocationPremises::all());
+        $garagePriceCategory = $this->normalizeLegacyCatalog(GaragePriceCategory::all());
 
         $formView = null;
         switch ((string) $id) {
             case '1':
-                $equipment = Equipment::where('type_id', 1)->get();
+                $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 1)->get());
                 $formView = 'post.forms.form_1';
                 break;
             case '13':
-                $equipment = Equipment::where('type_id', 1)->get();
+                $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 1)->get());
                 $formView = 'post.forms.form_2';
                 break;
             case '4':
-                $equipment = Equipment::where('type_id', 4)->get();
+                $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 4)->get());
                 $formView = 'post.forms.form_3';
                 break;
             case '14':
-                $feature = Feature::where('id_type', 14)->get();
-                $equipment = Equipment::where('type_id', 14)->get();
+                $feature = $this->normalizeLegacyCatalog(Feature::where('id_type', 14)->get());
+                $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 14)->get());
                 $formView = 'post.forms.form_4';
                 break;
             case '9':
-                $equipment = Equipment::where('type_id', 4)->get();
+                $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 4)->get());
                 $formView = 'post.forms.form_5';
                 break;
             case '15':
-                $typology = Typology::where('type_id', 15)->get();
+                $typology = $this->normalizeLegacyCatalog(Typology::where('type_id', 15)->get());
                 $formView = 'post.forms.form_casa_rustica';
                 break;
         }
@@ -896,30 +1008,18 @@ class PostController extends Controller
 
         $existingVideo = Video::where('property_id', $propertyId)->first();
         $video = $request->file('video');
-        if ($video && ! $video->isValid()) {
-            return redirect()->back()->with('error', 'El video supera el limite permitido de 32MB por archivo o no se pudo subir correctamente.');
-        }
-        if ($video && $video->isValid()) {
-            $allowedMime = ['video/mp4', 'video/avi', 'video/mov', 'video/mpeg'];
-            if (! in_array($video->getMimeType(), $allowedMime, true)) {
-                return redirect()->back()->with('error', 'El video no es valido.');
-            }
-            if ($video->getSize() > 32768 * 1024) {
-                return redirect()->back()->with('error', 'El video excede el limite permitido de 32MB por archivo.');
-            }
-
-            $extension = $video->getClientOriginalExtension();
-            $randomName = bin2hex(random_bytes(16)) . '.' . $extension;
-            if (! $video->move($videoPath, $randomName)) {
-                return redirect()->back()->with('error', 'Error al guardar el video.');
+        if ($video) {
+            $storedVideo = $this->storeUploadedVideo($video, $videoPath);
+            if (! $storedVideo['success']) {
+                return redirect()->back()->with('error', $storedVideo['error']);
             }
 
             Video::updateOrCreate(
                 ['property_id' => $propertyId],
-                ['url' => $randomName]
+                ['url' => $storedVideo['file_name']]
             );
 
-            if ($existingVideo && $existingVideo->url !== $randomName) {
+            if ($existingVideo && $existingVideo->url !== $storedVideo['file_name']) {
                 $this->deleteStoredFile('video/uploads', $existingVideo->url);
             }
         }
@@ -963,39 +1063,39 @@ class PostController extends Controller
             ]];
         }
 
-        $category = Category::all()->toArray();
+        $category = $this->normalizeLegacyCatalog(Category::all()->toArray());
         $city = City::all()->toArray();
         $country = Country::all()->toArray();
-        $feature = Feature::all()->toArray();
+        $feature = $this->normalizeLegacyCatalog(Feature::all()->toArray());
         $province = Province::all()->toArray();
         $state = State::all()->toArray();
         $type = Type::all()->toArray();
         $userLevel = UserLevel::all()->toArray();
         $typeId = (int) $property[0]['type_id'];
         $typology = $typeId === 15
-            ? Typology::where('type_id', 15)->get()->toArray()
-            : Typology::where('type_id', 1)->get()->toArray();
-        $orientation = Orientation::all()->toArray();
-        $typeHeating = TypeHeating::all()->toArray();
-        $emissionsRating = EmissionsRating::all()->toArray();
-        $energyClass = EnergyClass::all()->toArray();
-        $stateConservation = StateConservation::all()->toArray();
-        $visibilityInPortals = VisibilityInPortals::all()->toArray();
-        $rentalType = RentalType::all()->toArray();
-        $contactOption = ContactOption::all()->toArray();
-        $powerConsumptionRating = PowerConsumptionRating::all()->toArray();
-        $reasonForSale = ReasonForSale::all()->toArray();
-        $plant = Plant::all()->toArray();
+            ? $this->normalizeLegacyCatalog(Typology::where('type_id', 15)->get()->toArray())
+            : $this->normalizeLegacyCatalog(Typology::where('type_id', 1)->get()->toArray());
+        $orientation = $this->normalizeLegacyCatalog(Orientation::all()->toArray());
+        $typeHeating = $this->normalizeLegacyCatalog(TypeHeating::all()->toArray());
+        $emissionsRating = $this->normalizeLegacyCatalog(EmissionsRating::all()->toArray());
+        $energyClass = $this->normalizeLegacyCatalog(EnergyClass::all()->toArray());
+        $stateConservation = $this->normalizeLegacyCatalog(StateConservation::all()->toArray());
+        $visibilityInPortals = $this->normalizeLegacyCatalog(VisibilityInPortals::all()->toArray());
+        $rentalType = $this->normalizeLegacyCatalog(RentalType::all()->toArray());
+        $contactOption = $this->normalizeLegacyCatalog(ContactOption::all()->toArray());
+        $powerConsumptionRating = $this->normalizeLegacyCatalog(PowerConsumptionRating::all()->toArray());
+        $reasonForSale = $this->normalizeLegacyCatalog(ReasonForSale::all()->toArray());
+        $plant = $this->normalizeLegacyCatalog(Plant::all()->toArray());
         $doorOptions = Door::all()->toArray();
-        $typeFloor = TypeFloor::all()->toArray();
-        $facade = Facade::all()->toArray();
-        $plazaCapacity = PlazaCapacity::all()->toArray();
-        $typeOfTerrain = TypeOfTerrain::all()->toArray();
-        $wheeledAccess = WheeledAccess::all()->toArray();
-        $nearestMunicipalityDistance = NearestMunicipalityDistance::all()->toArray();
-        $heatingFuel = HeatingFuel::all()->toArray();
-        $locationPremises = LocationPremises::all()->toArray();
-        $garagePriceCategory = GaragePriceCategory::all()->toArray();
+        $typeFloor = $this->normalizeLegacyCatalog(TypeFloor::all()->toArray());
+        $facade = $this->normalizeLegacyCatalog(Facade::all()->toArray());
+        $plazaCapacity = $this->normalizeLegacyCatalog(PlazaCapacity::all()->toArray());
+        $typeOfTerrain = $this->normalizeLegacyCatalog(TypeOfTerrain::all()->toArray());
+        $wheeledAccess = $this->normalizeLegacyCatalog(WheeledAccess::all()->toArray());
+        $nearestMunicipalityDistance = $this->normalizeLegacyCatalog(NearestMunicipalityDistance::all()->toArray());
+        $heatingFuel = $this->normalizeLegacyCatalog(HeatingFuel::all()->toArray());
+        $locationPremises = $this->normalizeLegacyCatalog(LocationPremises::all()->toArray());
+        $garagePriceCategory = $this->normalizeLegacyCatalog(GaragePriceCategory::all()->toArray());
 
         $typesFloors = TypesFloors::where('property_id', $id)->get()->toArray();
         $equipments = Equipments::where('property_id', $id)->get()->toArray();
@@ -1005,24 +1105,24 @@ class PostController extends Controller
         $orientations = Orientations::where('property_id', $id)->get()->toArray();
         $features = Features::where('property_id', $id)->get()->toArray();
 
-        $equipment = Equipment::all()->toArray();
+        $equipment = $this->normalizeLegacyCatalog(Equipment::all()->toArray());
         $formView = 'post.forms.form_1_update';
 
         if ($typeId === 1) {
-            $equipment = Equipment::where('type_id', 1)->get()->toArray();
+            $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 1)->get()->toArray());
             $formView = 'post.forms.form_1_update';
         } elseif ($typeId === 13) {
-            $equipment = Equipment::where('type_id', 1)->get()->toArray();
+            $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 1)->get()->toArray());
             $formView = 'post.forms.form_2_update';
         } elseif ($typeId === 4) {
-            $equipment = Equipment::where('type_id', 4)->get()->toArray();
+            $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 4)->get()->toArray());
             $formView = 'post.forms.form_3_update';
         } elseif ($typeId === 14) {
-            $feature = Feature::where('id_type', 14)->get()->toArray();
-            $equipment = Equipment::where('type_id', 14)->get()->toArray();
+            $feature = $this->normalizeLegacyCatalog(Feature::where('id_type', 14)->get()->toArray());
+            $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 14)->get()->toArray());
             $formView = 'post.forms.form_4_update';
         } elseif ($typeId === 9) {
-            $equipment = Equipment::where('type_id', 4)->get()->toArray();
+            $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 4)->get()->toArray());
             $formView = 'post.forms.form_5_update';
         } elseif ($typeId === 15) {
             $formView = 'post.forms.form_casa_rustica_update';
@@ -1706,30 +1806,18 @@ class PostController extends Controller
 
         $existingVideo = Video::where('service_id', $serviceId)->first();
         $video = $request->file('video');
-        if ($video && ! $video->isValid()) {
-            return redirect()->back()->with('error', 'El video supera el limite permitido de 32MB por archivo o no se pudo subir correctamente.');
-        }
-        if ($video && $video->isValid()) {
-            $allowedMime = ['video/mp4', 'video/avi', 'video/mov', 'video/mpeg'];
-            if (! in_array($video->getMimeType(), $allowedMime, true)) {
-                return redirect()->back()->with('error', 'El video no es valido.');
-            }
-            if ($video->getSize() > 32768 * 1024) {
-                return redirect()->back()->with('error', 'El video excede el limite permitido de 32MB por archivo.');
-            }
-
-            $extension = $video->getClientOriginalExtension();
-            $randomName = bin2hex(random_bytes(16)) . '.' . $extension;
-            if (! $video->move($videoPath, $randomName)) {
-                return redirect()->back()->with('error', 'Error al guardar el video.');
+        if ($video) {
+            $storedVideo = $this->storeUploadedVideo($video, $videoPath);
+            if (! $storedVideo['success']) {
+                return redirect()->back()->with('error', $storedVideo['error']);
             }
 
             Video::updateOrCreate(
                 ['service_id' => $serviceId],
-                ['url' => $randomName]
+                ['url' => $storedVideo['file_name']]
             );
 
-            if ($existingVideo && $existingVideo->url !== $randomName) {
+            if ($existingVideo && $existingVideo->url !== $storedVideo['file_name']) {
                 $this->deleteStoredFile('video/uploads', $existingVideo->url);
             }
         }
