@@ -24,8 +24,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN { \
-        echo 'upload_max_filesize=200M'; \
-        echo 'post_max_size=230M'; \
+        echo 'upload_max_filesize=150M'; \
+        echo 'post_max_size=180M'; \
         echo 'memory_limit=512M'; \
         echo 'max_file_uploads=50'; \
         echo 'max_execution_time=300'; \

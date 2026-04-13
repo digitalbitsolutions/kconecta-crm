@@ -370,6 +370,30 @@ body{
     margin-top: 1rem;
 }
 
+.video-upload-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.85rem;
+}
+
+.video-upload-action {
+    border-radius: 999px;
+    padding-inline: 1rem;
+}
+
+.video-upload-action.is-primary {
+    background: var(--color-main-1);
+    border-color: var(--color-main-1);
+    color: #ffffff;
+}
+
+.video-upload-action.is-secondary {
+    background: #ffffff;
+    border: 1px solid #cdd7e3;
+    color: #183b56;
+}
+
 .payload-size-feedback {
     margin-bottom: 1rem;
     padding: 0.95rem 1rem;

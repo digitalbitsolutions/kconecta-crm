@@ -87,7 +87,7 @@
 
         <script src="{{ asset('js/libraries/bulma.modal.min.js') }}"></script>
         <script>
-            window.KC_VIDEO_MAX_UPLOAD_BYTES = {{ max(1, (int) config('uploads.video_max_upload_mb', 40)) * 1024 * 1024 }};
+            window.KC_VIDEO_MAX_UPLOAD_BYTES = {{ max(1, (int) config('uploads.video_max_upload_mb', 150)) * 1024 * 1024 }};
         </script>
         @yield('scripts')
     </body>

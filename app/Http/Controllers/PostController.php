@@ -64,14 +64,14 @@ class PostController extends Controller
 
     private function maxVideoUploadBytes(): int
     {
-        $maxMb = max(1, (int) config('uploads.video_max_upload_mb', 40));
+        $maxMb = max(1, (int) config('uploads.video_max_upload_mb', 150));
 
         return $maxMb * 1024 * 1024;
     }
 
     private function maxVideoUploadLabel(): string
     {
-        return max(1, (int) config('uploads.video_max_upload_mb', 40)) . 'MB';
+        return max(1, (int) config('uploads.video_max_upload_mb', 150)) . 'MB';
     }
 
     private function normalizeLegacyLabel(?string $value): ?string
