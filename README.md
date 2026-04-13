@@ -71,6 +71,11 @@ Validated edit flows:
 - `Places API (New)`
 - `Geocoding API`
 
+## Upload Limit
+- Env var:
+- `VIDEO_MAX_UPLOAD_MB` (default `40`)
+- Keep this value aligned with Dokploy reverse-proxy body size limit to avoid `413 Content Too Large`.
+
 ## Deployment Workflow
 Operational policy for CRM changes:
 1. Validate the change locally.

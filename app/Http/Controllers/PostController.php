@@ -55,14 +55,24 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-    private const MAX_VIDEO_UPLOAD_BYTES = 200 * 1024 * 1024;
-
     private const ALLOWED_VIDEO_MIME_TYPES = [
         'video/mp4',
         'video/quicktime',
         'video/x-msvideo',
         'video/mpeg',
     ];
+
+    private function maxVideoUploadBytes(): int
+    {
+        $maxMb = max(1, (int) config('uploads.video_max_upload_mb', 40));
+
+        return $maxMb * 1024 * 1024;
+    }
+
+    private function maxVideoUploadLabel(): string
+    {
+        return max(1, (int) config('uploads.video_max_upload_mb', 40)) . 'MB';
+    }
 
     private function normalizeLegacyLabel(?string $value): ?string
     {
@@ -233,15 +243,19 @@ class PostController extends Controller
         }
 
         if (! $video->isValid()) {
-            return 'El video no se pudo subir correctamente o supera el limite permitido de 200MB por archivo.';
+            return 'El video no se pudo subir correctamente o supera el limite permitido de '
+                . $this->maxVideoUploadLabel()
+                . ' por archivo.';
         }
 
         if (! in_array($video->getMimeType(), self::ALLOWED_VIDEO_MIME_TYPES, true)) {
             return 'El video no es valido. Solo se permiten MP4, MOV, AVI o MPEG.';
         }
 
-        if ($video->getSize() > self::MAX_VIDEO_UPLOAD_BYTES) {
-            return 'El video excede el limite permitido de 200MB por archivo.';
+        if ($video->getSize() > $this->maxVideoUploadBytes()) {
+            return 'El video excede el limite permitido de '
+                . $this->maxVideoUploadLabel()
+                . ' por archivo.';
         }
 
         return null;

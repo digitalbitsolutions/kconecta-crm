@@ -44,7 +44,17 @@ use Illuminate\Support\Str;
 
 class PropertyApiController extends Controller
 {
-    private const MAX_VIDEO_UPLOAD_BYTES = 200 * 1024 * 1024;
+    private function maxVideoUploadBytes(): int
+    {
+        $maxMb = max(1, (int) config('uploads.video_max_upload_mb', 40));
+
+        return $maxMb * 1024 * 1024;
+    }
+
+    private function maxVideoUploadLabel(): string
+    {
+        return max(1, (int) config('uploads.video_max_upload_mb', 40)) . 'MB';
+    }
 
     public function index(Request $request)
     {
@@ -492,8 +502,8 @@ class PropertyApiController extends Controller
                     : 'El video no es valido.';
             }
 
-            if ($video->getSize() > self::MAX_VIDEO_UPLOAD_BYTES) {
-                return 'El video excede el limite permitido de 200MB.';
+            if ($video->getSize() > $this->maxVideoUploadBytes()) {
+                return 'El video excede el limite permitido de ' . $this->maxVideoUploadLabel() . '.';
             }
         }
 

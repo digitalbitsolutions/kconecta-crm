@@ -1,6 +1,10 @@
 (function () {
-    const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
-    const VIDEO_BUTTON_TEXT = "Subir video (max. 200MB) (opcional)";
+    const configuredMaxVideoBytes = Number(window.KC_VIDEO_MAX_UPLOAD_BYTES);
+    const MAX_VIDEO_BYTES = Number.isFinite(configuredMaxVideoBytes) && configuredMaxVideoBytes > 0
+        ? configuredMaxVideoBytes
+        : 40 * 1024 * 1024;
+    const MAX_VIDEO_MB = Math.max(1, Math.round(MAX_VIDEO_BYTES / (1024 * 1024)));
+    const VIDEO_BUTTON_TEXT = `Subir video (max. ${MAX_VIDEO_MB}MB) (opcional)`;
     const ALLOWED_MIME_TYPES = new Set([
         "video/mp4",
         "video/quicktime",
@@ -92,7 +96,7 @@
         const summary = feedback.querySelector("[data-video-summary]");
 
         if (help && !help.textContent.trim()) {
-            help.textContent = "El video se sube sin recortar ni optimizar. El archivo debe pesar 200MB o menos.";
+            help.textContent = `El video se sube sin recortar ni optimizar. El archivo debe pesar ${MAX_VIDEO_MB}MB o menos.`;
         }
 
         return { feedback, help, status, summary };
@@ -217,7 +221,7 @@
             setVideoError(
                 context,
                 state,
-                `El video pesa ${formatBytes(file.size || 0)} y supera el limite de 200MB.`
+                `El video pesa ${formatBytes(file.size || 0)} y supera el limite de ${MAX_VIDEO_MB}MB.`
             );
             return;
         }
