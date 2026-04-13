@@ -55,7 +55,7 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-    private const MAX_VIDEO_UPLOAD_BYTES = 32768 * 1024;
+    private const MAX_VIDEO_UPLOAD_BYTES = 200 * 1024 * 1024;
 
     private const ALLOWED_VIDEO_MIME_TYPES = [
         'video/mp4',
@@ -233,7 +233,7 @@ class PostController extends Controller
         }
 
         if (! $video->isValid()) {
-            return 'El video no se pudo subir correctamente o supera el limite permitido de 32MB por archivo.';
+            return 'El video no se pudo subir correctamente o supera el limite permitido de 200MB por archivo.';
         }
 
         if (! in_array($video->getMimeType(), self::ALLOWED_VIDEO_MIME_TYPES, true)) {
@@ -241,7 +241,7 @@ class PostController extends Controller
         }
 
         if ($video->getSize() > self::MAX_VIDEO_UPLOAD_BYTES) {
-            return 'El video excede el limite permitido de 32MB por archivo.';
+            return 'El video excede el limite permitido de 200MB por archivo.';
         }
 
         return null;

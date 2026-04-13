@@ -15,6 +15,10 @@ return new class extends Migration
             return;
         }
 
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement('ALTER TABLE `user` MODIFY `password` VARCHAR(255) NOT NULL');
     }
 
@@ -26,4 +30,3 @@ return new class extends Migration
         // Keep as no-op to avoid truncating existing password hashes.
     }
 };
-

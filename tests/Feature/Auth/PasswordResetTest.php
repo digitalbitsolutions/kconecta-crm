@@ -25,7 +25,10 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $this->withCsrfToken()->post('/forgot-password', [
+            '_token' => 'test-csrf-token',
+            'email' => $user->email,
+        ]);
 
         Notification::assertSentTo($user, ResetPassword::class);
     }
@@ -36,7 +39,10 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $this->withCsrfToken()->post('/forgot-password', [
+            '_token' => 'test-csrf-token',
+            'email' => $user->email,
+        ]);
 
         Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
             $response = $this->get('/reset-password/'.$notification->token);
@@ -53,10 +59,14 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $this->withCsrfToken()->post('/forgot-password', [
+            '_token' => 'test-csrf-token',
+            'email' => $user->email,
+        ]);
 
         Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
-            $response = $this->post('/reset-password', [
+            $response = $this->withCsrfToken()->post('/reset-password', [
+                '_token' => 'test-csrf-token',
                 'token' => $notification->token,
                 'email' => $user->email,
                 'password' => 'password',

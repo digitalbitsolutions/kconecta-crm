@@ -14,7 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $appEnv = $_ENV['APP_ENV'] ?? $_SERVER['APP_ENV'] ?? null;
+
         $middleware->trustProxies(at: '*');
+        $middleware->validateCsrfTokens(except: $appEnv === 'testing' ? ['*'] : []);
 
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,

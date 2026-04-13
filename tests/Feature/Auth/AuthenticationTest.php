@@ -21,7 +21,8 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->post('/login', [
+        $response = $this->withCsrfToken()->post('/login', [
+            '_token' => 'test-csrf-token',
             'email' => $user->email,
             'password' => 'password',
         ]);
@@ -34,7 +35,8 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->post('/login', [
+        $this->withCsrfToken()->post('/login', [
+            '_token' => 'test-csrf-token',
             'email' => $user->email,
             'password' => 'wrong-password',
         ]);
@@ -46,7 +48,9 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post('/logout');
+        $response = $this->actingAs($user)->withCsrfToken()->post('/logout', [
+            '_token' => 'test-csrf-token',
+        ]);
 
         $this->assertGuest();
         $response->assertRedirect('/');

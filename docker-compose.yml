@@ -22,6 +22,10 @@ services:
       DB_PASSWORD: secret
     depends_on:
       - mysql
+    volumes:
+      - .:/var/www/html
+      - app-vendor:/var/www/html/vendor
+      - app-build:/var/www/html/public/build
 
   mysql:
     image: mysql:8.0
@@ -33,3 +37,5 @@ services:
 
 volumes:
   db-data:
+  app-vendor:
+  app-build:

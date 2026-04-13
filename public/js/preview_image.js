@@ -50,7 +50,7 @@ const loadVideoOptimizerScript = () => {
         const script = document.createElement("script");
         script.src = `${window.location.origin}/js/video_upload_optimizer.js`;
         script.onload = () => resolve(window.KconectaVideoUploadOptimizer);
-        script.onerror = () => reject(new Error("No se pudo cargar el optimizador de video."));
+        script.onerror = () => reject(new Error("No se pudo cargar el validador de video."));
         document.head.appendChild(script);
     });
 

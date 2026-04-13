@@ -24,9 +24,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN { \
-        echo 'upload_max_filesize=32M'; \
-        echo 'post_max_size=40M'; \
-        echo 'memory_limit=256M'; \
+        echo 'upload_max_filesize=200M'; \
+        echo 'post_max_size=230M'; \
+        echo 'memory_limit=512M'; \
         echo 'max_file_uploads=50'; \
         echo 'max_execution_time=300'; \
     } > /usr/local/etc/php/conf.d/uploads.ini

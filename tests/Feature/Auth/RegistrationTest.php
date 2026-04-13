@@ -23,7 +23,8 @@ class RegistrationTest extends TestCase
             'name' => 'Administrador',
         ]);
 
-        $response = $this->post('/register', [
+        $response = $this->withCsrfToken()->post('/register', [
+            '_token' => 'test-csrf-token',
             'user_level_id' => $level->id,
             'document_type' => 'DNI',
             'document_number' => '12345678',

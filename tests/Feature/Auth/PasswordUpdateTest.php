@@ -17,8 +17,10 @@ class PasswordUpdateTest extends TestCase
 
         $response = $this
             ->actingAs($user)
+            ->withCsrfToken()
             ->from('/profile')
             ->put('/password', [
+                '_token' => 'test-csrf-token',
                 'current_password' => 'password',
                 'password' => 'new-password',
                 'password_confirmation' => 'new-password',
@@ -37,8 +39,10 @@ class PasswordUpdateTest extends TestCase
 
         $response = $this
             ->actingAs($user)
+            ->withCsrfToken()
             ->from('/profile')
             ->put('/password', [
+                '_token' => 'test-csrf-token',
                 'current_password' => 'wrong-password',
                 'password' => 'new-password',
                 'password_confirmation' => 'new-password',
