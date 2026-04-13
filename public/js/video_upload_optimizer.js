@@ -489,7 +489,7 @@
         clearVideoError(context, state);
         showPreviewFromFile(context, state, file);
         showActions(context.feedback, false);
-        setStatus(context.feedback, "Video listo para subir.", "success");
+        setStatus(context.feedback, "Archivo correcto.", "success");
         setSummary(
             context.feedback,
             summaryMessage || `${file.name} (${formatBytes(file.size || 0)})`,

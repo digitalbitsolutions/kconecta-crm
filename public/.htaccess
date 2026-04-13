@@ -25,17 +25,17 @@
 </IfModule>
 
 <IfModule mod_php.c>
-    php_value upload_max_filesize 32M
-    php_value post_max_size 40M
+    php_value upload_max_filesize 150M
+    php_value post_max_size 180M
     php_value max_file_uploads 50
     php_value max_execution_time 300
-    php_value memory_limit 256M
+    php_value memory_limit 512M
 </IfModule>
 
 <IfModule php_module>
-    php_value upload_max_filesize 32M
-    php_value post_max_size 40M
+    php_value upload_max_filesize 150M
+    php_value post_max_size 180M
     php_value max_file_uploads 50
     php_value max_execution_time 300
-    php_value memory_limit 256M
+    php_value memory_limit 512M
 </IfModule>
