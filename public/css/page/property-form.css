@@ -90,9 +90,38 @@ body {
   border-radius: 0.65rem;
 }
 
+.container-main .garage-description-row {
+  grid-template-columns: minmax(0, 2.3fr) minmax(16rem, 1fr);
+  align-items: end;
+}
+
+.container-main .garage-description-title,
+.container-main .garage-description-website,
+.container-main .garage-description-textarea {
+  display: grid;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.container-main .garage-description-title .input,
+.container-main .garage-description-website .input,
+.container-main .garage-description-textarea .textarea {
+  width: 100%;
+  max-width: 100%;
+}
+
+.container-main .garage-description-textarea .textarea {
+  min-height: 7.9rem;
+  resize: vertical;
+}
+
 @media (max-width: 960px) {
   .container-title-page,
   .container-main {
     max-width: 100%;
+  }
+
+  .container-main .garage-description-row {
+    grid-template-columns: 1fr;
   }
 }

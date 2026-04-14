@@ -31,17 +31,22 @@ let cont_img = 1;
 
 if (imagesContainer && inputImagen) {
     inputImagen.addEventListener("change", () => {
-        const file = inputImagen.files[0];
+        const selectedFiles = Array.from(inputImagen.files || []);
 
-        if (file) {
-            mostrarPreview(file, "ref-img-" + cont_img);
+        if (!selectedFiles.length) {
+            return;
+        }
+
+        selectedFiles.forEach((file) => {
+            const inputClass = "ref-img-" + cont_img;
+            mostrarPreview(file, inputClass);
 
             // Crear un nuevo input file "clonado" solo con esa imagen
             const nuevoInput = document.createElement("input");
             nuevoInput.type = "file";
             nuevoInput.name = "more_images[]";
             nuevoInput.style.display = "none";
-            nuevoInput.classList.add("ref-img-" + cont_img);
+            nuevoInput.classList.add(inputClass);
 
             // Crear un DataTransfer para meter el archivo dentro del nuevo input
             const dataTransfer = new DataTransfer();
@@ -50,12 +55,12 @@ if (imagesContainer && inputImagen) {
 
             // Agregar el input al formulario
             imagesContainer.appendChild(nuevoInput);
-
-            // Resetear input original
-            inputImagen.value = "";
             cont_img += 1;
-            notifyMediaChange();
-        }
+        });
+
+        // Resetear input original
+        inputImagen.value = "";
+        notifyMediaChange();
     });
 }
 

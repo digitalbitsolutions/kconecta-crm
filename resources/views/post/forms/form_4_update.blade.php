@@ -501,19 +501,19 @@ if (!function_exists('site_url')) {
             </div>
         </div> -->
         <h2 class="title-main-row-section">Descripci&oacute;n de la propiedad</h2>
-        <div class="container-row-form box">
-            <label for="" class="container-two-grid-col">
+        <div class="container-row-form box garage-description-row">
+            <label for="" class="garage-description-title">
                 <span class="title-label">T&iacute;tulo *</span>
                 <input type="text" class="input" value="<?= $property[0]["title"] ?>" name="title" required>
             </label>
-            <label for="">
+            <label for="" class="garage-description-website">
                 <span class="title-label">Sitio web</span>
                 <input type="text" class="input" placeholder="https://" value="<?= $property[0]["page_url"] ?>" name="page_url">
             </label>
         </div>
-        <div class="container-row-form-col-1 box">
+        <div class="container-row-form-col-1 box garage-description-box">
             <div class="div-col-1">
-                <label for="">
+                <label for="" class="garage-description-textarea">
                     <span class="title-label">Descripci&oacute;n *</span>
                     <textarea class="textarea" name="description" required><?= $property[0]["description"] ?></textarea>
                 </label>
@@ -558,7 +558,7 @@ if (!function_exists('site_url')) {
                         Agregar imagen
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48"><g fill="none"><path fill="#ffffff" d="M44 24a2 2 0 1 0-4 0zM24 8a2 2 0 1 0 0-4zm15 32H9v4h30zM8 39V9H4v30zm32-15v15h4V24zM9 8h15V4H9zm0 32a1 1 0 0 1-1-1H4a5 5 0 0 0 5 5zm30 4a5 5 0 0 0 5-5h-4a1 1 0 0 1-1 1zM8 9a1 1 0 0 1 1-1V4a5 5 0 0 0-5 5z"/><path stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="m6 35l10.693-9.802a2 2 0 0 1 2.653-.044L32 36m-4-5l4.773-4.773a2 2 0 0 1 2.615-.186L42 31m-5-13V6m-5 5l5-5l5 5"/></g></svg>
                     </div>
-                    <input type="file" id="more_images" class="input-simple-main-template" accept="image/png, image/jpeg, image/jpg, image/webp">
+                    <input type="file" id="more_images" class="input-simple-main-template" accept="image/png, image/jpeg, image/jpg, image/webp" multiple>
                 </label>    
             </div>
 
