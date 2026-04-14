@@ -117,7 +117,44 @@ body{
     grid-column: span 2;
 }
 .container-main .container-row-form-col-1{
+    display: grid;
     grid-template-columns: 1fr 1fr 1fr ;
+    column-gap: 1.2rem;
+    row-gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+    height: fit-content;
+}
+.container-main .container-row-form > label,
+.container-main .container-row-form-col-1 > label,
+.container-main .container-row-form-col-1 .div-col-1 > label,
+.container-main .container-row-form .div-col-1 > label{
+    display: grid;
+    gap: .45rem;
+    width: 100%;
+    min-width: 0;
+}
+.container-main .container-row-form .input,
+.container-main .container-row-form .textarea,
+.container-main .container-row-form-col-1 .input,
+.container-main .container-row-form-col-1 .textarea,
+.container-main .container-row-form input[type="text"],
+.container-main .container-row-form input[type="email"],
+.container-main .container-row-form input[type="password"],
+.container-main .container-row-form input[type="number"],
+.container-main .container-row-form input[type="url"],
+.container-main .container-row-form input[type="date"],
+.container-main .container-row-form-col-1 input[type="text"],
+.container-main .container-row-form-col-1 input[type="email"],
+.container-main .container-row-form-col-1 input[type="password"],
+.container-main .container-row-form-col-1 input[type="number"],
+.container-main .container-row-form-col-1 input[type="url"],
+.container-main .container-row-form-col-1 input[type="date"],
+.container-main .container-row-form-col-1 textarea,
+.container-main .container-row-form textarea{
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
 }
 .container-main .container-row-form input[type="radio"],
 .container-main .container-row-form input[type="checkbox"]{
@@ -493,12 +530,18 @@ body{
     .container-main .container-row-form{
         grid-template-columns: 1fr 1fr;
     }
+    .container-main .container-row-form-col-1{
+        grid-template-columns: 1fr 1fr;
+    }
     .container-main .div-col-3{
         grid-template-columns: 1fr 1fr;
     }
 }
 @media screen and (max-width: 600px) {
     .container-main .container-row-form{
+        grid-template-columns: 1fr;
+    }
+    .container-main .container-row-form-col-1{
         grid-template-columns: 1fr;
     }
     .container-main .div-col-3{
