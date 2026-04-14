@@ -1018,6 +1018,14 @@ class PostController extends Controller
         }
 
         $existingCoverImage = CoverImage::where('property_id', $propertyId)->first();
+        $deleteCoverImage = (int) $request->input('delete_cover_image', 0) === 1;
+
+        if ($deleteCoverImage && $existingCoverImage) {
+            $this->deleteStoredFile('img/uploads', $existingCoverImage->url);
+            $existingCoverImage->delete();
+            $existingCoverImage = null;
+        }
+
         $coverImage = $request->file('cover_image');
         if ($coverImage && $coverImage->isValid()) {
             $storedImage = $this->storeUploadedImage($coverImage, $imagePath);

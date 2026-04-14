@@ -128,3 +128,33 @@ document.addEventListener("click", (event) => {
         notifyMediaChange();
     }
 });
+
+document.addEventListener("click", (event) => {
+    const deleteCoverButton = event.target.closest(".btn-delete-cover-image");
+    if (deleteCoverButton) {
+        const confirmDelete = confirm("Eliminar la imagen de portada?");
+        if (!confirmDelete) {
+            return;
+        }
+
+        const deleteCoverInput = document.getElementById("delete_cover_image");
+        const coverPreview = document.getElementById("preview_cover_image");
+        const coverInput = document.getElementById("cover_image");
+        const placeholderImage = deleteCoverButton.dataset.placeholder;
+
+        if (deleteCoverInput) {
+            deleteCoverInput.value = "1";
+        }
+
+        if (coverInput) {
+            coverInput.value = "";
+        }
+
+        if (coverPreview && deleteCoverButton.dataset.placeholder) {
+            coverPreview.src = placeholderImage;
+        }
+
+        deleteCoverButton.remove();
+        notifyMediaChange();
+    }
+});

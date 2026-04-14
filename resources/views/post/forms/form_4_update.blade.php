@@ -241,7 +241,7 @@ if (!function_exists('site_url')) {
                 </label>
                 <?php } ?>
             </div> -->
-            <div class="div-col-1 container-for-sale-only">
+            <div class="div-col-1">
                 <span class="title-label">Capacidad de la plaza *</span>
                 <div class="select">
                     <select name="plaza_capacity" required>
@@ -538,6 +538,12 @@ if (!function_exists('site_url')) {
                     </div>
                     <input type="file" name="cover_image" id="cover_image" class="input-simple-main-template" accept="image/png, image/jpeg, image/jpg, image/webp">
                 </label>
+                <input type="hidden" name="delete_cover_image" id="delete_cover_image" value="0">
+                <?php if(!empty($coverImage)){ ?>
+                    <div class="container-button-actions">
+                        <button class="button btn-delete-cover-image" type="button" data-placeholder="<?= base_url("img/image-icon-1280x960.png") ?>">Eliminar portada</button>
+                    </div>
+                <?php } ?>
             </div>
             
             <div class="container-main-template-input-simple">

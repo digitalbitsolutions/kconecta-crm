@@ -220,7 +220,7 @@
                 </label>
                 <?php } ?>
             </div> -->
-            <div class="div-col-1 container-for-sale-only">
+            <div class="div-col-1">
                 <span class="title-label">Capacidad de la plaza *</span>
                 <div class="select">
                     <select name="plaza_capacity" required>
