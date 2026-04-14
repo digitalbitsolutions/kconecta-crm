@@ -134,6 +134,39 @@ class PostController extends Controller
         }
     }
 
+    private function normalizeDecimalValue(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $normalized = preg_replace('/[^0-9,.\-]/', '', str_replace(' ', '', (string) $value));
+        if (! is_string($normalized) || $normalized === '' || $normalized === '-' || $normalized === ',' || $normalized === '.') {
+            return null;
+        }
+
+        if (str_contains($normalized, ',') && str_contains($normalized, '.')) {
+            $lastComma = strrpos($normalized, ',');
+            $lastDot = strrpos($normalized, '.');
+
+            if ($lastComma !== false && $lastDot !== false && $lastComma > $lastDot) {
+                $normalized = str_replace('.', '', $normalized);
+                $normalized = str_replace(',', '.', $normalized);
+            } else {
+                $normalized = str_replace(',', '', $normalized);
+            }
+        } elseif (str_contains($normalized, ',')) {
+            $normalized = str_replace(',', '.', $normalized);
+        } elseif (substr_count($normalized, '.') > 1) {
+            $lastDot = strrpos($normalized, '.');
+            $integerPart = str_replace('.', '', substr($normalized, 0, $lastDot));
+            $decimalPart = substr($normalized, $lastDot + 1);
+            $normalized = $integerPart . '.' . $decimalPart;
+        }
+
+        return is_numeric($normalized) ? (float) $normalized : null;
+    }
+
     private function deleteStoredFile(string $directory, ?string $fileName): void
     {
         if (! $fileName) {
@@ -767,11 +800,11 @@ class PostController extends Controller
         }
         $this->setPositiveIntegerField($dataForDb, 'garage_price_category_id', $garagePriceCategoryId);
         $this->setPositiveIntegerField($dataForDb, 'location_premises_id', $locationPremisesId);
-        if (! empty($mLong)) {
-            $dataForDb['m_long'] = str_replace('.', '', $mLong);
+        if ($request->exists('m_long')) {
+            $dataForDb['m_long'] = $this->normalizeDecimalValue($mLong);
         }
-        if (! empty($mWide)) {
-            $dataForDb['m_wide'] = str_replace('.', '', $mWide);
+        if ($request->exists('m_wide')) {
+            $dataForDb['m_wide'] = $this->normalizeDecimalValue($mWide);
         }
         $this->setPositiveIntegerField($dataForDb, 'heating_fuel_id', $heatingFuelId);
         if (! empty($landSize)) {
@@ -780,8 +813,9 @@ class PostController extends Controller
         $this->setPositiveIntegerField($dataForDb, 'nearest_municipality_distance_id', $nearestMunicipalityDistanceId);
         $this->setPositiveIntegerField($dataForDb, 'wheeled_access_id', $wheeledAccessId);
         $this->setPositiveIntegerField($dataForDb, 'type_of_terrain_id', $typeOfTerrainId);
-        if (! empty($linearMetersOfFacade)) {
-            $dataForDb['linear_meters_of_facade'] = $linearMetersOfFacade;
+        if ($request->has('linear_meters_of_facade')) {
+            $linearMetersOfFacadeValue = trim((string) $linearMetersOfFacade);
+            $dataForDb['linear_meters_of_facade'] = $linearMetersOfFacadeValue !== '' ? $linearMetersOfFacadeValue : null;
         }
         if (! empty($stays)) {
             $dataForDb['stays'] = $stays;

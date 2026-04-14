@@ -292,9 +292,9 @@ if (!function_exists('site_url')) {
                 </label>
             </div>
             <div class="div-col-1">
-                <span class="title-label">Metros lineales de fachada *</span>
+                <span class="title-label">Metros lineales de fachada</span>
                 <label for="">
-                    <input type="text" class="input" value="<?= $property[0]["linear_meters_of_facade"] ?>" name="linear_meters_of_facade" required id="linear_meters_of_facade">
+                    <input type="text" class="input" value="<?= $property[0]["linear_meters_of_facade"] ?>" name="linear_meters_of_facade" id="linear_meters_of_facade">
                 </label>
             </div>
             <div class="div-col-1">

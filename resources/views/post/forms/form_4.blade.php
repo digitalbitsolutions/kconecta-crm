@@ -243,11 +243,11 @@
             <div class="div-col-1">
                 <label for="">
                     <span class="title-label">M de largo *</span>
-                    <input type="text" class="input" name="m_long" required id="m_long">
+                    <input type="text" class="input" name="m_long" required id="m_long" inputmode="decimal">
                 </label>
                 <label for="">
                     <span class="title-label">M de ancho *</span>
-                    <input type="text" class="input" name="m_wide" required id="m_wide">
+                    <input type="text" class="input" name="m_wide" required id="m_wide" inputmode="decimal">
                 </label>
             </div>
             <!-- <label for="">
@@ -681,8 +681,6 @@
     format_1("community_expenses");
     format_1("ibi");
     format_1("mortgage_rate");
-    format_1("m_long");
-    format_1("m_wide");
 
 </script>
 
