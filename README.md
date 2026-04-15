@@ -4,8 +4,8 @@ CRM inmobiliario de Kconecta migrado desde un proyecto legacy.
 
 ## Repository
 - GitHub: `https://github.com/sttildeveloper/kconecta-crm`
-- Main branch: `main`
-- Active remote: `origin`
+- Branch principal: `main`
+- Remote activo: `origin`
 
 ## Stack
 - Laravel 12
@@ -19,35 +19,52 @@ cd C:\MeegDev\kconecta-crm\web
 docker compose -p kconecta up -d --build
 ```
 
-Local app:
+App local:
 - `http://localhost:8010`
 
 ## Database
-- Local docker schema: `kconecta_schema`
-- Production schema: `kconecta-mysql`
+- Schema local docker: `kconecta_schema`
+- Schema productivo: `kconecta-mysql`
+
+## Backup Workspace
+- Carpeta local de respaldo operativo: `backups/`
+- Uso previsto antes de cambios sensibles o limpieza de media:
+- dump de BD local
+- dump/export de BD productiva
+- inventario de media investigada
+- copia de media productiva descargada desde host cuando aplique
+- Convencion recomendada de carpetas:
+- `backups/YYYYMMDD_HHMM_pre_commit_sync/`
+- Dentro de cada carpeta:
+- `db_local.sql`
+- `db_production.sql`
+- `media_production/`
+- `notes.md`
 
 ## Migration Note
-- Password hash compatibility migration:
+Se agrego una migracion para asegurar compatibilidad de hashes de password:
 - `database/migrations/2026_03_01_010900_expand_user_password_column.php`
 
-## Production Status (2026-04-10)
-- Production runs on Dokploy.
+## Production Status (2026-04-15)
+- Entorno productivo activo en Dokploy.
 - URL: `https://kconecta.com/`
-- Autodeploy is active on `main`.
-- Home and login are operational.
-- Authenticated panel was manually validated in production.
-- Apache `ServerName` warning is resolved.
-- Property create/edit flows require a valid Google-resolved address.
-- Property forms use a `Places API (New)` compatible flow.
-- Non-WebP image uploads are converted to `.webp` before persistence.
-- Main property create flows by type were validated online in production.
-- Property edit with media replacement was validated online in production.
-- Views tolerate missing cover images and show a safe placeholder.
-- The browser-side video optimization and hardened upload flow was pushed to GitHub `main` in commit `6e80a54`.
-- Explicit post-deploy verification of the new video flow is still pending.
+- Deploy automatico activo sobre `main`.
+- Home y login operativos.
+- Login y panel autenticado validados manualmente en produccion.
+- Warning de Apache `ServerName` ya resuelto.
+- Las altas y ediciones de propiedades requieren direccion valida resuelta por Google Maps.
+- El formulario web de propiedades usa un flujo compatible con `Places API (New)`.
+- Las imagenes no WebP se convierten a `.webp` antes de persistirse.
+- Los principales flujos de alta por tipo ya fueron validados online en produccion.
+- La edicion con reemplazo de multimedia ya fue validada online.
+- Alta y edicion de `Garaje` quedaron validadas online tanto para venta como para alquiler.
+- Gala probo online el flujo de `Garaje` y reporto funcionamiento correcto.
+- Registro local de `Terreno` validado para alquiler y venta.
+- Edicion de `Terreno` ajustada para corregir layout de titulo y descripcion.
+- Las vistas toleran propiedades sin portada y muestran placeholder sin `500`.
 
 ## Production Validation Snapshot
-Validated create flows:
+Flujos de alta validados online:
 - `Casa o chalet`
 - `Piso`
 - `Local o nave`
@@ -55,17 +72,19 @@ Validated create flows:
 - `Terreno`
 - `Casa rustica`
 
-Validated edit flows:
-- edit of `Piso`
-- replace cover image
-- add extra images
-- deferred delete of extra images
-- replace video
+Flujos de edicion validados online:
+- edicion de `Piso`
+- edicion de `Garaje` en venta y alquiler
+- reemplazo de portada
+- agregado de imagenes adicionales
+- borrado diferido de imagenes adicionales
+- reemplazo de video
 
 ## Google Maps Requirements
-- Env var:
+Para que el flujo de direcciones funcione en local y produccion:
+- Variable de entorno:
 - `GOOGLE_MAPS_API_KEY`
-- Required Google Cloud APIs:
+- APIs requeridas en Google Cloud:
 - `Maps JavaScript API`
 - `Places API`
 - `Places API (New)`
@@ -77,37 +96,34 @@ Validated edit flows:
 - Keep this value aligned with Dokploy reverse-proxy body size limit to avoid `413 Content Too Large`.
 
 ## Deployment Workflow
-Operational policy for CRM changes:
-1. Validate the change locally.
-2. Review local and remote repo state before `commit` and `push`.
-3. Create the `commit` on `main`.
-4. Push to `origin/main`.
-5. Wait for Dokploy autodeploy.
-6. Verify critical routes, login, and the touched flow in production.
+Politica operativa para cambios que afecten el CRM:
+1. Validar el cambio en local.
+2. Crear `commit` en `main`.
+3. Hacer `push` a `origin/main`.
+4. Esperar el `autodeploy` de Dokploy.
+5. Verificar rutas criticas, login y el flujo tocado en el entorno desplegado.
 
-Notes:
-- Avoid manual redeploy unless autodeploy fails or health checks remain broken.
-- Do not commit dumps, backups, or secrets.
-- Before `commit` or `push`, review `git status` and compare local `main` with the real remote head.
-- If `origin/main` may be stale or local SSH is failing, verify the remote with:
-- `git ls-remote https://github.com/sttildeveloper/kconecta-crm.git HEAD refs/heads/main`
+Notas:
+- Evitar `manual redeploy` salvo que el despliegue automatico falle o queden endpoints caidos.
+- No subir dumps, backups ni secretos al repo.
 
 ## Version Tags
-- Use annotated tags for important stable commits already on `main`.
-- Format: `vMAJOR.MINOR.PATCH`
-- Published tags:
+- Usar tags anotados sobre commits importantes ya listos en `main`.
+- Esquema: `vMAJOR.MINOR.PATCH`.
+- Tags publicados:
 - `v0.1.0`
 - `v0.1.1`
-- Detailed guide: [VERSIONING.md](./VERSIONING.md)
+- Guia detallada: [VERSIONING.md](./VERSIONING.md)
 
 ## Current Priorities
-- close the short audit before Gala tests online
-- harden the legacy auth flow
-- verify the new video optimization/upload flow in production after the `main` push
-- keep web and mobile forms aligned
-- define a consistent image/video pipeline for web and mobile
+- endurecer seguridad del flujo de autenticacion legacy
+- alinear mensaje/limite real de video y preparar compresion frontend
+- revisar si `createService()` necesita el mismo hardening que propiedades
+- investigar y corregir drift entre referencias en BD y archivos fisicos de media
+- igualar formularios web y movil
+- definir pipeline consistente de video e imagenes para web y movil
 
 ## Project Control Files
-- State and next steps: [tasks.md](./tasks.md)
-- Operational context: [agent.md](./agent.md)
-- Operational roadmap: [roadmap.md](./roadmap.md)
+- Estado y plan: [tasks.md](./tasks.md)
+- Contexto operativo: [agent.md](./agent.md)
+- Roadmap operativo: [roadmap.md](./roadmap.md)

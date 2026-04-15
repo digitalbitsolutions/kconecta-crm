@@ -1,45 +1,44 @@
 # Kconecta CRM - Roadmap
 
-## Baseline (2026-04-10)
-- Repository connected and deployed on Dokploy.
-- Production is operational with autodeploy on `main`.
-- Home, login, panel, and main listings were verified.
-- Property address flow uses `Places API (New)` in production.
-- Property create flows by type were validated online.
-- Property edit with media replacement was validated online.
-- Views are protected against missing cover images.
-- The hardened video flow is published on GitHub `main`, pending explicit post-deploy verification.
+## Baseline (2026-04-15)
+- Repository conectado y desplegado en Dokploy.
+- Produccion operativa con autodeploy sobre `main`.
+- Home, login, panel y listados principales verificados.
+- Flujo de direccion de propiedades migrado a `Places API (New)` y funcionando en produccion.
+- Flujos de alta por tipo de propiedad validados online.
+- Edicion de propiedades validada online con reemplazo de multimedia.
+- Flujo de `Garaje` validado online en alta y edicion para venta y alquiler.
+- Gala valido online el flujo de `Garaje` sin incidencias.
+- Flujo de `Terreno` validado localmente en alta para venta y alquiler.
+- Layout de edicion de `Terreno` alineado con el fix aplicado antes en `Garaje`.
+- Vistas protegidas ante propiedades sin portada.
 
 ## Phase 1 - Stabilize Production
-- Close the short audit before Gala tests online.
-- Execute a guided test with Gala for:
-- property create
-- property edit
-- placeholder behavior when cover image is missing
-- Verify the already-published video UX:
-- real payload summary
-- browser optimization and auto-trim
-- final backend validation
-- Review whether service create needs the same hardening as property create.
+- Verificar tras deploy si el nuevo `Garaje` con imagenes mantiene la media online.
+- Investigar drift entre referencias en BD y archivos fisicos de media.
+- Corregir UX de subida de video:
+- mensaje real de limite
+- validacion previa
+- futura compresion frontend
+- Revisar si alta de servicios requiere el mismo hardening que propiedades.
 
 ## Phase 2 - Security Hardening
-- Rotate production credentials and application secrets.
-- Remove legacy plaintext password fallback.
-- Force updates of imported/default passwords.
+- Rotar credenciales productivas y secrets de aplicacion.
+- Eliminar fallback legacy de password en texto plano.
+- Forzar actualizacion de passwords por defecto o importados.
 
 ## Phase 3 - Data Governance
-- Define the source of truth for seeded data (`seeders` vs SQL snapshots).
-- Avoid local-to-production overwrites without explicit approval.
-- Formalize backup and restore drills.
+- Definir fuente de verdad para seed de datos (`seeders` vs snapshots SQL).
+- Evitar sobrescrituras local -> produccion sin aprobacion explicita.
+- Formalizar procedimiento de backup y restore drill.
 
 ## Phase 4 - Web/Mobile Parity
-- Keep property forms aligned by type between web CRM and mobile app.
-- Maintain a compatible WebP image pipeline for web and mobile.
-- Define a compatible video pipeline for web and mobile.
-- Review whether the mobile API contract covers all legacy CRM fields.
+- Igualar formularios de propiedades por tipo entre CRM web y app movil.
+- Mantener pipeline de imagenes WebP compatible para web y movil.
+- Definir estrategia de video compatible para web y movil.
+- Revisar si el contrato del API movil cubre todos los campos legacy del CRM.
 
 ## Phase 5 - Operational Reliability
-- Improve health checks and observability for app and DB.
-- Watch for drift between repo migrations and production runtime.
-- Document incident response and rollback.
-- Keep the habit of reviewing local and remote repo state before every `commit` and `push`.
+- Mejorar health checks y observabilidad de app + DB.
+- Vigilar drift entre migraciones del repo y runtime productivo.
+- Documentar incident response y rollback operativo.
