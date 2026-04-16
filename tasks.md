@@ -68,10 +68,16 @@
 - [x] `/root/kconecta_backups/20260415_1656_pre_commit_sync/db_production.sql`
 - [x] `/root/kconecta_backups/20260415_1656_pre_commit_sync/media_production/img_uploads`
 - [x] `/root/kconecta_backups/20260415_1656_pre_commit_sync/media_production/video_uploads`
+- [x] Incidente de perdida de media post-deploy diagnosticado:
+- [x] causa raiz confirmada en almacenamiento efimero del contenedor
+- [x] volumen persistente Dokploy configurado para `/var/www/html/public/img/uploads`
+- [x] volumen persistente Dokploy configurado para `/var/www/html/public/video/uploads`
+- [x] media historica restaurada desde backup en los volumenes persistentes
+- [x] redeploy de verificacion completado sin perdida de imagenes
+- [x] nueva subida validada online y persistente tras redeploy
 
 ### In Progress
 - [ ] Revision de si `createService()` necesita el mismo hardening que propiedades.
-- [ ] Verificar tras deploy si el nuevo `Garaje` con imagenes conserva media online.
 
 ### Next
 - [ ] Respaldar BD local.
@@ -97,5 +103,6 @@
 - `todo.md` sigue como archivo local sin trackear; no mezclarlo en commits funcionales.
 - `.codex_tmp` sigue local y sin trackear; no mezclarlo en commits.
 - Para inspeccion rapida de produccion, preferir Hostinger browser terminal si el SSH directo desde este PC vuelve a fallar.
-- `origin/main` y `HEAD` local siguen alineados en `c4845c5`; las diferencias actuales son cambios locales sin commit.
+- `origin/main` y `HEAD` local quedaron alineados en `32b6035` tras publicar el fix de `Terreno` y la actualizacion de contexto previa.
 - Referencias `sadtgnab`, `6ckhqztv` y `cyj5uxrv` tienen media en BD local pero sus archivos no existen en `public/img/uploads`.
+- La persistencia productiva de media ya no esta pendiente: quedo resuelta en Dokploy y validada con redeploy mas subida nueva.

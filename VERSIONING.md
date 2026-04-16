@@ -1,58 +1,61 @@
 # Versioning
 
 ## Goal
-Define a simple and stable release policy for the CRM without breaking the current Dokploy flow.
+Definir una politica simple y estable para releases del CRM sin romper el flujo actual con Dokploy.
 
 ## Deployment Policy
-For normal project changes:
-1. Validate locally.
-2. Review local and remote repo state before `commit` and `push`.
-3. Create the `commit` on `main`.
-4. Push to `origin/main`.
-5. Wait for Dokploy autodeploy.
-6. Verify login, panel, and the affected functional flow.
+Para cambios normales del proyecto:
+1. Validar localmente.
+2. Revisar el estado del repo local antes de commitear.
+3. Crear `commit` en `main`.
+4. Hacer `push` a `origin/main`.
+5. Esperar `autodeploy` en Dokploy.
+6. Verificar login, panel y el flujo funcional afectado.
 
-Use manual redeploy only if autodeploy fails or an endpoint remains unstable.
-
-Remote verification note:
-- If `origin/main` may be stale or SSH is failing on the current machine, compare against the real remote with:
-- `git ls-remote https://github.com/sttildeveloper/kconecta-crm.git HEAD refs/heads/main`
+Usar redeploy manual solo si el despliegue automatico falla o queda algun endpoint inestable.
 
 ## Tag Policy
-- Tag type: annotated (`git tag -a`)
-- Base branch: `main`
-- Format: `vMAJOR.MINOR.PATCH`
+- Tipo de tag: anotado (`git tag -a`)
+- Rama base: `main`
+- Formato: `vMAJOR.MINOR.PATCH`
 
 ## Current Baseline
-- `v0.1.0`: initial stable production baseline
-- `v0.1.1`: production fix for Apache `ServerName`
+- `v0.1.0`: baseline operativo inicial con flujo `commit -> push -> autodeploy`
+- `v0.1.1`: fix de produccion para suprimir warning de Apache `ServerName`
 
 ## Current State
-- Since `v0.1.1`, several production-facing fixes were shipped without a new tag:
-- robust property create flow
-- `Places API (New)` migration
-- WebP image conversion
-- placeholder hardening for `Seleccione`
-- media cleanup on edit
-- fallback for missing cover images
-- euro symbol render fix
-- browser-side video optimization and backend upload guards (`6e80a54`)
+- Desde `v0.1.1` se han desplegado varios fixes productivos sin nuevo tag:
+- alta robusta de propiedades
+- migracion a `Places API (New)`
+- conversion de imagenes a WebP
+- hardening de placeholders `Seleccione`
+- limpieza de multimedia en edicion
+- fallback para propiedades sin portada
+- fix de render del simbolo `EUR`
+- fix de layout en edicion de `Terreno`
+- correccion de persistencia de media via volumenes en Dokploy
+
+- El proximo tag recomendable deberia reservarse para un hito mas redondo, por ejemplo:
+- implementacion robusta de `createService()`
+- compresion o validacion consistente de video
+- endurecimiento de autenticacion legacy
+- baseline estable tras auditoria operativa completa
 
 ## Version Meaning
-- `PATCH`: small fixes or narrow adjustments
-- `MINOR`: important compatible functional changes
-- `MAJOR`: large or incompatible changes
+- `PATCH`: fixes chicos o ajustes sin cambio funcional amplio
+- `MINOR`: cambios funcionales importantes compatibles
+- `MAJOR`: cambios grandes o incompatibles
 
 ## When To Create A Tag
-Create a tag when the commit represents one of these milestones:
-- stable production baseline
-- sensitive auth or database change
-- important functional delivery
-- safe rollback point before a large change set
+Crear tag cuando el commit represente uno de estos hitos:
+- baseline estable de produccion
+- cambio sensible en autenticacion o base de datos
+- entrega funcional importante
+- punto seguro de rollback antes de una tanda grande de cambios
 
-Before creating a tag:
-- verify the local tree is in the expected state
-- verify the real remote head matches what you think is deployed
+Antes de crear un tag:
+- verificar que el arbol local este limpio o con cambios intencionales claros
+- verificar que el commit de `main` sea exactamente el que se quiere desplegar o marcar
 
 ## Suggested Commands
 ```bash

@@ -109,6 +109,16 @@ Operate and evolve `kconecta-crm` with focus on:
 - `Terreno` create flow validated locally for both sale and rent
 - `Terreno` edit layout adjusted to match the fixed `Garaje` description section
 - Production backup created on host at `/root/kconecta_backups/20260415_1656_pre_commit_sync`
+- Post-deploy media incident diagnosed in production:
+- root cause was ephemeral container storage for uploaded media
+- Dokploy was updated with persistent volume mounts for:
+- `/var/www/html/public/img/uploads`
+- `/var/www/html/public/video/uploads`
+- Historical media was restored from `/root/kconecta_backups/20260415_1656_pre_commit_sync`
+- Media persistence was validated by:
+- redeploy after restore
+- new upload after fix
+- redeploy after new upload
 
 ## Known Recent Incidents
 - Incomplete `Piso` draft records were created on `2026-04-07` when the form submitted literal `Seleccione` into integer fields such as `emissions_rating_id` and `power_consumption_rating_id`.
@@ -127,6 +137,7 @@ Operate and evolve `kconecta-crm` with focus on:
 - rent
 - operator-side online validation by Gala
 - Property/service views with missing cover image now fall back to placeholder instead of failing.
+- Production media persistence is now considered validated for both restored and newly uploaded files.
 
 ## Next Operational Focus
 - Update context files and operational notes after major production validations.
@@ -137,7 +148,7 @@ Operate and evolve `kconecta-crm` with focus on:
 - compress video in frontend before submit
 - Rotate exposed or weak credentials and keys.
 - Remove legacy plaintext password fallback in auth flow.
-- Define recurring backup and restore drill for production DB.
+- Define recurring backup and restore drill for production DB and media volumes.
 
 ## Known Risks
 - Existing fallback login logic still accepts plaintext and rehashes on login.
@@ -148,5 +159,6 @@ Operate and evolve `kconecta-crm` with focus on:
 - backend/server limits can still surprise users with large uploads
 - Some property records can reference image files that are missing from the current workspace or deployment media set.
 - Existing production backup set is available before cleanup under `/root/kconecta_backups/20260415_1656_pre_commit_sync`.
+- Future Dokploy service changes must preserve the configured media volume mounts or the same class of incident can return.
 - Legacy dumps may override expected Laravel schema if imported without review.
 - Production data can drift from local if sync is repeated without controls.

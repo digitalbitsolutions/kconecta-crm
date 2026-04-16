@@ -62,6 +62,14 @@ Se agrego una migracion para asegurar compatibilidad de hashes de password:
 - Registro local de `Terreno` validado para alquiler y venta.
 - Edicion de `Terreno` ajustada para corregir layout de titulo y descripcion.
 - Las vistas toleran propiedades sin portada y muestran placeholder sin `500`.
+- Backup operativo previo a cambios productivos creado en host:
+- `/root/kconecta_backups/20260415_1656_pre_commit_sync`
+- Persistencia de media en produccion corregida en Dokploy con volumenes para:
+- `/var/www/html/public/img/uploads`
+- `/var/www/html/public/video/uploads`
+- La restauracion de media desde backup fue validada.
+- Un redeploy posterior mantuvo las imagenes existentes.
+- Una subida nueva posterior al fix tambien persistio tras redeploy.
 
 ## Production Validation Snapshot
 Flujos de alta validados online:
@@ -106,6 +114,10 @@ Politica operativa para cambios que afecten el CRM:
 Notas:
 - Evitar `manual redeploy` salvo que el despliegue automatico falle o queden endpoints caidos.
 - No subir dumps, backups ni secretos al repo.
+- Si se agregan mounts/volumenes nuevos en Dokploy para media, poblarlos antes de dar por buena la persistencia.
+- Las rutas de media que deben mantenerse persistentes en produccion son:
+- `/var/www/html/public/img/uploads`
+- `/var/www/html/public/video/uploads`
 
 ## Version Tags
 - Usar tags anotados sobre commits importantes ya listos en `main`.

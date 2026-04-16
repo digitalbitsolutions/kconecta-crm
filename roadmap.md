@@ -12,9 +12,12 @@
 - Flujo de `Terreno` validado localmente en alta para venta y alquiler.
 - Layout de edicion de `Terreno` alineado con el fix aplicado antes en `Garaje`.
 - Vistas protegidas ante propiedades sin portada.
+- Backup productivo previo a cambios creado y validado en host.
+- Persistencia de media corregida en Dokploy con volumenes para imagenes y videos.
+- Restauracion desde backup validada.
+- Media historica y nueva persistieron correctamente tras redeploy.
 
 ## Phase 1 - Stabilize Production
-- Verificar tras deploy si el nuevo `Garaje` con imagenes mantiene la media online.
 - Investigar drift entre referencias en BD y archivos fisicos de media.
 - Corregir UX de subida de video:
 - mensaje real de limite
@@ -30,7 +33,7 @@
 ## Phase 3 - Data Governance
 - Definir fuente de verdad para seed de datos (`seeders` vs snapshots SQL).
 - Evitar sobrescrituras local -> produccion sin aprobacion explicita.
-- Formalizar procedimiento de backup y restore drill.
+- Formalizar procedimiento de backup y restore drill para DB y volumenes de media.
 
 ## Phase 4 - Web/Mobile Parity
 - Igualar formularios de propiedades por tipo entre CRM web y app movil.
