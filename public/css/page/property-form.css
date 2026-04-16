@@ -90,27 +90,27 @@ body {
   border-radius: 0.65rem;
 }
 
-.container-main .garage-description-row {
+.container-main .property-description-row {
   grid-template-columns: minmax(0, 2.3fr) minmax(16rem, 1fr);
   align-items: end;
 }
 
-.container-main .garage-description-title,
-.container-main .garage-description-website,
-.container-main .garage-description-textarea {
+.container-main .property-description-title,
+.container-main .property-description-website,
+.container-main .property-description-textarea {
   display: grid;
   gap: 0.5rem;
   width: 100%;
 }
 
-.container-main .garage-description-title .input,
-.container-main .garage-description-website .input,
-.container-main .garage-description-textarea .textarea {
+.container-main .property-description-title .input,
+.container-main .property-description-website .input,
+.container-main .property-description-textarea .textarea {
   width: 100%;
   max-width: 100%;
 }
 
-.container-main .garage-description-textarea .textarea {
+.container-main .property-description-textarea .textarea {
   min-height: 7.9rem;
   resize: vertical;
 }
@@ -121,7 +121,7 @@ body {
     max-width: 100%;
   }
 
-  .container-main .garage-description-row {
+  .container-main .property-description-row {
     grid-template-columns: 1fr;
   }
 }

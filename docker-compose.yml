@@ -1,8 +1,8 @@
-name: kconecta
+name: kconecta-crm
 
 services:
   app:
-    container_name: kconecta
+    container_name: kconecta-crm-app
     build:
       context: .
       dockerfile: Dockerfile
@@ -28,6 +28,7 @@ services:
       - app-build:/var/www/html/public/build
 
   mysql:
+    container_name: kconecta-crm-mysql
     image: mysql:8.0
     environment:
       MYSQL_DATABASE: kconecta_schema

@@ -509,6 +509,22 @@
         context.input.click();
     };
 
+    const applyNoVideoSelected = (context, state) => {
+        resetOversizeChoice(context, state);
+        clearVideoError(context, state);
+        restoreInitialPreview(context, state);
+
+        if (state.initialPreviewSrc) {
+            setStatus(context.feedback, "Se mantendra el video actual.", "success");
+            setSummary(context.feedback, "");
+        } else {
+            setStatus(context.feedback, "El video es opcional. Puedes guardar sin adjuntarlo.", "success");
+            setSummary(context.feedback, "");
+        }
+
+        updateFormState(context, state);
+    };
+
     const authorizeTrim = async (context, state) => {
         if (!state.originalFile) {
             return;
@@ -555,12 +571,7 @@
         const file = context.input.files?.[0] || null;
 
         if (!file) {
-            resetOversizeChoice(context, state);
-            clearVideoError(context, state);
-            setStatus(context.feedback, "");
-            setSummary(context.feedback, state.initialPreviewSrc ? "Se mantendra el video actual." : "");
-            restoreInitialPreview(context, state);
-            updateFormState(context, state);
+            applyNoVideoSelected(context, state);
             return;
         }
 
@@ -647,12 +658,8 @@
             }
         });
 
-        if (state.initialPreviewSrc) {
-            setSummary(context.feedback, "Se mantendra el video actual.");
-        }
-
         showActions(context.feedback, false);
-        updateFormState(context, state);
+        applyNoVideoSelected(context, state);
     };
 
     window.KconectaVideoUploadOptimizer = { init };

@@ -485,19 +485,19 @@ if (!function_exists('site_url')) {
             </div>
         </div> -->
         <h2 class="title-main-row-section">Descripci&oacute;n de la propiedad</h2>
-        <div class="container-row-form box garage-description-row">
-            <label for="" class="garage-description-title">
+        <div class="container-row-form box property-description-row">
+            <label for="" class="property-description-title">
                 <span class="title-label">T&iacute;tulo *</span>
                 <input type="text" class="input" value="<?= $property[0]["title"] ?>" name="title" required>
             </label>
-            <label for="" class="garage-description-website">
+            <label for="" class="property-description-website">
                 <span class="title-label">Sitio web</span>
                 <input type="text" class="input" placeholder="https://" value="<?= $property[0]["page_url"] ?>" name="page_url">
             </label>
         </div>
-        <div class="container-row-form-col-1 box garage-description-box">
+        <div class="container-row-form-col-1 box property-description-box">
             <div class="div-col-1">
-                <label for="" class="garage-description-textarea">
+                <label for="" class="property-description-textarea">
                     <span class="title-label">Descripci&oacute;n *</span>
                     <textarea class="textarea" name="description" required><?= $property[0]["description"] ?></textarea>
                 </label>

@@ -25,3 +25,7 @@ Thumbs.db
 /backups/
 *.sql
 *.sql.gz
+
+# Media uploads
+/public/img/uploads/
+/public/video/uploads/

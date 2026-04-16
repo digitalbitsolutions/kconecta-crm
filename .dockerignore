@@ -10,3 +10,7 @@ bootstrap/cache/*.php
 npm-debug.log
 yarn-error.log
 .DS_Store
+
+# Media uploads
+public/img/uploads/
+public/video/uploads/

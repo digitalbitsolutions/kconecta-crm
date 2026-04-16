@@ -495,21 +495,21 @@
                 <?php } ?>
             </div>
         </div>
-        <h2 class="title-main-row-section">Descripción de la propiedad</h2>
-        <div class="container-row-form box">
-            <label for="" class="container-two-grid-col">
-                <span class="title-label">Título *</span>
+        <h2 class="title-main-row-section">Descripci&oacute;n de la propiedad</h2>
+        <div class="container-row-form box property-description-row">
+            <label for="" class="property-description-title">
+                <span class="title-label">T&iacute;tulo *</span>
                 <input type="text" class="input" name="title" required>
             </label>
-            <label for="">
+            <label for="" class="property-description-website">
                 <span class="title-label">Sitio web</span>
                 <input type="text" class="input" placeholder="https://" name="page_url">
             </label>
         </div>
-        <div class="container-row-form-col-1 box">
+        <div class="container-row-form-col-1 box property-description-box">
             <div class="div-col-1">
-                <label for="">
-                    <span class="title-label">Descripción *</span>
+                <label for="" class="property-description-textarea">
+                    <span class="title-label">Descripci&oacute;n *</span>
                     <textarea class="textarea" name="description" required></textarea>
                 </label>
             </div>
