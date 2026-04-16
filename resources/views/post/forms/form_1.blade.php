@@ -562,7 +562,7 @@
         </div>
         
         <div class="box">
-            <button class="button container-button-save" type="submit">Guardar y publicar (v1.1)</button>
+            <button class="button container-button-save" type="submit">Guardar y publicar anuncio</button>
         </div>
     </div>
 </form>
