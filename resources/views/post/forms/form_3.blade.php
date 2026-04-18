@@ -316,10 +316,6 @@
                     </div>
                 </label>
             </div>
-            <!-- <label for="">
-                <span class="title-label">Plantas del chalet</span>
-                <input type="text" class="input" name="number_of_plants">
-            </label> -->
             <!-- <label for="" class="container-for-rent-only">
                 <span class="title-label">Número de habitaciones *</span>
                 <input type="text" class="input" name="rooms" required>

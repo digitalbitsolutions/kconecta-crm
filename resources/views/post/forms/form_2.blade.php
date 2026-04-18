@@ -311,7 +311,7 @@
                     <?= $featur["name"] ?>
                 </label>
                 <?php } if ($featur["id"] == 27){ ?>
-                    <div class="div-col-1 div-garage_price_category" style="margin-left: 1.8rem; display:none">
+                    <div class="div-col-1 div-extra-price-category" style="margin-left: 1.8rem; display:none">
                         <span class="title-label">Precio del garaje *</span>
                         <?php foreach($garagePriceCategory as $gpc){ ?>
                             <label class="radio label-radio-checkbox-col-100">
@@ -319,24 +319,24 @@
                                 <?= $gpc["name"] ?>
                             </label>
                         <?php } ?>
-                        <label for="" class="label-container-garage_price label-col-100" style="display:none; width: calc(100% - 3.6rem);margin-left: 1.6rem;">
+                        <label for="" class="label-container-extra-price label-col-100" style="display:none; width: calc(100% - 3.6rem);margin-left: 1.6rem;">
                             <div class="group-icon-input-ui-2">
                                 <span class="icon-ui">€</span>
-                                <input placeholder="Precio *" type="text" name="garage_price" id="garage_price" class="input-ui" >
+                                <input placeholder="Precio *" type="text" name="garage_price" id="extra_price_amount" class="input-ui" >
                             </div>
                         </label>
                         <script>
-                            const garage_price_category = document.getElementsByName("garage_price_category");
-                            const label_container_garage_price = document.querySelector(".label-container-garage_price");
-                            garage_price_category.forEach(tag =>{
+                            const extraPriceCategoryInputs = document.getElementsByName("garage_price_category");
+                            const extraPriceAmountContainer = document.querySelector(".label-container-extra-price");
+                            extraPriceCategoryInputs.forEach(tag =>{
                                 tag.addEventListener("input", ()=>{
                                     if (tag.value === "2"){
-                                        label_container_garage_price.style.display = "flex";
-                                        label_container_garage_price.querySelector("input").setAttribute("required", true)
+                                        extraPriceAmountContainer.style.display = "flex";
+                                        extraPriceAmountContainer.querySelector("input").setAttribute("required", true)
                                     }else{
-                                        label_container_garage_price.style.display = "none";
-                                        label_container_garage_price.querySelector("input").value = "";
-                                        label_container_garage_price.querySelector("input").removeAttribute("required")
+                                        extraPriceAmountContainer.style.display = "none";
+                                        extraPriceAmountContainer.querySelector("input").value = "";
+                                        extraPriceAmountContainer.querySelector("input").removeAttribute("required")
                                     }
                                 })
                             })
@@ -731,26 +731,26 @@
         }
     })
     const checkboxes_feature = document.querySelectorAll(".checkbox-feature");
-    const div_garage_price_category = document.querySelector(".div-garage_price_category");
+    const extraPriceCategoryPanel = document.querySelector(".div-extra-price-category");
     checkboxes_feature.forEach(el=>{
         el.addEventListener("click", ()=>{
             if (parseInt(el.value) === 27){
                 if (el.checked){
-                    div_garage_price_category.style.display = "grid";
-                    div_garage_price_category.querySelectorAll("input[type='radio']").forEach(r=>{
+                    extraPriceCategoryPanel.style.display = "grid";
+                    extraPriceCategoryPanel.querySelectorAll("input[type='radio']").forEach(r=>{
                         r.setAttribute("required", true)
                     })
                 }else{
-                    div_garage_price_category.querySelector(".label-container-garage_price").style.display = "none";
-                    div_garage_price_category.querySelectorAll("input[type='text']").forEach(tag =>{
+                    extraPriceCategoryPanel.querySelector(".label-container-extra-price").style.display = "none";
+                    extraPriceCategoryPanel.querySelectorAll("input[type='text']").forEach(tag =>{
                         tag.removeAttribute("required");
                         tag.value = "";
                     })
-                    div_garage_price_category.querySelectorAll("input[type='radio']").forEach(r=>{
+                    extraPriceCategoryPanel.querySelectorAll("input[type='radio']").forEach(r=>{
                         r.checked = false;
                         r.removeAttribute("required");
                     })
-                    div_garage_price_category.style.display = "none";
+                    extraPriceCategoryPanel.style.display = "none";
                 }
             }
         })
@@ -788,7 +788,7 @@
     format_1("useful_meters");
     format_1("energy_consumption");
     format_1("emissions_consumption");
-    format_1("garage_price");
+    format_1("extra_price_amount");
 </script>
 
 <script src="https://maps.googleapis.com/maps/api/js?key={{ $mapsKey }}&libraries=places"></script>

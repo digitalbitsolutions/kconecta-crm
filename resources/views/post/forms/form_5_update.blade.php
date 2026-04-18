@@ -302,16 +302,6 @@ if (!function_exists('site_url')) {
                     <input type="text" class="input" name="number_of_shop_windows" required>
                 </label>
             </div> -->
-            <!-- <div class="div-col-1">
-                <span class="title-label">Plantas del garaje *</span>
-                <label for="">
-                    <input type="number" class="input" name="number_of_plants" required>
-                </label>
-            </div> -->
-            <!-- <label for="">
-                <span class="title-label">Plantas del chalet</span>
-                <input type="text" class="input" name="number_of_plants">
-            </label> -->
             <!-- <label for="" class="container-for-rent-only">
                 <span class="title-label">N&uacute;mero de habitaciones *</span>
                 <input type="text" class="input" name="rooms" required>
