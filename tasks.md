@@ -1,6 +1,6 @@
 # Kconecta CRM - Tasks
 
-## Session Checkpoint (2026-04-15)
+## Session Checkpoint (2026-04-21)
 
 ### Done
 - [x] Proyecto migrado de DameloDamelo a Kconecta en branding y referencias principales.
@@ -75,6 +75,47 @@
 - [x] media historica restaurada desde backup en los volumenes persistentes
 - [x] redeploy de verificacion completado sin perdida de imagenes
 - [x] nueva subida validada online y persistente tras redeploy
+- [x] Seleccion multiple de imagenes en galeria habilitada en formularios de edicion pendientes:
+- [x] `Casa o chalet`
+- [x] `Piso`
+- [x] `Local o nave`
+- [x] `Terreno`
+- [x] `Casa rustica`
+- [x] Validacion local completada para edicion de `Piso` con seleccion multiple en galeria.
+- [x] Validacion local completada para edicion de `Local o nave` con seleccion multiple en galeria.
+- [x] Deploy a produccion del fix de galeria multiple completado desde `main`.
+- [x] Validacion online posterior al deploy reportada como satisfactoria.
+- [x] Mini auditoria de formularios de propiedades completada para detectar naming cruzado y residuos legacy.
+- [x] Limpieza controlada de naming/residuos publicada en:
+- [x] `ee63e5c` - `Clean property form naming and legacy residue`
+- [x] Cambio de `Terreno` implementado y publicado en:
+- [x] `eadae0a` - `Add terrain use support and normalize land forms`
+- [x] Nuevo modelo de datos para `Terreno` implementado:
+- [x] tabla `terrain_use`
+- [x] columna nullable `property.terrain_use_id`
+- [x] Catalogo web/API de `Terreno` separado en:
+- [x] `Tipo de terreno`: `Urbano`, `Urbanizable`, `Rústico`
+- [x] `Uso`: `Servicios`, `Residencial`, `Industrial`, `Agrícola`
+- [x] Formulario web de alta de `Terreno` validado online tras aplicar esquema en produccion.
+- [x] Detalle publico de `Terreno` muestra arriba los recuadros:
+- [x] `Tipo de terreno`
+- [x] `Uso`
+- [x] Backup productivo previo al cambio de `Terreno` creado y validado:
+- [x] `/root/kconecta_backups/20260420_2313_pre_terreno/db_production.sql.gz`
+- [x] `/root/kconecta_backups/20260420_2313_pre_terreno/type_of_terrain.tsv`
+- [x] `/root/kconecta_backups/20260420_2313_pre_terreno/terrain_properties.tsv`
+- [x] Contenedor MySQL productivo utilizado para backup del cambio de `Terreno`:
+- [x] `kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3`
+- [x] Contenedor app productivo utilizado para migraciones/cache clear del cambio de `Terreno`:
+- [x] `kconecta-kconectacrm-5oikfs.1.8j4e7feeo9l3yxw5hap9vhw8k`
+- [x] Incidencia `500` en `/post/create_form/9` diagnosticada y resuelta:
+- [x] causa raiz confirmada en migraciones productivas no aplicadas
+- [x] esquema productivo actualizado manualmente
+- [x] cache productiva limpiada
+- [x] pruebas online satisfactorias posteriores a la correccion
+- [x] Particularidad operativa documentada:
+- [x] la tabla legacy `migrations` no acepta el registro estandar de Laravel sin poblar campos extra (`version`, `class`, `group`, `namespace`, `time`)
+- [x] durante futuras migraciones productivas puede ser necesario registrar manualmente cada migracion ya ejecutada con `php artisan tinker --execute ... updateOrInsert(...)`
 
 ### In Progress
 - [ ] Revision de si `createService()` necesita el mismo hardening que propiedades.
@@ -82,6 +123,7 @@
 ### Next
 - [ ] Respaldar BD local.
 - [ ] Comparar media faltante de referencias con respaldo productivo antes de limpiar archivos no trackeados.
+- [ ] Decidir si se limpiaran mas adelante de `type_of_terrain` los valores legacy `Servicios`, `Industrial` y `Afectado` una vez confirmada la no dependencia historica.
 - [ ] Implementar plan de video:
 - [ ] cambiar mensaje de `50MB` a limite real alineado
 - [ ] validar tamano antes de subir
@@ -103,6 +145,13 @@
 - `todo.md` sigue como archivo local sin trackear; no mezclarlo en commits funcionales.
 - `.codex_tmp` sigue local y sin trackear; no mezclarlo en commits.
 - Para inspeccion rapida de produccion, preferir Hostinger browser terminal si el SSH directo desde este PC vuelve a fallar.
-- `origin/main` y `HEAD` local quedaron alineados en `32b6035` tras publicar el fix de `Terreno` y la actualizacion de contexto previa.
+- `origin/main` quedo alineado con `eadae0a` tras publicar el cambio de `Terreno`.
+- El backup mas reciente util para el cambio de `Terreno` esta en `/root/kconecta_backups/20260420_2313_pre_terreno`.
+- Para backups productivos del CRM, usar directamente el contenedor MySQL:
+- `kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3`
+- Comando validado para dump:
+- `docker exec kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3 sh -lc 'mysqldump --no-tablespaces -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' > "$BKP_DIR/db_production.sql"`
+- Para migraciones productivas del CRM, usar directamente el contenedor app:
+- `kconecta-kconectacrm-5oikfs.1.8j4e7feeo9l3yxw5hap9vhw8k`
 - Referencias `sadtgnab`, `6ckhqztv` y `cyj5uxrv` tienen media en BD local pero sus archivos no existen en `public/img/uploads`.
 - La persistencia productiva de media ya no esta pendiente: quedo resuelta en Dokploy y validada con redeploy mas subida nueva.

@@ -45,7 +45,7 @@ App local:
 Se agrego una migracion para asegurar compatibilidad de hashes de password:
 - `database/migrations/2026_03_01_010900_expand_user_password_column.php`
 
-## Production Status (2026-04-15)
+## Production Status (2026-04-21)
 - Entorno productivo activo en Dokploy.
 - URL: `https://kconecta.com/`
 - Deploy automatico activo sobre `main`.
@@ -59,11 +59,26 @@ Se agrego una migracion para asegurar compatibilidad de hashes de password:
 - La edicion con reemplazo de multimedia ya fue validada online.
 - Alta y edicion de `Garaje` quedaron validadas online tanto para venta como para alquiler.
 - Gala probo online el flujo de `Garaje` y reporto funcionamiento correcto.
+- La edicion de propiedades ya permite seleccionar multiples imagenes para la galeria en un solo paso.
+- El fix de carga multiple en galeria fue validado en local para `Piso` y `Local o nave`.
+- El fix de carga multiple en galeria fue validado online tras deploy sin incidencias reportadas.
 - Registro local de `Terreno` validado para alquiler y venta.
 - Edicion de `Terreno` ajustada para corregir layout de titulo y descripcion.
+- El modulo de `Terreno` fue ampliado para separar `Tipo de terreno` de `Uso`.
+- `Terreno` ahora usa:
+- `Tipo de terreno`: `Urbano`, `Urbanizable`, `Rústico`
+- `Uso`: `Servicios`, `Residencial`, `Industrial`, `Agrícola`
+- El detalle publico de `Terreno` ahora muestra arriba los recuadros `Tipo de terreno` y `Uso`.
+- El alta de `Terreno` en produccion quedo validada despues de aplicar migraciones y limpiar cache.
 - Las vistas toleran propiedades sin portada y muestran placeholder sin `500`.
 - Backup operativo previo a cambios productivos creado en host:
 - `/root/kconecta_backups/20260415_1656_pre_commit_sync`
+- Backup operativo previo al cambio de `Terreno` creado en host:
+- `/root/kconecta_backups/20260420_2313_pre_terreno`
+- Contenedor MySQL usado para backup y verificacion en produccion:
+- `kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3`
+- Contenedor app usado para migraciones y cache clear en produccion:
+- `kconecta-kconectacrm-5oikfs.1.8j4e7feeo9l3yxw5hap9vhw8k`
 - Persistencia de media en produccion corregida en Dokploy con volumenes para:
 - `/var/www/html/public/img/uploads`
 - `/var/www/html/public/video/uploads`
@@ -82,11 +97,61 @@ Flujos de alta validados online:
 
 Flujos de edicion validados online:
 - edicion de `Piso`
+- seleccion multiple de imagenes en galeria al editar `Piso`
+- seleccion multiple de imagenes en galeria al editar `Local o nave`
 - edicion de `Garaje` en venta y alquiler
 - reemplazo de portada
 - agregado de imagenes adicionales
 - borrado diferido de imagenes adicionales
 - reemplazo de video
+- alta de `Terreno` con `Uso` y `Tipo de terreno` separados
+- detalle publico de `Terreno` con recuadros superiores de `Tipo de terreno` y `Uso`
+
+## Terrain Change (2026-04-21)
+- Commit publicado:
+- `eadae0a` - `Add terrain use support and normalize land forms`
+- Cambio de datos implementado:
+- nueva tabla `terrain_use`
+- nueva columna nullable `property.terrain_use_id`
+- migracion que garantiza la presencia de `Urbanizable` en `type_of_terrain`
+- Cambio funcional implementado solo para `Terreno`:
+- formularios web de alta y edicion muestran `Uso`
+- backend web guarda `terrain_use_id`
+- API de propiedades expone y acepta `terrain_use`
+- detalle publico recibe y muestra `terrain_use`
+- Estrategia de compatibilidad:
+- no se borraron de BD los valores legacy de `type_of_terrain` (`Servicios`, `Industrial`, `Afectado`)
+- esos valores legacy dejaron de exponerse en el formulario/catalogo de `Terreno`
+- los `Terreno` existentes en produccion usaban solo `Urbano` al momento del cambio
+
+## Production Backup Drill
+- Ruta de backup validada para este cambio:
+- `/root/kconecta_backups/20260420_2313_pre_terreno`
+- Archivos validados:
+- `db_production.sql.gz`
+- `type_of_terrain.tsv`
+- `terrain_properties.tsv`
+- Comando funcional para dump productivo:
+```bash
+docker exec kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3 sh -lc 'mysqldump --no-tablespaces -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' > "$BKP_DIR/db_production.sql"
+```
+- Comando funcional para snapshot del catalogo `type_of_terrain`:
+```bash
+docker exec kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3 sh -lc 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e "SELECT id,name FROM type_of_terrain ORDER BY id"' > "$BKP_DIR/type_of_terrain.tsv"
+```
+- Comando funcional para snapshot de propiedades `Terreno`:
+```bash
+docker exec kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3 sh -lc 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e "SELECT id,reference,title,type_id,type_of_terrain_id FROM property WHERE type_id=9 ORDER BY id"' > "$BKP_DIR/terrain_properties.tsv"
+```
+
+## Migration Caveat
+- La tabla `migrations` de este entorno legacy no coincide con la expectativa estandar de Laravel.
+- Columnas observadas:
+- `id`, `migration`, `version`, `class`, `group`, `namespace`, `time`, `batch`
+- Resultado operativo:
+- `php artisan migrate` ejecuta el SQL pero falla al registrar la migracion si no se completan esos campos extra.
+- En produccion se resolvio registrando manualmente las migraciones ya ejecutadas mediante `php artisan tinker --execute ... updateOrInsert(...)`.
+- Este comportamiento debe tenerse en cuenta antes de futuras migraciones productivas.
 
 ## Google Maps Requirements
 Para que el flujo de direcciones funcione en local y produccion:

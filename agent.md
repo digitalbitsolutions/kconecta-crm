@@ -12,7 +12,7 @@ Operate and evolve `kconecta-crm` with focus on:
 - Active GitHub repo: `https://github.com/sttildeveloper/kconecta-crm`
 - Active remote: `origin`
 - Main branch: `main`
-- Last operational update: `2026-04-15`
+- Last operational update: `2026-04-21`
 
 ## Working Rules
 - Prefer minimal, testable changes.
@@ -42,6 +42,10 @@ Operate and evolve `kconecta-crm` with focus on:
 - App URL: `https://kconecta.com/`
 - App service pattern: `kconecta-kconectacrm-*`
 - DB service pattern: `kconecta-crm-*`
+- Current production app container used on `2026-04-20/21`:
+- `kconecta-kconectacrm-5oikfs.1.8j4e7feeo9l3yxw5hap9vhw8k`
+- Current production MySQL container used on `2026-04-20/21`:
+- `kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3`
 - DB schema: `kconecta-mysql`
 - Deploy mode: automatic redeploy on `push` to `main`
 - Release tags published:
@@ -108,6 +112,35 @@ Operate and evolve `kconecta-crm` with focus on:
 - Gala performed online operator testing on `Garaje` and confirmed the flow works correctly
 - `Terreno` create flow validated locally for both sale and rent
 - `Terreno` edit layout adjusted to match the fixed `Garaje` description section
+- Additional validation completed on `2026-04-18`:
+- multiple gallery image selection in property edit forms was enabled for the remaining property types
+- `Piso` edit flow validated locally with multiple gallery image selection
+- `Local o nave` edit flow validated locally with multiple gallery image selection
+- production deploy completed from `main`
+- online validation after deploy confirmed the multiple gallery image selection fix works satisfactorily
+- Additional implementation and validation completed on `2026-04-20/21`:
+- production backup created at `/root/kconecta_backups/20260420_2313_pre_terreno`
+- production snapshots captured for `type_of_terrain` and current `Terreno` records
+- `Terreno` was refactored to separate `Tipo de terreno` from `Uso`
+- new data model introduced:
+- table `terrain_use`
+- nullable column `property.terrain_use_id`
+- `Terreno` web create/edit forms now show:
+- `Tipo de terreno`: `Urbano`, `Urbanizable`, `Rústico`
+- `Uso`: `Servicios`, `Residencial`, `Industrial`, `Agrícola`
+- public property detail now shows `Tipo de terreno` and `Uso` cards for `Terreno`
+- production `500` on `/post/create_form/9` diagnosed after deploy
+- root cause was pending schema change in production, not the Blade form itself
+- production schema was updated and cache cleared successfully
+- online tests for `Terreno` were reported as successful after schema update
+- production `Terreno` records at backup time used only `type_of_terrain_id = Urbano`
+- legacy values `Servicios`, `Industrial`, `Afectado` remain in `type_of_terrain` for compatibility, but are no longer exposed by the `Terreno` form
+- production migration workflow required manual registration in `migrations` table after each executed migration because the table expects extra fields:
+- `version`
+- `class`
+- `group`
+- `namespace`
+- `time`
 - Production backup created on host at `/root/kconecta_backups/20260415_1656_pre_commit_sync`
 - Post-deploy media incident diagnosed in production:
 - root cause was ephemeral container storage for uploaded media
@@ -136,11 +169,14 @@ Operate and evolve `kconecta-crm` with focus on:
 - sale
 - rent
 - operator-side online validation by Gala
+- Property edit forms are now aligned to allow multiple gallery image selection in one action.
+- `Terreno` create flow now includes isolated support for `terrain_use_id`.
 - Property/service views with missing cover image now fall back to placeholder instead of failing.
 - Production media persistence is now considered validated for both restored and newly uploaded files.
 
 ## Next Operational Focus
 - Update context files and operational notes after major production validations.
+- Decide whether to normalize or migrate legacy `type_of_terrain` values in production later, once it is safe to remove compatibility leftovers.
 - Decide whether `createService()` should receive the same backend hardening as property create flow.
 - Implement planned video upload hardening:
 - align frontend/backend messaging with real limits
@@ -159,6 +195,8 @@ Operate and evolve `kconecta-crm` with focus on:
 - backend/server limits can still surprise users with large uploads
 - Some property records can reference image files that are missing from the current workspace or deployment media set.
 - Existing production backup set is available before cleanup under `/root/kconecta_backups/20260415_1656_pre_commit_sync`.
+- Backup set specific to the `Terreno` schema change is available at `/root/kconecta_backups/20260420_2313_pre_terreno`.
+- Production migrations are operationally riskier than standard Laravel because the legacy `migrations` table shape forces manual registration if `php artisan migrate` only partially completes.
 - Future Dokploy service changes must preserve the configured media volume mounts or the same class of incident can return.
 - Legacy dumps may override expected Laravel schema if imported without review.
 - Production data can drift from local if sync is repeated without controls.
