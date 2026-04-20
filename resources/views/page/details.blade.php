@@ -143,6 +143,18 @@
                     ?> €
                 </span>
             </div>
+            <?php if ((int) ($property["type_id"] ?? 0) === 9 && !empty($property["type_of_terrain"])) { ?>
+            <div class="btn-dec">
+                <span class="">Tipo de terreno</span>
+                <span><?= $property["type_of_terrain"][0]["name"] ?></span>
+            </div>
+            <?php } ?>
+            <?php if ((int) ($property["type_id"] ?? 0) === 9 && !empty($property["terrain_use"])) { ?>
+            <div class="btn-dec">
+                <span class="">Uso</span>
+                <span><?= $property["terrain_use"][0]["name"] ?></span>
+            </div>
+            <?php } ?>
             <?php if (!empty($property["meters_built"])){ ?>
             <div class="btn-dec">
                 <span class="">M<sup>2</sup> Construidos</span>

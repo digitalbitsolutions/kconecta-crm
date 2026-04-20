@@ -16,6 +16,7 @@ use App\Models\PowerConsumptionRating;
 use App\Models\ReasonForSale;
 use App\Models\RentalType;
 use App\Models\StateConservation;
+use App\Models\TerrainUse;
 use App\Models\TypeFloor;
 use App\Models\TypeHeating;
 use App\Models\TypeOfTerrain;
@@ -87,7 +88,10 @@ class PropertyFormCatalogsService
                 ? $this->mapOptions(PlazaCapacity::query()->orderBy('id')->get())
                 : [],
             'type_of_terrain' => $typeId === self::TYPE_LAND
-                ? $this->mapOptions(TypeOfTerrain::query()->orderBy('id')->get())
+                ? $this->resolveTerrainTypeOptions()
+                : [],
+            'terrain_use' => $typeId === self::TYPE_LAND
+                ? $this->mapOptions(TerrainUse::query()->orderBy('id')->get())
                 : [],
             'wheeled_access' => $typeId === self::TYPE_LAND
                 ? $this->mapOptions(WheeledAccess::query()->orderBy('id')->get())
@@ -165,6 +169,16 @@ class PropertyFormCatalogsService
         }
 
         return [];
+    }
+
+    private function resolveTerrainTypeOptions(): array
+    {
+        return $this->mapOptions(
+            TypeOfTerrain::query()
+                ->whereIn('name', ['Urbano', 'Urbanizable', 'Rústico'])
+                ->orderBy('id')
+                ->get()
+        );
     }
 
     private function usesFloorTypes(int $typeId): bool

@@ -221,6 +221,15 @@
                 <?php } ?>
             </div>
             <div class="div-col-1">
+                <span class="title-label">Uso *</span>
+                <?php foreach($terrainUse as $tu){ ?>
+                <label class="radio label-radio-checkbox-col-100">
+                    <label class="container-input-radio-ui"><input type="radio" name="terrain_use" value="<?= $tu["id"] ?>" required /><div class="checkmark"></div></label>
+                    <?= $tu["name"] ?>
+                </label>
+                <?php } ?>
+            </div>
+            <div class="div-col-1">
                 <span class="title-label">Acceso rodado *</span>
                 <?php foreach($wheeledAccess as $wa){ ?>
                 <label class="radio label-radio-checkbox-col-100">

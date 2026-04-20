@@ -36,6 +36,7 @@ use App\Models\ServiceType;
 use App\Models\ServiceTypeLink;
 use App\Models\State;
 use App\Models\StateConservation;
+use App\Models\TerrainUse;
 use App\Models\Type;
 use App\Models\TypeFloor;
 use App\Models\TypeHeating;
@@ -125,6 +126,25 @@ class PostController extends Controller
         }
 
         return $normalized;
+    }
+
+    private function normalizeTerrainTypeCatalog(?int $selectedId = null): array
+    {
+        $query = TypeOfTerrain::query()->whereIn('name', ['Urbano', 'Urbanizable', 'Rústico']);
+
+        if ($selectedId) {
+            $query->orWhere('id', $selectedId);
+        }
+
+        return collect($this->normalizeLegacyCatalog($query->orderBy('id')->get()))
+            ->unique('id')
+            ->values()
+            ->all();
+    }
+
+    private function normalizeTerrainUseCatalog(): array
+    {
+        return $this->normalizeLegacyCatalog(TerrainUse::query()->orderBy('id')->get());
     }
 
     private function setPositiveIntegerField(array &$dataForDb, string $column, mixed $value): void
@@ -434,7 +454,8 @@ class PostController extends Controller
         $feature = $this->normalizeLegacyCatalog(Feature::all());
         $equipment = $this->normalizeLegacyCatalog(Equipment::all());
         $plazaCapacity = $this->normalizeLegacyCatalog(PlazaCapacity::all());
-        $typeOfTerrain = $this->normalizeLegacyCatalog(TypeOfTerrain::all());
+        $typeOfTerrain = $this->normalizeTerrainTypeCatalog();
+        $terrainUse = $this->normalizeTerrainUseCatalog();
         $wheeledAccess = $this->normalizeLegacyCatalog(WheeledAccess::all());
         $nearestMunicipalityDistance = $this->normalizeLegacyCatalog(NearestMunicipalityDistance::all());
         $locationPremises = $this->normalizeLegacyCatalog(LocationPremises::all());
@@ -499,6 +520,7 @@ class PostController extends Controller
             'equipment' => $equipment,
             'plazaCapacity' => $plazaCapacity,
             'typeOfTerrain' => $typeOfTerrain,
+            'terrainUse' => $terrainUse,
             'wheeledAccess' => $wheeledAccess,
             'nearestMunicipalityDistance' => $nearestMunicipalityDistance,
             'locationPremises' => $locationPremises,
@@ -780,6 +802,7 @@ class PostController extends Controller
         $nearestMunicipalityDistanceId = $request->input('nearest_municipality_distance');
         $wheeledAccessId = $request->input('wheeled_access');
         $typeOfTerrainId = $request->input('type_of_terrain');
+        $terrainUseId = $request->input('terrain_use');
         $heatingFuelId = $request->input('heating_fuel');
         $mLong = $request->input('m_long');
         $mWide = $request->input('m_wide');
@@ -813,6 +836,7 @@ class PostController extends Controller
         $this->setPositiveIntegerField($dataForDb, 'nearest_municipality_distance_id', $nearestMunicipalityDistanceId);
         $this->setPositiveIntegerField($dataForDb, 'wheeled_access_id', $wheeledAccessId);
         $this->setPositiveIntegerField($dataForDb, 'type_of_terrain_id', $typeOfTerrainId);
+        $this->setPositiveIntegerField($dataForDb, 'terrain_use_id', $terrainUseId);
         if ($request->has('linear_meters_of_facade')) {
             $linearMetersOfFacadeValue = trim((string) $linearMetersOfFacade);
             $dataForDb['linear_meters_of_facade'] = $linearMetersOfFacadeValue !== '' ? $linearMetersOfFacadeValue : null;
@@ -1146,7 +1170,9 @@ class PostController extends Controller
         $typeFloor = $this->normalizeLegacyCatalog(TypeFloor::all()->toArray());
         $facade = $this->normalizeLegacyCatalog(Facade::all()->toArray());
         $plazaCapacity = $this->normalizeLegacyCatalog(PlazaCapacity::all()->toArray());
-        $typeOfTerrain = $this->normalizeLegacyCatalog(TypeOfTerrain::all()->toArray());
+        $selectedTerrainTypeId = isset($property[0]['type_of_terrain_id']) ? (int) $property[0]['type_of_terrain_id'] : null;
+        $typeOfTerrain = $this->normalizeTerrainTypeCatalog($selectedTerrainTypeId);
+        $terrainUse = $this->normalizeTerrainUseCatalog();
         $wheeledAccess = $this->normalizeLegacyCatalog(WheeledAccess::all()->toArray());
         $nearestMunicipalityDistance = $this->normalizeLegacyCatalog(NearestMunicipalityDistance::all()->toArray());
         $heatingFuel = $this->normalizeLegacyCatalog(HeatingFuel::all()->toArray());
@@ -1224,6 +1250,7 @@ class PostController extends Controller
             'equipments' => $equipments,
             'plazaCapacity' => $plazaCapacity,
             'typeOfTerrain' => $typeOfTerrain,
+            'terrainUse' => $terrainUse,
             'wheeledAccess' => $wheeledAccess,
             'nearestMunicipalityDistance' => $nearestMunicipalityDistance,
             'video' => $video,

@@ -229,8 +229,15 @@ class DatabaseSeeder extends Seeder
 
         $this->upsertRows('type_of_terrain', $this->rowsFromNames([
             'Urbano',
-            'Rustico',
+            'Urbanizable',
+            'Rústico',
+        ]), ['name']);
+
+        $this->upsertRows('terrain_use', $this->rowsFromNames([
+            'Servicios',
+            'Residencial',
             'Industrial',
+            'Agrícola',
         ]), ['name']);
 
         $this->upsertRows('wheeled_access', $this->rowsFromNames([
@@ -969,4 +976,3 @@ class DatabaseSeeder extends Seeder
         return $row?->name;
     }
 }
-

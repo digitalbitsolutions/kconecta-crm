@@ -26,6 +26,7 @@ use App\Models\PropertyAddress;
 use App\Models\ReasonForSale;
 use App\Models\RentalType;
 use App\Models\StateConservation;
+use App\Models\TerrainUse;
 use App\Models\Type;
 use App\Models\TypeFloor;
 use App\Models\TypeHeating;
@@ -815,6 +816,7 @@ class PropertyApiController extends Controller
         $this->setNullableIntegerField($request, $data, 'emissions_rating', 'emissions_rating_id');
         $this->setNullableIntegerField($request, $data, 'plaza_capacity', 'plaza_capacity_id');
         $this->setNullableIntegerField($request, $data, 'type_of_terrain', 'type_of_terrain_id');
+        $this->setNullableIntegerField($request, $data, 'terrain_use', 'terrain_use_id');
         $this->setNullableIntegerField($request, $data, 'wheeled_access', 'wheeled_access_id');
         $this->setNullableIntegerField(
             $request,
@@ -873,6 +875,7 @@ class PropertyApiController extends Controller
             'emissions_rating_id' => null,
             'plaza_capacity_id' => null,
             'type_of_terrain_id' => null,
+            'terrain_use_id' => null,
             'wheeled_access_id' => null,
             'nearest_municipality_distance_id' => null,
             'guarantee' => null,
@@ -1102,6 +1105,7 @@ class PropertyApiController extends Controller
         $reasonForSale = $this->wrapSingle(ReasonForSale::query()->find($property->reason_for_sale_id));
         $plazaCapacity = $this->wrapSingle(PlazaCapacity::query()->find($property->plaza_capacity_id));
         $typeOfTerrain = $this->wrapSingle(TypeOfTerrain::query()->find($property->type_of_terrain_id));
+        $terrainUse = $this->wrapSingle(TerrainUse::query()->find($property->terrain_use_id));
         $wheeledAccess = $this->wrapSingle(WheeledAccess::query()->find($property->wheeled_access_id));
         $nearestMunicipalityDistance = $this->wrapSingle(
             NearestMunicipalityDistance::query()->find($property->nearest_municipality_distance_id)
@@ -1150,6 +1154,8 @@ class PropertyApiController extends Controller
             'plaza_capacity_label' => $plazaCapacity[0]['name'] ?? null,
             'type_of_terrain' => $typeOfTerrain,
             'type_of_terrain_label' => $typeOfTerrain[0]['name'] ?? null,
+            'terrain_use' => $terrainUse,
+            'terrain_use_label' => $terrainUse[0]['name'] ?? null,
             'wheeled_access' => $wheeledAccess,
             'wheeled_access_label' => $wheeledAccess[0]['name'] ?? null,
             'nearest_municipality_distance' => $nearestMunicipalityDistance,
