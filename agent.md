@@ -12,7 +12,7 @@ Operate and evolve `kconecta-crm` with focus on:
 - Active GitHub repo: `https://github.com/sttildeveloper/kconecta-crm`
 - Active remote: `origin`
 - Main branch: `main`
-- Last operational update: `2026-04-21` (post deploy `703ae94`)
+- Last operational update: `2026-04-21` (post pushes `703ae94`, `105c0b3`, `9cd087e`)
 
 ## Working Rules
 - Prefer minimal, testable changes.
@@ -205,6 +205,12 @@ Operate and evolve `kconecta-crm` with focus on:
 - `terrain_qualifications`
 - new terrain feature options seeded for `id_type=9`
 - online validation confirmed with published terrain detail showing qualification values
+- `Terreno` (follow-up round `2026-04-21`):
+- create/edit forms now conditionally show additional area fields by terrain type
+- `Urbano` and `Urbanizable` enable:
+- `Superficie edificable` (`plot_meters`)
+- `Superficie minima vende/alquila` (`useful_meters`)
+- local validation reported successful in create and edit after fixing a Blade variable scope error in `form_5_update`
 
 ## Known Risks
 - Existing fallback login logic still accepts plaintext and rehashes on login.

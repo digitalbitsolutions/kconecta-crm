@@ -118,6 +118,16 @@
 - [x] durante futuras migraciones productivas puede ser necesario registrar manualmente cada migracion ya ejecutada con `php artisan tinker --execute ... updateOrInsert(...)`
 - [x] Bloque `Terreno` (calificaciones) implementado y publicado en:
 - [x] `703ae94` - `Terreno: calificaciones, usos y detalle público`
+- [x] Bloque `Terreno` (superficies condicionales por tipo) implementado y publicado en:
+- [x] `9cd087e` - `Terreno: mostrar campos de superficie segun tipo`
+- [x] Regla aplicada en formularios de alta/edicion de `Terreno`:
+- [x] si `Tipo de terreno` = `Urbano` o `Urbanizable`, mostrar:
+- [x] `Superficie edificable` (`plot_meters`)
+- [x] `Superficie minima vende/alquila` (`useful_meters`)
+- [x] si cambia a otro tipo, ocultar y limpiar ambos campos en frontend
+- [x] Validacion local reportada:
+- [x] alta de terreno OK
+- [x] edicion de terreno OK (corregido undefined variable en `form_5_update`)
 - [x] Produccion actualizada con nuevas tablas:
 - [x] `terrain_qualification`
 - [x] `terrain_qualifications`
@@ -161,6 +171,7 @@
 - Para inspeccion rapida de produccion, preferir Hostinger browser terminal si el SSH directo desde este PC vuelve a fallar.
 - `origin/main` quedo alineado con `eadae0a` tras publicar el cambio de `Terreno`.
 - `origin/main` quedo actualizado con `703ae94` para el bloque de `Tipo de calificación` en `Terreno`.
+- `origin/main` quedo actualizado con `9cd087e` para superficies condicionales de `Terreno`.
 - El backup mas reciente util para el cambio de `Terreno` esta en `/root/kconecta_backups/20260420_2313_pre_terreno`.
 - Para backups productivos del CRM, usar directamente el contenedor MySQL:
 - `kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3`

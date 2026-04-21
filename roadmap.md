@@ -35,6 +35,9 @@
 - tabla `terrain_qualification`
 - tabla pivot `terrain_qualifications`
 - validacion online final confirmada en detalle publico de terreno (con `Tipo de calificación` visible)
+- `Terreno` ya soporta visualizacion condicional de campos de superficie por `Tipo de terreno` en formularios web:
+- para `Urbano` y `Urbanizable` muestra `Superficie edificable` y `Superficie minima vende/alquila`
+- para otros tipos los oculta y limpia en frontend
 
 ## Phase 1 - Stabilize Production
 - Investigar drift entre referencias en BD y archivos fisicos de media.
