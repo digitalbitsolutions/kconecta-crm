@@ -240,6 +240,17 @@ class DatabaseSeeder extends Seeder
             'Agrícola',
         ]), ['name']);
 
+        $this->upsertRows('terrain_qualification', [
+            ['id' => 1, 'name' => 'Residencial en altura (bloques)'],
+            ['id' => 2, 'name' => 'Residencial unifamiliar (chalets)'],
+            ['id' => 3, 'name' => 'Terciario oficinas'],
+            ['id' => 4, 'name' => 'Terciario comercial'],
+            ['id' => 5, 'name' => 'Terciario hoteles'],
+            ['id' => 6, 'name' => 'Industrial'],
+            ['id' => 7, 'name' => 'Dotaciones (hospitales, escuelas, museos)'],
+            ['id' => 8, 'name' => 'Otra'],
+        ], ['name']);
+
         $this->upsertRows('wheeled_access', $this->rowsFromNames([
             'Accesible',
             'No accesible',
@@ -296,6 +307,12 @@ class DatabaseSeeder extends Seeder
             ['id' => 12, 'name' => 'Plaza cubierta', 'id_type' => 14, 'category_id' => null],
             ['id' => 13, 'name' => 'Puerta automatica', 'id_type' => 14, 'category_id' => null],
             ['id' => 14, 'name' => 'Trastero garaje', 'id_type' => 14, 'category_id' => null],
+            ['id' => 15, 'name' => 'Agua', 'id_type' => 9, 'category_id' => null],
+            ['id' => 16, 'name' => 'Luz', 'id_type' => 9, 'category_id' => null],
+            ['id' => 17, 'name' => 'Alcantarillado', 'id_type' => 9, 'category_id' => null],
+            ['id' => 18, 'name' => 'Gas natural', 'id_type' => 9, 'category_id' => null],
+            ['id' => 19, 'name' => 'Alumbrado publico', 'id_type' => 9, 'category_id' => null],
+            ['id' => 20, 'name' => 'Aceras', 'id_type' => 9, 'category_id' => null],
         ], ['name', 'id_type', 'category_id']);
 
         $this->upsertRows('equipment', [

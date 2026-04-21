@@ -26,6 +26,8 @@ use App\Models\PropertyAddress;
 use App\Models\ReasonForSale;
 use App\Models\RentalType;
 use App\Models\StateConservation;
+use App\Models\TerrainQualification;
+use App\Models\TerrainQualifications;
 use App\Models\TerrainUse;
 use App\Models\Type;
 use App\Models\TypeFloor;
@@ -789,6 +791,14 @@ class PropertyApiController extends Controller
         $this->syncPivotSelection($request, $property, 'type_floor', TypesFloors::class, 'type_floor_id', $clearTypeSpecific);
         $this->syncPivotSelection($request, $property, 'orientation', Orientations::class, 'orientation_id', $clearTypeSpecific);
         $this->syncPivotSelection($request, $property, 'feature', Features::class, 'feature_id', $clearTypeSpecific);
+        $this->syncPivotSelection(
+            $request,
+            $property,
+            'terrain_qualification',
+            TerrainQualifications::class,
+            'terrain_qualification_id',
+            $clearTypeSpecific
+        );
         $this->syncPivotSelection($request, $property, 'equipment', Equipments::class, 'equipment_id', $clearTypeSpecific);
     }
 
@@ -1106,6 +1116,12 @@ class PropertyApiController extends Controller
         $plazaCapacity = $this->wrapSingle(PlazaCapacity::query()->find($property->plaza_capacity_id));
         $typeOfTerrain = $this->wrapSingle(TypeOfTerrain::query()->find($property->type_of_terrain_id));
         $terrainUse = $this->wrapSingle(TerrainUse::query()->find($property->terrain_use_id));
+        $terrainQualifications = $this->mapLinkedItems(
+            $propertyId,
+            TerrainQualifications::class,
+            'terrain_qualification_id',
+            TerrainQualification::class
+        );
         $wheeledAccess = $this->wrapSingle(WheeledAccess::query()->find($property->wheeled_access_id));
         $nearestMunicipalityDistance = $this->wrapSingle(
             NearestMunicipalityDistance::query()->find($property->nearest_municipality_distance_id)
@@ -1156,6 +1172,7 @@ class PropertyApiController extends Controller
             'type_of_terrain_label' => $typeOfTerrain[0]['name'] ?? null,
             'terrain_use' => $terrainUse,
             'terrain_use_label' => $terrainUse[0]['name'] ?? null,
+            'terrain_qualifications' => $terrainQualifications,
             'wheeled_access' => $wheeledAccess,
             'wheeled_access_label' => $wheeledAccess[0]['name'] ?? null,
             'nearest_municipality_distance' => $nearestMunicipalityDistance,

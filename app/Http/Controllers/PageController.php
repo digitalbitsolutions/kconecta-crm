@@ -34,6 +34,8 @@ use App\Models\ServiceType;
 use App\Models\ServiceTypeLink;
 use App\Models\StateConservation;
 use App\Models\TerrainUse;
+use App\Models\TerrainQualification;
+use App\Models\TerrainQualifications;
 use App\Models\Type;
 use App\Models\TypeFloor;
 use App\Models\TypeHeating;
@@ -548,6 +550,14 @@ class PageController extends Controller
         $item['wheeled_access'] = $this->wrapSingle(WheeledAccess::find($property->wheeled_access_id));
         $item['type_of_terrain'] = $this->wrapSingle(TypeOfTerrain::find($property->type_of_terrain_id));
         $item['terrain_use'] = $this->wrapSingle(TerrainUse::find($property->terrain_use_id));
+        $item['terrain_qualifications'] = [];
+        $terrainQualificationLinks = TerrainQualifications::where('property_id', $property->id)->get();
+        foreach ($terrainQualificationLinks as $terrainQualificationLink) {
+            $terrainQualification = TerrainQualification::find($terrainQualificationLink->terrain_qualification_id);
+            if ($terrainQualification) {
+                $item['terrain_qualifications'][] = $terrainQualification->toArray();
+            }
+        }
         $item['property_address'] = PropertyAddress::where('property_id', $property->id)->get()->toArray();
         $item['user'] = User::find($property->user_id)?->toArray() ?? [];
 

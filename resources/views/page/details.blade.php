@@ -155,6 +155,12 @@
                 <span><?= $property["terrain_use"][0]["name"] ?></span>
             </div>
             <?php } ?>
+            <?php if ((int) ($property["type_id"] ?? 0) === 9 && !empty($property["terrain_qualifications"])) { ?>
+            <div class="btn-dec">
+                <span class="">Tipo de calificación</span>
+                <span><?= implode(', ', array_column($property["terrain_qualifications"], "name")) ?></span>
+            </div>
+            <?php } ?>
             <?php if (!empty($property["meters_built"])){ ?>
             <div class="btn-dec">
                 <span class="">M<sup>2</sup> Construidos</span>
@@ -463,6 +469,22 @@
                             <ul>
                                 <?php foreach($property["features"] as $feature){ ?>
                                     <li><?= $feature["name"] ?></li>
+                                <?php } ?>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+            <?php } ?>
+            <?php if ((int) ($property["type_id"] ?? 0) === 9 && !empty($property["terrain_qualifications"])) { ?>
+                <article class="message">
+                    <div class="message-header">
+                        <p>Tipo de calificación</p>
+                    </div>
+                    <div class="message-body">
+                        <div class="container-row">
+                            <ul>
+                                <?php foreach($property["terrain_qualifications"] as $terrainQualification){ ?>
+                                    <li><?= $terrainQualification["name"] ?></li>
                                 <?php } ?>
                             </ul>
                         </div>

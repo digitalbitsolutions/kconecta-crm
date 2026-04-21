@@ -131,6 +131,9 @@
 - [ ] Endurecer `createService()` si se confirma que debe seguir la misma logica robusta que propiedades.
 - [ ] igualar formularios web y movil por tipo de propiedad.
 
+### Closed
+- [x] Bloque de trabajo de `Terreno` dado por cerrado tras validacion online y documentacion operativa.
+
 ### Security Backlog
 - [ ] Rotar secretos actuales (`APP_KEY`, API keys, credenciales DB).
 - [ ] Forzar actualizacion de passwords por defecto.

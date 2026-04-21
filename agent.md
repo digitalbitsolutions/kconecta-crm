@@ -186,6 +186,16 @@ Operate and evolve `kconecta-crm` with focus on:
 - Remove legacy plaintext password fallback in auth flow.
 - Define recurring backup and restore drill for production DB and media volumes.
 
+## Recently Closed
+- `Terreno`:
+- separation of `Tipo de terreno` and `Uso`
+- web create/edit support
+- API support
+- public detail cards
+- production schema update
+- production validation after fix
+- operational notes and backup procedure documented
+
 ## Known Risks
 - Existing fallback login logic still accepts plaintext and rehashes on login.
 - Google Maps address UX depends on keeping both Dokploy env and Google Cloud API enablement aligned.

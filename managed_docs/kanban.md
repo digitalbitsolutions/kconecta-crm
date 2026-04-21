@@ -5,9 +5,9 @@ Este es el centro de orquestación para la nueva App en **React Native** consumi
 ---
 
 ## 🏗️ Estado General del Proyecto
-- **Backend:** Laravel 12 (Confirmado/Auditando)
+- **Backend:** Laravel 12 (Confirmado/Auditando - UI de 12 formularios globalizada)
 - **App Móvil:** Pendiente de inicializar (Expo)
-- **Infraestructura AI:** Modelos locales en descarga (DeepSeek/Mistral)
+- **Infraestructura:** Git LFS Saneado (Media en .gitignore), Backups en VPS realizados (2026-04-16)
 
 ---
 
@@ -16,6 +16,7 @@ Este es el centro de orquestación para la nueva App en **React Native** consumi
 ### 📥 Backlog (Futuro)
 - [ ] Implementar Push Notifications (Firebase/Expo Notifications).
 - [ ] Configurar CI/CD para despliegues automáticos en TestFlight/Google Play Store.
+- [ ] **[Backend]** Centralizar botones de guardado como componente Blade o `@include` (Refactor Architectural).
 - [ ] Añadir Modo Offline (Caché local con SQLite/AsynStorage).
 - [ ] Integrar Analytics (Google Analytics o Mixpanel).
 
@@ -35,6 +36,8 @@ Este es el centro de orquestación para la nueva App en **React Native** consumi
 ### ✅ Finalizado (Done)
 - [x] **[Setup]** Clonar repositorio de GitHub.
 - [x] **[Setup]** Confirmar versión de Laravel y arquitectura de rutas.
+- [x] **[UI]** Estandarización global de clases `property-description-*` en 12 formularios (Creación y Update).
+- [x] **[Infra]** Respaldo de BD y Media en VPS (Hostinger/Dokploy) y Saneamiento de Git LFS.
 - [x] **[Setup]** Crear sistema de orquestura via Kanban Markdown.
 
 ---

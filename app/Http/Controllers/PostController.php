@@ -36,6 +36,8 @@ use App\Models\ServiceType;
 use App\Models\ServiceTypeLink;
 use App\Models\State;
 use App\Models\StateConservation;
+use App\Models\TerrainQualification;
+use App\Models\TerrainQualifications;
 use App\Models\TerrainUse;
 use App\Models\Type;
 use App\Models\TypeFloor;
@@ -145,6 +147,11 @@ class PostController extends Controller
     private function normalizeTerrainUseCatalog(): array
     {
         return $this->normalizeLegacyCatalog(TerrainUse::query()->orderBy('id')->get());
+    }
+
+    private function normalizeTerrainQualificationCatalog(): array
+    {
+        return $this->normalizeLegacyCatalog(TerrainQualification::query()->orderBy('id')->get());
     }
 
     private function setPositiveIntegerField(array &$dataForDb, string $column, mixed $value): void
@@ -456,6 +463,7 @@ class PostController extends Controller
         $plazaCapacity = $this->normalizeLegacyCatalog(PlazaCapacity::all());
         $typeOfTerrain = $this->normalizeTerrainTypeCatalog();
         $terrainUse = $this->normalizeTerrainUseCatalog();
+        $terrainQualification = $this->normalizeTerrainQualificationCatalog();
         $wheeledAccess = $this->normalizeLegacyCatalog(WheeledAccess::all());
         $nearestMunicipalityDistance = $this->normalizeLegacyCatalog(NearestMunicipalityDistance::all());
         $locationPremises = $this->normalizeLegacyCatalog(LocationPremises::all());
@@ -481,6 +489,7 @@ class PostController extends Controller
                 $formView = 'post.forms.form_4';
                 break;
             case '9':
+                $feature = $this->normalizeLegacyCatalog(Feature::where('id_type', 9)->get());
                 $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 4)->get());
                 $formView = 'post.forms.form_5';
                 break;
@@ -521,6 +530,7 @@ class PostController extends Controller
             'plazaCapacity' => $plazaCapacity,
             'typeOfTerrain' => $typeOfTerrain,
             'terrainUse' => $terrainUse,
+            'terrainQualification' => $terrainQualification,
             'wheeledAccess' => $wheeledAccess,
             'nearestMunicipalityDistance' => $nearestMunicipalityDistance,
             'locationPremises' => $locationPremises,
@@ -803,6 +813,7 @@ class PostController extends Controller
         $wheeledAccessId = $request->input('wheeled_access');
         $typeOfTerrainId = $request->input('type_of_terrain');
         $terrainUseId = $request->input('terrain_use');
+        $terrainQualification = $request->input('terrain_qualification');
         $heatingFuelId = $request->input('heating_fuel');
         $mLong = $request->input('m_long');
         $mWide = $request->input('m_wide');
@@ -1004,12 +1015,21 @@ class PostController extends Controller
                 ]);
             }
         }
-        if (! empty($feature)) {
+        if (! empty($feature) || $request->exists('terrain_feature_present')) {
             Features::where('property_id', $propertyId)->delete();
-            foreach ($feature as $value) {
+            foreach ((array) $feature as $value) {
                 Features::create([
                     'property_id' => $propertyId,
                     'feature_id' => $value,
+                ]);
+            }
+        }
+        if (! empty($terrainQualification) || $request->exists('terrain_qualification_present')) {
+            TerrainQualifications::where('property_id', $propertyId)->delete();
+            foreach ((array) $terrainQualification as $value) {
+                TerrainQualifications::create([
+                    'property_id' => $propertyId,
+                    'terrain_qualification_id' => $value,
                 ]);
             }
         }
@@ -1173,6 +1193,7 @@ class PostController extends Controller
         $selectedTerrainTypeId = isset($property[0]['type_of_terrain_id']) ? (int) $property[0]['type_of_terrain_id'] : null;
         $typeOfTerrain = $this->normalizeTerrainTypeCatalog($selectedTerrainTypeId);
         $terrainUse = $this->normalizeTerrainUseCatalog();
+        $terrainQualification = $this->normalizeTerrainQualificationCatalog();
         $wheeledAccess = $this->normalizeLegacyCatalog(WheeledAccess::all()->toArray());
         $nearestMunicipalityDistance = $this->normalizeLegacyCatalog(NearestMunicipalityDistance::all()->toArray());
         $heatingFuel = $this->normalizeLegacyCatalog(HeatingFuel::all()->toArray());
@@ -1186,6 +1207,7 @@ class PostController extends Controller
         $video = Video::where('property_id', $id)->get()->toArray();
         $orientations = Orientations::where('property_id', $id)->get()->toArray();
         $features = Features::where('property_id', $id)->get()->toArray();
+        $terrainQualifications = TerrainQualifications::where('property_id', $id)->get()->toArray();
 
         $equipment = $this->normalizeLegacyCatalog(Equipment::all()->toArray());
         $formView = 'post.forms.form_1_update';
@@ -1204,6 +1226,7 @@ class PostController extends Controller
             $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 14)->get()->toArray());
             $formView = 'post.forms.form_4_update';
         } elseif ($typeId === 9) {
+            $feature = $this->normalizeLegacyCatalog(Feature::where('id_type', 9)->get()->toArray());
             $equipment = $this->normalizeLegacyCatalog(Equipment::where('type_id', 4)->get()->toArray());
             $formView = 'post.forms.form_5_update';
         } elseif ($typeId === 15) {
@@ -1223,6 +1246,8 @@ class PostController extends Controller
             'coverImage' => $coverImage,
             'feature' => $feature,
             'features' => $features,
+            'terrainQualification' => $terrainQualification,
+            'terrainQualifications' => $terrainQualifications,
             'moreImages' => $moreImages,
             'property' => $property,
             'province' => $province,

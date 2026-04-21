@@ -17,6 +17,7 @@ use App\Models\ReasonForSale;
 use App\Models\RentalType;
 use App\Models\StateConservation;
 use App\Models\TerrainUse;
+use App\Models\TerrainQualification;
 use App\Models\TypeFloor;
 use App\Models\TypeHeating;
 use App\Models\TypeOfTerrain;
@@ -93,6 +94,9 @@ class PropertyFormCatalogsService
             'terrain_use' => $typeId === self::TYPE_LAND
                 ? $this->mapOptions(TerrainUse::query()->orderBy('id')->get())
                 : [],
+            'terrain_qualification' => $typeId === self::TYPE_LAND
+                ? $this->mapOptions(TerrainQualification::query()->orderBy('id')->get())
+                : [],
             'wheeled_access' => $typeId === self::TYPE_LAND
                 ? $this->mapOptions(WheeledAccess::query()->orderBy('id')->get())
                 : [],
@@ -145,6 +149,10 @@ class PropertyFormCatalogsService
 
         if ($typeId === self::TYPE_RUSTIC_HOUSE) {
             return $this->mapOptions(Feature::query()->orderBy('id')->get());
+        }
+
+        if ($typeId === self::TYPE_LAND) {
+            return $this->mapOptions(Feature::query()->where('id_type', self::TYPE_LAND)->orderBy('id')->get());
         }
 
         return [];

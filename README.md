@@ -70,6 +70,7 @@ Se agrego una migracion para asegurar compatibilidad de hashes de password:
 - `Uso`: `Servicios`, `Residencial`, `Industrial`, `Agrícola`
 - El detalle publico de `Terreno` ahora muestra arriba los recuadros `Tipo de terreno` y `Uso`.
 - El alta de `Terreno` en produccion quedo validada despues de aplicar migraciones y limpiar cache.
+- El bloque operativo de `Terreno` implementado en esta ronda se considera cerrado.
 - Las vistas toleran propiedades sin portada y muestran placeholder sin `500`.
 - Backup operativo previo a cambios productivos creado en host:
 - `/root/kconecta_backups/20260415_1656_pre_commit_sync`

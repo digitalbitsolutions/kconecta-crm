@@ -58,6 +58,9 @@
 - Definir estrategia de video compatible para web y movil.
 - Revisar si el contrato del API movil cubre todos los campos legacy del CRM.
 
+## Closed In This Round
+- `Terreno` quedo alineado en datos, formularios y detalle publico.
+
 ## Phase 5 - Operational Reliability
 - Mejorar health checks y observabilidad de app + DB.
 - Vigilar drift entre migraciones del repo y runtime productivo.

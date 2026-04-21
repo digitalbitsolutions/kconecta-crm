@@ -199,6 +199,21 @@ if (!function_exists('site_url')) {
         </div> -->
         <h2 class="title-main-row-section">Caracter&iacute;sticas del terreno</h2>
         <div class="container-row-form box">
+            <?php
+                $selectedFeatureIds = array_column($features, 'feature_id');
+                $selectedTerrainQualificationIds = array_column($terrainQualifications, 'terrain_qualification_id');
+            ?>
+            <div class="div-col-1">
+                <span class="title-label">Servicios y suministros</span>
+                <input type="hidden" name="terrain_feature_present" value="1" />
+                <?php foreach($feature as $featur){ ?>
+                <label class="checkbox label-radio-checkbox-col-100">
+                    <input type="checkbox" <?= in_array($featur["id"], $selectedFeatureIds) ? "checked" : "" ?> class="checkbox-input-ui" hidden="" name="feature[]" value="<?= $featur["id"] ?>" />
+                    <span class="checkmark-checkbox-input-ui"></span>
+                    <?= $featur["name"] ?>
+                </label>
+                <?php } ?>
+            </div>
             <!-- <div class="div-col-1 container-for-sale-only">
                 <span class="title-label">Caracter&iacute;stica adicional *</span>
                 <?php foreach($typeFloor as $tf){ ?>
@@ -365,6 +380,17 @@ if (!function_exists('site_url')) {
                     <span class="checkmark-checkbox-input-ui"></span>
                     Inmueble de banco
                 </label>
+            </div>
+            <div class="div-col-1">
+                <span class="title-label">Tipo de calificaci&oacute;n</span>
+                <input type="hidden" name="terrain_qualification_present" value="1" />
+                <?php foreach($terrainQualification as $qualification){ ?>
+                <label class="checkbox label-radio-checkbox-col-100">
+                    <input type="checkbox" <?= in_array($qualification["id"], $selectedTerrainQualificationIds) ? "checked" : "" ?> class="checkbox-input-ui" hidden="" name="terrain_qualification[]" value="<?= $qualification["id"] ?>" />
+                    <span class="checkmark-checkbox-input-ui"></span>
+                    <?= $qualification["name"] ?>
+                </label>
+                <?php } ?>
             </div>
             <!-- <div class="div-col-1">
                 <span class="title-label">Adaptado a personas con movilidad reducida</span>
