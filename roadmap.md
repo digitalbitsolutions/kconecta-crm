@@ -30,6 +30,11 @@
 - `kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3`
 - Procedimiento real de migracion/cache clear validado contra el contenedor app:
 - `kconecta-kconectacrm-5oikfs.1.8j4e7feeo9l3yxw5hap9vhw8k`
+- `Terreno` ya soporta `Tipo de calificación` en formularios web, API y detalle publico.
+- Produccion ya tiene:
+- tabla `terrain_qualification`
+- tabla pivot `terrain_qualifications`
+- validacion online final confirmada en detalle publico de terreno (con `Tipo de calificación` visible)
 
 ## Phase 1 - Stabilize Production
 - Investigar drift entre referencias en BD y archivos fisicos de media.

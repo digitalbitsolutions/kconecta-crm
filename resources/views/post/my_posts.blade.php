@@ -157,7 +157,7 @@
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 11v6M14 11v6"/>
                         </svg>
                     </button>
-                    <a class="icon-action neutral" href="{{ url('/result/' . $property['reference']) }}" title="Ver anuncio" aria-label="Ver anuncio">
+                    <a class="icon-action neutral" href="{{ url('/result/' . $property['reference']) }}" target="_blank" rel="noopener noreferrer" title="Ver anuncio" aria-label="Ver anuncio">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14 3h7v7"/>
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 14L21 3"/>

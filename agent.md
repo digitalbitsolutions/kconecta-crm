@@ -12,7 +12,7 @@ Operate and evolve `kconecta-crm` with focus on:
 - Active GitHub repo: `https://github.com/sttildeveloper/kconecta-crm`
 - Active remote: `origin`
 - Main branch: `main`
-- Last operational update: `2026-04-21`
+- Last operational update: `2026-04-21` (post deploy `703ae94`)
 
 ## Working Rules
 - Prefer minimal, testable changes.
@@ -44,6 +44,8 @@ Operate and evolve `kconecta-crm` with focus on:
 - DB service pattern: `kconecta-crm-*`
 - Current production app container used on `2026-04-20/21`:
 - `kconecta-kconectacrm-5oikfs.1.8j4e7feeo9l3yxw5hap9vhw8k`
+- Current production app container validated after terrain-qualification deploy on `2026-04-21`:
+- `kconecta-kconectacrm-5oikfs.1.r7nuo2pf6d5y46mu7ij1t5nrw`
 - Current production MySQL container used on `2026-04-20/21`:
 - `kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3`
 - DB schema: `kconecta-mysql`
@@ -195,6 +197,14 @@ Operate and evolve `kconecta-crm` with focus on:
 - production schema update
 - production validation after fix
 - operational notes and backup procedure documented
+- `Terreno` (extra round `2026-04-21`):
+- support for `Tipo de calificación` in create/edit and API
+- public detail now renders `Tipo de calificación` (badge + detail block)
+- new schema objects deployed:
+- `terrain_qualification`
+- `terrain_qualifications`
+- new terrain feature options seeded for `id_type=9`
+- online validation confirmed with published terrain detail showing qualification values
 
 ## Known Risks
 - Existing fallback login logic still accepts plaintext and rehashes on login.

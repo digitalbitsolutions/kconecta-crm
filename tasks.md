@@ -116,6 +116,17 @@
 - [x] Particularidad operativa documentada:
 - [x] la tabla legacy `migrations` no acepta el registro estandar de Laravel sin poblar campos extra (`version`, `class`, `group`, `namespace`, `time`)
 - [x] durante futuras migraciones productivas puede ser necesario registrar manualmente cada migracion ya ejecutada con `php artisan tinker --execute ... updateOrInsert(...)`
+- [x] Bloque `Terreno` (calificaciones) implementado y publicado en:
+- [x] `703ae94` - `Terreno: calificaciones, usos y detalle público`
+- [x] Produccion actualizada con nuevas tablas:
+- [x] `terrain_qualification`
+- [x] `terrain_qualifications`
+- [x] Verificacion productiva posterior al deploy:
+- [x] `Schema::hasTable('terrain_qualification') = true`
+- [x] `Schema::hasTable('terrain_qualifications') = true`
+- [x] catalogo `terrain_qualification` con `8` registros
+- [x] Validacion online reportada:
+- [x] detalle publico de terreno muestra `Tipo de calificación` correctamente
 
 ### In Progress
 - [ ] Revision de si `createService()` necesita el mismo hardening que propiedades.
@@ -149,6 +160,7 @@
 - `.codex_tmp` sigue local y sin trackear; no mezclarlo en commits.
 - Para inspeccion rapida de produccion, preferir Hostinger browser terminal si el SSH directo desde este PC vuelve a fallar.
 - `origin/main` quedo alineado con `eadae0a` tras publicar el cambio de `Terreno`.
+- `origin/main` quedo actualizado con `703ae94` para el bloque de `Tipo de calificación` en `Terreno`.
 - El backup mas reciente util para el cambio de `Terreno` esta en `/root/kconecta_backups/20260420_2313_pre_terreno`.
 - Para backups productivos del CRM, usar directamente el contenedor MySQL:
 - `kconecta-crm-b8ejyl.1.uhlwrkdsmasxw6hmpnkio19y3`
