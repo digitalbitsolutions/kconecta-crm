@@ -243,12 +243,39 @@ if (!function_exists('site_url')) {
             </div> -->
             <div class="div-col-1">
                 <span class="title-label">Tipo de terreno *</span>
+                <?php
+                    $selectedTerrainTypeId = isset($property[0]["type_of_terrain_id"]) ? (int) $property[0]["type_of_terrain_id"] : 0;
+                    $buildableTerrainTypeIds = [];
+                    foreach ($typeOfTerrain as $tot) {
+                        if (in_array($tot["name"], ["Urbano", "Urbanizable"], true)) {
+                            $buildableTerrainTypeIds[] = (int) $tot["id"];
+                        }
+                    }
+                    $showTerrainBuildabilityFields = in_array((int) $selectedTerrainTypeId, $buildableTerrainTypeIds, true);
+                ?>
+                <input type="hidden" id="buildable_terrain_type_ids" value="<?= implode(',', $buildableTerrainTypeIds) ?>" />
                 <?php foreach($typeOfTerrain as $tot){ ?>
                 <label class="radio label-radio-checkbox-col-100">
                     <label class="container-input-radio-ui"><input type="radio" <?= $tot["id"] == $property[0]["type_of_terrain_id"] ? "checked" : "" ?> name="type_of_terrain" value="<?= $tot["id"] ?>" required /><div class="checkmark"></div></label>
                     <?= $tot["name"] ?>
                 </label>
                 <?php } ?>
+            </div>
+            <div class="div-col-1 terrain-buildability-fields" style="<?= $showTerrainBuildabilityFields ? "" : "display: none;" ?>">
+                <label for="" class="label-col-100">
+                    <span class="title-label">Superficie edificable</span>
+                    <div class="group-icon-input-ui-2">
+                        <span class="icon-ui">m<sup>2</sup></span>
+                        <input placeholder="" type="text" class="input-ui" value="<?= $property[0]["plot_meters"] ?>" name="plot_meters" id="plot_meters">
+                    </div>
+                </label>
+                <label for="" class="label-col-100">
+                    <span class="title-label">Superficie m&iacute;nima vende/alquila</span>
+                    <div class="group-icon-input-ui-2">
+                        <span class="icon-ui">m<sup>2</sup></span>
+                        <input placeholder="" type="text" class="input-ui" value="<?= $property[0]["useful_meters"] ?>" name="useful_meters" id="useful_meters">
+                    </div>
+                </label>
             </div>
             <div class="div-col-1">
                 <span class="title-label">Uso *</span>
@@ -770,6 +797,43 @@ if (!function_exists('site_url')) {
     open_modal_addres.addEventListener("click", ()=>{
         openModal(document.getElementById('modal-view-map-select'))
     });
+
+    const buildableTerrainTypeIdsValue = document.getElementById("buildable_terrain_type_ids")?.value ?? "";
+    const buildableTerrainTypeIds = buildableTerrainTypeIdsValue
+        .split(",")
+        .map((value) => parseInt(value, 10))
+        .filter((value) => Number.isInteger(value));
+    const terrainTypeInputs = document.querySelectorAll('input[name="type_of_terrain"]');
+    const terrainBuildabilityFields = document.querySelector(".terrain-buildability-fields");
+    const plotMetersInput = document.getElementById("plot_meters");
+    const usefulMetersInput = document.getElementById("useful_meters");
+
+    const syncTerrainBuildabilityFields = () => {
+        const selectedTerrainType = document.querySelector('input[name="type_of_terrain"]:checked');
+        const selectedTerrainTypeId = selectedTerrainType ? parseInt(selectedTerrainType.value, 10) : null;
+        const shouldShow = Number.isInteger(selectedTerrainTypeId) && buildableTerrainTypeIds.includes(selectedTerrainTypeId);
+
+        if (!terrainBuildabilityFields) {
+            return;
+        }
+
+        if (shouldShow) {
+            terrainBuildabilityFields.style.display = "";
+        } else {
+            terrainBuildabilityFields.style.display = "none";
+            if (plotMetersInput) {
+                plotMetersInput.value = "";
+            }
+            if (usefulMetersInput) {
+                usefulMetersInput.value = "";
+            }
+        }
+    };
+
+    terrainTypeInputs.forEach((input) => {
+        input.addEventListener("change", syncTerrainBuildabilityFields);
+    });
+    syncTerrainBuildabilityFields();
 </script>
 
 <script src="<?= base_url("js/format_input.js") ?>"></script>
@@ -778,6 +842,8 @@ if (!function_exists('site_url')) {
     format_1("rental_price");
     format_1("guarantee");
     format_1("land_size");
+    format_1("plot_meters");
+    format_1("useful_meters");
 
 </script>
 <script src="<?= base_url("js/form_update_image.js") ?>"></script>
