@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 
 class UserController extends Controller
@@ -279,7 +280,7 @@ class UserController extends Controller
             'address_lat' => ['nullable', 'numeric'],
             'address_lng' => ['nullable', 'numeric'],
             'password' => ['nullable', 'string', 'min:6'],
-            'photo' => ['nullable', 'image', 'max:2048'],
+            'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $addressRecord = UserAddress::firstOrNew(['user_id' => $user->id]);
@@ -311,10 +312,18 @@ class UserController extends Controller
 
         $photoUpdated = false;
         if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = $this->processProfilePhoto($file, (int) $user->id);
-            $user->photo = $filename;
-            $photoUpdated = true;
+            try {
+                $file = $request->file('photo');
+                $filename = $this->processProfilePhoto($file, (int) $user->id);
+                $user->photo = $filename;
+                $photoUpdated = true;
+            } catch (\Throwable $exception) {
+                report($exception);
+
+                throw ValidationException::withMessages([
+                    'photo' => 'No se pudo procesar el logo en este momento. Verifica que sea una imagen JPG, PNG o WEBP e intentalo de nuevo.',
+                ]);
+            }
         }
 
         $user->save();
@@ -434,9 +443,13 @@ class UserController extends Controller
 
     private function processProfilePhoto(\Illuminate\Http\UploadedFile $file, int $userId): string
     {
+        if (! extension_loaded('gd') || ! function_exists('imagewebp')) {
+            throw new \RuntimeException('GD/WebP no disponible en el servidor.');
+        }
+
         $source = $this->createImageResourceFromUpload($file);
         if (! $source) {
-            abort(422, 'No se pudo procesar la imagen subida.');
+            throw new \RuntimeException('No se pudo procesar la imagen subida.');
         }
 
         $sourceWidth = imagesx($source);
@@ -463,8 +476,12 @@ class UserController extends Controller
         );
 
         $directory = public_path('img/photo_profile');
-        if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
+        if (! is_dir($directory) && ! @mkdir($directory, 0755, true) && ! is_dir($directory)) {
+            throw new \RuntimeException('No se pudo crear el directorio de logos de perfil.');
+        }
+
+        if (! is_writable($directory)) {
+            throw new \RuntimeException('El directorio de logos de perfil no tiene permisos de escritura.');
         }
 
         $filename = 'user_' . $userId . '_' . Str::random(12) . '.webp';
@@ -475,7 +492,7 @@ class UserController extends Controller
         imagedestroy($source);
 
         if (! $saved) {
-            abort(422, 'No se pudo guardar la imagen en formato WebP.');
+            throw new \RuntimeException('No se pudo guardar la imagen en formato WebP.');
         }
 
         return $filename;
@@ -493,7 +510,6 @@ class UserController extends Controller
         return match ($mime) {
             'image/jpeg', 'image/jpg' => @imagecreatefromjpeg($path),
             'image/png' => @imagecreatefrompng($path),
-            'image/gif' => @imagecreatefromgif($path),
             'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($path) : false,
             default => false,
         };
