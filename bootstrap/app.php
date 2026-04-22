@@ -24,6 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        $middleware->alias([
+            'provider_or_agent_verified' => \App\Http\Middleware\EnsureProviderOrAgentEmailIsVerified::class,
+        ]);
+
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {

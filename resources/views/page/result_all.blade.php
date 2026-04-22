@@ -462,8 +462,8 @@
                         position: { lat: lat, lng: lng },
                         map: map,
                         icon: {
-                            url: "/img/icon-location-main-app.webp",
-                            scaledSize: new google.maps.Size(30, 42)
+                            url: "/img/kconecta_icon.webp",
+                            scaledSize: new google.maps.Size(34, 34)
                         },
                         title: `Cantidad: ${location.quantity}`
                     });
@@ -542,10 +542,10 @@
             leafletMarkers = [];
 
             const icon = L.icon({
-                iconUrl: "/img/icon-location-main-app.webp",
-                iconSize: [30, 42],
-                iconAnchor: [15, 42],
-                popupAnchor: [0, -42],
+                iconUrl: "/img/kconecta_icon.webp",
+                iconSize: [34, 34],
+                iconAnchor: [17, 17],
+                popupAnchor: [0, -18],
             });
 
             data_temp.forEach((location) => {
@@ -773,5 +773,4 @@
 </script>
 <script src="<?= base_url("js/autocomplet.js") ?>"></script>
 @endsection
-
 

@@ -38,6 +38,20 @@
 - `Terreno` ya soporta visualizacion condicional de campos de superficie por `Tipo de terreno` en formularios web:
 - para `Urbano` y `Urbanizable` muestra `Superficie edificable` y `Superficie minima vende/alquila`
 - para otros tipos los oculta y limpia en frontend
+- Proveedores/servicios (`2026-04-22`):
+- formulario de alta de servicios para proveedor ya no duplica datos de usuario
+- direccion de servicio se toma desde perfil validado del proveedor
+- perfil del proveedor:
+- foto/logo se recorta a `350x350` y se guarda en WebP
+- `username` queda bloqueado (solo lectura)
+- landing de proveedor en `/post/services`:
+- slider multi-imagen funcional con controles y dots
+- boton de ver publicacion en listado abre en `_blank`
+- boton `Ver video` retirado de la cabecera segun decision UX (video queda en bloque inferior)
+- detalle publico de servicio:
+- fix de carga de video por `service_id`
+- mapas de resultados:
+- icono legacy reemplazado por icono Kconecta
 
 ## Phase 1 - Stabilize Production
 - Investigar drift entre referencias en BD y archivos fisicos de media.
@@ -47,6 +61,7 @@
 - validacion previa
 - futura compresion frontend
 - Revisar si alta de servicios requiere el mismo hardening que propiedades.
+- Ejecutar pasada final de normalizacion UTF-8 en vistas legacy con mojibake.
 
 ## Phase 2 - Security Hardening
 - Rotar credenciales productivas y secrets de aplicacion.

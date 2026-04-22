@@ -140,6 +140,29 @@
 
 ### In Progress
 - [ ] Revision de si `createService()` necesita el mismo hardening que propiedades.
+- [ ] Limpieza final de textos mojibake/encoding en vistas legacy.
+
+### Session Update (2026-04-22)
+- [x] Registro de proveedores alineado:
+- [x] tipos permitidos en registro limitados a `Proveedor de servicios` y `Agente inmobiliario`
+- [x] validaciones CIF/DNI/NIE reforzadas
+- [x] `username` alineado con `Razon social`
+- [x] Perfil de proveedor:
+- [x] foto/logo procesada a WebP 350x350 en backend
+- [x] `username` bloqueado (solo lectura)
+- [x] feedback de carga/guardado en interfaz de perfil
+- [x] Servicios proveedor:
+- [x] formulario de alta sin bloque duplicado de datos de usuario
+- [x] direccion de servicio resuelta desde perfil del proveedor
+- [x] slider en `/post/services` funcional con controles + dots
+- [x] bug visual post-login mitigado en primer render del slider
+- [x] CTA de ver publicacion en listados ajustado a `_blank`
+- [x] Detalle publico de servicio:
+- [x] fix de carga de video por `service_id` en `result_service`
+- [x] Mapas de resultados:
+- [x] icono de marcador migrado a branding Kconecta (`kconecta_icon.webp`)
+- [x] UX proveedor:
+- [x] boton `Ver video` retirado de cabecera de `/post/services` (video queda en bloque inferior)
 
 ### Next
 - [ ] Respaldar BD local.

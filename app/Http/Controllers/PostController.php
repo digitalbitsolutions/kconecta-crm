@@ -239,14 +239,18 @@ class PostController extends Controller
         }
     }
 
-    private function storeUploadedImage($file, string $imagePath): array
+    private function storeUploadedImage($file, string $imagePath, array $options = []): array
     {
         if (! $file || ! $file->isValid()) {
             return ['success' => false, 'error' => 'La imagen no es valida.'];
         }
 
+        $targetWidth = (int) ($options['target_width'] ?? 0);
+        $targetHeight = (int) ($options['target_height'] ?? 0);
+        $shouldCropToFit = (bool) ($options['crop_to_fit'] ?? false);
+
         $mimeType = $file->getMimeType();
-        if ($mimeType === 'image/webp') {
+        if ($mimeType === 'image/webp' && $targetWidth <= 0 && $targetHeight <= 0) {
             $fileName = bin2hex(random_bytes(16)) . '.webp';
             if (! $file->move($imagePath, $fileName)) {
                 return ['success' => false, 'error' => 'Error al mover la imagen WebP.'];
@@ -255,13 +259,15 @@ class PostController extends Controller
             return ['success' => true, 'file_name' => $fileName];
         }
 
-        if (! in_array($mimeType, ['image/jpeg', 'image/png'], true)) {
+        if (! in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp'], true)) {
             return ['success' => false, 'error' => 'Formato de imagen no soportado.'];
         }
 
-        $canConvertToWebp = function_exists('imagewebp')
+        $canConvertToWebp = extension_loaded('gd')
+            && function_exists('imagewebp')
             && (($mimeType !== 'image/jpeg') || function_exists('imagecreatefromjpeg'))
-            && (($mimeType !== 'image/png') || function_exists('imagecreatefrompng'));
+            && (($mimeType !== 'image/png') || function_exists('imagecreatefrompng'))
+            && (($mimeType !== 'image/webp') || function_exists('imagecreatefromwebp'));
 
         if (! $canConvertToWebp) {
             return ['success' => false, 'error' => 'El servidor no puede convertir imagenes a WebP en este momento.'];
@@ -269,20 +275,52 @@ class PostController extends Controller
 
         $fileName = bin2hex(random_bytes(16)) . '.webp';
         $tempPath = $file->getRealPath();
-        $image = $mimeType === 'image/jpeg'
-            ? imagecreatefromjpeg($tempPath)
-            : imagecreatefrompng($tempPath);
+        $image = $this->createGdImageFromPath($tempPath, $mimeType);
 
         if (! $image) {
             return ['success' => false, 'error' => 'Error al procesar la imagen.'];
         }
 
-        if ($mimeType === 'image/png') {
-            if (function_exists('imagepalettetotruecolor') && ! imageistruecolor($image)) {
-                imagepalettetotruecolor($image);
+        if ($targetWidth > 0 && $targetHeight > 0) {
+            $sourceWidth = imagesx($image);
+            $sourceHeight = imagesy($image);
+            $sourceX = 0;
+            $sourceY = 0;
+            $sourceCropWidth = $sourceWidth;
+            $sourceCropHeight = $sourceHeight;
+
+            if ($shouldCropToFit) {
+                $sourceRatio = $sourceWidth / max(1, $sourceHeight);
+                $targetRatio = $targetWidth / max(1, $targetHeight);
+
+                if ($sourceRatio > $targetRatio) {
+                    $sourceCropWidth = (int) round($sourceHeight * $targetRatio);
+                    $sourceX = (int) floor(($sourceWidth - $sourceCropWidth) / 2);
+                } elseif ($sourceRatio < $targetRatio) {
+                    $sourceCropHeight = (int) round($sourceWidth / $targetRatio);
+                    $sourceY = (int) floor(($sourceHeight - $sourceCropHeight) / 2);
+                }
             }
-            imagealphablending($image, true);
-            imagesavealpha($image, true);
+
+            $resized = imagecreatetruecolor($targetWidth, $targetHeight);
+            imagealphablending($resized, true);
+            imagesavealpha($resized, true);
+
+            imagecopyresampled(
+                $resized,
+                $image,
+                0,
+                0,
+                $sourceX,
+                $sourceY,
+                $targetWidth,
+                $targetHeight,
+                $sourceCropWidth,
+                $sourceCropHeight
+            );
+
+            imagedestroy($image);
+            $image = $resized;
         }
 
         $webpPath = $imagePath . DIRECTORY_SEPARATOR . $fileName;
@@ -294,6 +332,26 @@ class PostController extends Controller
         }
 
         return ['success' => true, 'file_name' => $fileName];
+    }
+
+    private function createGdImageFromPath(string $path, string $mimeType): \GdImage|false
+    {
+        $image = match ($mimeType) {
+            'image/jpeg' => @imagecreatefromjpeg($path),
+            'image/png' => @imagecreatefrompng($path),
+            'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($path) : false,
+            default => false,
+        };
+
+        if ($image && ($mimeType === 'image/png' || $mimeType === 'image/webp')) {
+            if (function_exists('imagepalettetotruecolor') && ! imageistruecolor($image)) {
+                imagepalettetotruecolor($image);
+            }
+            imagealphablending($image, true);
+            imagesavealpha($image, true);
+        }
+
+        return $image;
     }
 
     private function validateUploadedVideo($video): ?string
@@ -355,6 +413,10 @@ class PostController extends Controller
         $user = Auth::user();
         if (! $user) {
             return redirect()->route('login');
+        }
+
+        if (! $user->canManageProperties()) {
+            return redirect()->to('/post/services');
         }
 
         $userLevelName = UserLevel::find($user->user_level_id)?->name ?? 'Usuario';
@@ -440,6 +502,12 @@ class PostController extends Controller
                 'mapsKey' => config('services.google.maps_key'),
                 'serviceType' => $serviceType,
             ]);
+        }
+
+        if (! $user->canManageProperties()) {
+            return redirect()
+                ->to('/post/services')
+                ->with('status', 'Tu cuenta no puede publicar propiedades.');
         }
 
         $category = $this->normalizeLegacyCatalog(Category::all());
@@ -541,6 +609,10 @@ class PostController extends Controller
     public function myPosts()
     {
         $user = Auth::user();
+        if ($user && ! $user->canManageProperties()) {
+            return redirect()->to('/post/services');
+        }
+
         $isAdmin = $user && (int) $user->user_level_id === 1;
         $userLevelName = $user ? (UserLevel::find($user->user_level_id)?->name ?? 'Usuario') : 'Usuario';
         $isCompanyUser = $user && (int) $user->user_level_id === User::LEVEL_AGENT;
@@ -669,6 +741,12 @@ class PostController extends Controller
             return redirect()->route('login');
         }
 
+        if (! $user->canManageProperties()) {
+            return redirect()
+                ->to('/post/services')
+                ->with('error', 'Tu cuenta no puede crear propiedades.');
+        }
+
         if ($addressValidation = $this->validateResolvedPropertyAddress($request)) {
             return $addressValidation;
         }
@@ -712,6 +790,12 @@ class PostController extends Controller
         $user = Auth::user();
         if (! $user) {
             return redirect()->route('login');
+        }
+
+        if (! $user->canManageProperties()) {
+            return redirect()
+                ->to('/post/services')
+                ->with('error', 'Tu cuenta no puede editar propiedades.');
         }
 
         $propertyFromAttributes = $request->attributes->get('property_model');
@@ -1138,6 +1222,12 @@ class PostController extends Controller
             return redirect()->route('login');
         }
 
+        if (! $user->canManageProperties()) {
+            return redirect()
+                ->to('/post/services')
+                ->with('status', 'Tu cuenta no puede editar propiedades.');
+        }
+
         $isAdmin = (int) $user->user_level_id === 1;
         $propertyQuery = Property::where('id', $id);
         if (! $isAdmin) {
@@ -1294,6 +1384,10 @@ class PostController extends Controller
             return response()->json(['status' => 401]);
         }
 
+        if (! $user->canManageProperties()) {
+            return response()->json(['status' => 403, 'message' => 'Tu cuenta no puede eliminar propiedades.'], 403);
+        }
+
         $property = Property::find($propertyId);
         if (! $property) {
             return response()->json(['status' => 404]);
@@ -1325,6 +1419,10 @@ class PostController extends Controller
 
         if (! $user) {
             return response()->json(['status' => 401]);
+        }
+
+        if (! $user->canManageProperties()) {
+            return response()->json(['status' => 403, 'message' => 'Tu cuenta no puede cambiar estado de propiedades.'], 403);
         }
 
         $property = Property::find($propertyId);
@@ -1648,6 +1746,7 @@ class PostController extends Controller
 
             $primaryService = $services->first();
             $heroImage = asset('img/image-icon-1280x960.png');
+            $landingImages = [$heroImage];
             $serviceDescription = '';
             $serviceAvailability = '';
             $servicePageUrl = '';
@@ -1656,8 +1755,10 @@ class PostController extends Controller
             $serviceAddressLabel = $providerProfile['address'] ?? '';
 
             if ($primaryService) {
+                $landingImages = [];
                 if (! empty($primaryService['image'])) {
                     $heroImage = asset('img/uploads/' . $primaryService['image']);
+                    $landingImages[] = $heroImage;
                 }
                 $serviceDescription = $primaryService['description'] ?? '';
                 $serviceAvailability = $primaryService['availability'] ?? '';
@@ -1669,6 +1770,24 @@ class PostController extends Controller
                 if (! empty($primaryService['video'])) {
                     $serviceVideoUrl = asset('video/uploads/' . $primaryService['video']);
                 }
+
+                $galleryImages = MoreImage::where('service_id', (int) ($primaryService['id'] ?? 0))
+                    ->orderBy('id')
+                    ->pluck('url')
+                    ->filter()
+                    ->map(fn ($url) => asset('img/uploads/' . ltrim((string) $url, '/')))
+                    ->values()
+                    ->all();
+
+                foreach ($galleryImages as $galleryImage) {
+                    if (! in_array($galleryImage, $landingImages, true)) {
+                        $landingImages[] = $galleryImage;
+                    }
+                }
+            }
+
+            if (empty($landingImages)) {
+                $landingImages = [$heroImage];
             }
 
             $mapQuery = trim((string) $serviceAddressLabel);
@@ -1684,6 +1803,7 @@ class PostController extends Controller
 
             $providerLanding = [
                 'hero_image' => $heroImage,
+                'images' => $landingImages,
                 'address' => $serviceAddressLabel,
                 'description' => $serviceDescription,
                 'availability' => $serviceAvailability,
@@ -1939,7 +2059,129 @@ class PostController extends Controller
 
     public function createService(Request $request)
     {
-        return redirect()->back();
+        $user = Auth::user();
+        if (! $user) {
+            return redirect()->route('login');
+        }
+
+        if (! $user->canManageServices()) {
+            return redirect()
+                ->to('/home')
+                ->with('error', 'Tu cuenta no puede crear servicios.');
+        }
+
+        $validated = $request->validate([
+            'availability' => 'required|string|max:100',
+            'description' => 'required|string',
+            'page_url' => 'nullable|string|max:255',
+            'service_type' => 'required|array|min:1',
+            'service_type.*' => 'integer',
+            'cover_image' => 'required|file|mimes:jpg,jpeg,png,webp',
+            'more_images' => 'nullable|array',
+            'more_images.*' => 'file|mimes:jpg,jpeg,png,webp',
+            'video' => 'nullable|file|mimes:mp4,mov,avi,mpeg,mpg',
+        ]);
+
+        $imagePath = public_path('img/uploads');
+        $videoPath = public_path('video/uploads');
+        if (! is_dir($imagePath)) {
+            @mkdir($imagePath, 0755, true);
+        }
+        if (! is_dir($videoPath)) {
+            @mkdir($videoPath, 0755, true);
+        }
+
+        $coverImage = $request->file('cover_image');
+        $storedCover = $this->storeUploadedImage($coverImage, $imagePath);
+        if (! $storedCover['success']) {
+            return redirect()->back()->with('error', $storedCover['error'])->withInput();
+        }
+
+        $service = Service::create([
+            'title' => trim((string) $request->input('title', '')) ?: null,
+            'description' => (string) $validated['description'],
+            'availability' => (string) $validated['availability'],
+            'document_number' => trim((string) ($user->document_number ?? '')),
+            'page_url' => trim((string) $request->input('page_url', '')) ?: null,
+            'user_id' => (int) $user->id,
+        ]);
+
+        $providerAddress = UserAddress::where('user_id', (int) $user->id)->first();
+        $resolvedAddress = trim((string) ($providerAddress?->address ?? $user->address ?? ''));
+        if ($resolvedAddress === '') {
+            return redirect()
+                ->back()
+                ->with('error', 'Debes completar la direccion en Mi perfil antes de publicar un servicio.')
+                ->withInput();
+        }
+
+        $resolvedLatitude = $providerAddress?->latitude;
+        $resolvedLongitude = $providerAddress?->longitude;
+        if ($resolvedLatitude === null || $resolvedLongitude === null || $resolvedLatitude === '' || $resolvedLongitude === '') {
+            return redirect()
+                ->back()
+                ->with('error', 'Debes validar tu direccion en Mi perfil antes de publicar un servicio.')
+                ->withInput();
+        }
+
+        CoverImage::create([
+            'url' => $storedCover['file_name'],
+            'service_id' => (int) $service->id,
+        ]);
+
+        foreach ((array) $validated['service_type'] as $serviceTypeId) {
+            ServiceTypeLink::create([
+                'service_id' => (int) $service->id,
+                'service_type_id' => (int) $serviceTypeId,
+            ]);
+        }
+
+        ServiceAddress::create([
+            'service_id' => (int) $service->id,
+            'address' => $resolvedAddress,
+            'city' => (string) ($providerAddress?->city ?? ''),
+            'province' => (string) ($providerAddress?->province ?? ''),
+            'postal_code' => (string) ($providerAddress?->postal_code ?? ''),
+            'country' => (string) ($providerAddress?->country ?? ''),
+            'latitude' => (string) $resolvedLatitude,
+            'longitude' => (string) $resolvedLongitude,
+        ]);
+
+        $moreImages = $request->file('more_images', []);
+        if (! empty($moreImages)) {
+            foreach ((array) $moreImages as $file) {
+                if (! $file || ! $file->isValid()) {
+                    continue;
+                }
+
+                $storedImage = $this->storeUploadedImage($file, $imagePath);
+                if (! $storedImage['success']) {
+                    return redirect()->back()->with('error', $storedImage['error'])->withInput();
+                }
+
+                MoreImage::create([
+                    'url' => $storedImage['file_name'],
+                    'service_id' => (int) $service->id,
+                ]);
+            }
+        }
+
+        $video = $request->file('video');
+        if ($video) {
+            $storedVideo = $this->storeUploadedVideo($video, $videoPath);
+            if (! $storedVideo['success']) {
+                return redirect()->back()->with('error', $storedVideo['error'])->withInput();
+            }
+
+            Video::create([
+                'url' => $storedVideo['file_name'],
+                'service_id' => (int) $service->id,
+            ]);
+        }
+
+        return redirect()
+            ->to('/post/services')
+            ->with('status', 'Servicio creado correctamente.');
     }
 
     private function validateResolvedPropertyAddress(Request $request): ?RedirectResponse

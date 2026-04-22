@@ -55,11 +55,11 @@
                         <input type="email" name="email" value="{{ old('email', $user->email) }}" required>
                     </label>
                     <label class="profile-field">
-                        <span>Telefono</span>
+                        <span>Tel&eacute;fono</span>
                         <input type="text" name="phone" value="{{ old('phone', $user->phone) }}">
                     </label>
                     <label class="profile-field">
-                        <span>Telefono fijo</span>
+                        <span>Tel&eacute;fono fijo</span>
                         <input type="text" name="landline_phone" value="{{ old('landline_phone', $user->landline_phone) }}">
                     </label>
                     <label class="profile-field">
@@ -73,32 +73,37 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <input type="text" name="document_number" value="{{ old('document_number', $user->document_number) }}" placeholder="Numero de documento">
+                            <input type="text" name="document_number" value="{{ old('document_number', $user->document_number) }}" placeholder="N&uacute;mero de documento">
                         </div>
                     </label>
                     <label class="profile-field profile-field--full">
-                        <span>Direccion *</span>
+                        <span>Direcci&oacute;n *</span>
                         <input id="address-input" type="text" name="address" value="{{ $addressValue }}" placeholder="Escribe y selecciona una sugerencia" autocomplete="off" required>
-                        <small>Selecciona una direccion sugerida por Google para validar la ubicacion.</small>
+                        <small>Selecciona una direcci&oacute;n sugerida por Google para validar la ubicaci&oacute;n.</small>
                         <div class="address-status {{ $addressValidated ? 'is-valid' : '' }}" id="address-status">
-                            {{ $addressValidated ? 'Direccion validada' : 'Direccion pendiente' }}
+                            {!! $addressValidated ? 'Direcci&oacute;n validada' : 'Direcci&oacute;n pendiente' !!}
                         </div>
                     </label>
+                </div>
+
+                <div class="profile-grid profile-grid--credentials">
                     <label class="profile-field">
-                        <span>Nombre de usuario</span>
-                        <input type="text" name="user_name" value="{{ old('user_name', $user->user_name) }}">
+                        <span>Raz&oacute;n social / Nombre de usuario</span>
+                        <input type="text" value="{{ $user->user_name }}" readonly disabled>
                     </label>
                     <label class="profile-field">
                         <span>Nueva contrase&ntilde;a</span>
-                        <input type="password" name="password" autocomplete="new-password" placeholder="Dejar vacio para mantener">
+                        <input type="password" name="password" autocomplete="new-password" placeholder="Dejar vac&iacute;o para mantener">
                     </label>
+                    <p class="profile-grid-note">Este valor es &uacute;nico y no se puede modificar.</p>
                 </div>
 
                 <div class="profile-grid">
                     <label class="profile-field profile-field--full">
                         <span>Logo o foto (opcional)</span>
                         <input id="photo-input" type="file" name="photo" accept="image/*">
-                        <small>Formatos JPG, PNG o WEBP. Maximo 2MB.</small>
+                        <small>Se recorta a 350x350 y se guarda en formato WEBP. M&aacute;ximo 2MB.</small>
+                        <div class="upload-status" id="upload-status" aria-live="polite"></div>
                     </label>
                 </div>
 
@@ -118,7 +123,7 @@
                 <input type="hidden" name="address_lng" id="address-lng" value="{{ old('address_lng', $address?->longitude ?? '') }}">
 
                 <div class="profile-actions">
-                    <button type="submit">Guardar cambios</button>
+                    <button type="submit" id="profile-submit-btn">Guardar cambios</button>
                 </div>
             </form>
         </div>
@@ -134,10 +139,17 @@
                 </div>
             </div>
             <div class="profile-note">
-                <h4>Direccion validada</h4>
+                <h4>Direcci&oacute;n validada</h4>
                 <p>Usa el autocompletado de Google para mejorar la visibilidad en el mapa.</p>
             </div>
         </aside>
+    </div>
+
+    <div class="profile-loader" id="profile-loader" aria-hidden="true" hidden>
+        <div class="profile-loader__card">
+            <div class="profile-loader__spinner"></div>
+            <p id="profile-loader-text">Guardando perfil...</p>
+        </div>
     </div>
 @endsection
 
@@ -151,6 +163,9 @@
             const placeIdInput = document.getElementById('address-place-id');
             const statusBadge = document.getElementById('address-status');
             const form = document.getElementById('profile-form');
+            const submitBtn = document.getElementById('profile-submit-btn');
+            const loader = document.getElementById('profile-loader');
+            const loaderText = document.getElementById('profile-loader-text');
             const initialAddress = addressInput ? addressInput.value.trim() : '';
 
             const updateStatus = (isValid, message) => {
@@ -185,7 +200,7 @@
             if (addressInput) {
                 addressInput.addEventListener('input', () => {
                     clearAddressFields();
-                    updateStatus(false, 'Direccion pendiente');
+                    updateStatus(false, 'Direcci\u00f3n pendiente');
                 });
             }
 
@@ -198,7 +213,7 @@
                 autocomplete.addListener('place_changed', () => {
                     const place = autocomplete.getPlace();
                     if (!place || !place.geometry) {
-                        updateStatus(false, 'Selecciona una direccion valida');
+                        updateStatus(false, 'Selecciona una direcci\u00f3n v\u00e1lida');
                         return;
                     }
 
@@ -222,7 +237,7 @@
                     setValue('address-lat', place.geometry.location.lat());
                     setValue('address-lng', place.geometry.location.lng());
 
-                    updateStatus(true, 'Direccion validada');
+                    updateStatus(true, 'Direcci\u00f3n validada');
                 });
             }
 
@@ -231,20 +246,50 @@
                     const currentAddress = addressInput ? addressInput.value.trim() : '';
                     if (currentAddress && currentAddress !== initialAddress && !placeIdInput.value) {
                         event.preventDefault();
-                        alert('Selecciona una direccion sugerida por Google.');
+                        alert('Selecciona una direcci\u00f3n sugerida por Google.');
                     }
                 });
             }
 
             const photoInput = document.getElementById('photo-input');
             const previewImg = document.querySelector('#photo-preview img');
+            const uploadStatus = document.getElementById('upload-status');
             if (photoInput && previewImg) {
                 photoInput.addEventListener('change', () => {
                     const file = photoInput.files && photoInput.files[0];
                     if (!file) {
+                        if (uploadStatus) {
+                            uploadStatus.textContent = '';
+                            uploadStatus.classList.remove('is-ready');
+                        }
                         return;
                     }
                     previewImg.src = URL.createObjectURL(file);
+                    if (uploadStatus) {
+                        uploadStatus.textContent = 'Imagen lista para subir. Se procesar\u00e1 al guardar.';
+                        uploadStatus.classList.add('is-ready');
+                    }
+                });
+            }
+
+            if (form) {
+                form.addEventListener('submit', (event) => {
+                    if (event.defaultPrevented) {
+                        return;
+                    }
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = 'Guardando...';
+                    }
+                    if (loader) {
+                        const hasPhoto = photoInput && photoInput.files && photoInput.files.length > 0;
+                        loaderText.textContent = hasPhoto
+                            ? 'Procesando imagen y guardando perfil...'
+                            : 'Guardando perfil...';
+                        loader.hidden = false;
+                        loader.classList.add('is-visible');
+                        loader.setAttribute('aria-hidden', 'false');
+                    }
                 });
             }
         })();

@@ -119,6 +119,16 @@
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6.3 6.3a7 7 0 1 0 11.4 0"/>
                         </svg>
                     </button>
+                    @if (($isAdmin ?? false) && (int) ($userItem['user_level_id'] ?? 0) === \App\Models\User::LEVEL_SERVICE_PROVIDER)
+                        <button type="button" class="icon-action danger" data-delete-user="{{ $userItem['id'] }}" title="Eliminar usuario" aria-label="Eliminar usuario">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 6h18"/>
+                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/>
+                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 11v6M14 11v6"/>
+                            </svg>
+                        </button>
+                    @endif
                 </div>
             </article>
         @empty
@@ -146,6 +156,7 @@
     <script>
         (() => {
             const buttons = document.querySelectorAll('[data-toggle-user]');
+            const deleteButtons = document.querySelectorAll('[data-delete-user]');
             buttons.forEach((button) => {
                 button.addEventListener('click', async () => {
                     const userId = button.dataset.toggleUser;
@@ -179,6 +190,34 @@
                         }
                     } catch (error) {
                         alert('Error al actualizar el usuario.');
+                    } finally {
+                        button.disabled = false;
+                    }
+                });
+            });
+
+            deleteButtons.forEach((button) => {
+                button.addEventListener('click', async () => {
+                    const userId = button.dataset.deleteUser;
+                    if (!confirm('Se eliminara este proveedor y todas sus publicaciones. Deseas continuar?')) {
+                        return;
+                    }
+
+                    button.disabled = true;
+                    try {
+                        const response = await fetch(`/user/delete?id=${userId}`);
+                        const data = await response.json();
+                        if (data.status !== 200) {
+                            alert(data.message || 'No se pudo eliminar el proveedor.');
+                            return;
+                        }
+
+                        const card = document.querySelector(`[data-card-id="user-${userId}"]`);
+                        if (card) {
+                            card.remove();
+                        }
+                    } catch (error) {
+                        alert('Error al eliminar el proveedor.');
                     } finally {
                         button.disabled = false;
                     }

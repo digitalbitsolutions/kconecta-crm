@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -110,6 +111,7 @@ class UserController extends Controller
             return [
                 'id' => $row->id,
                 'name' => $name,
+                'user_level_id' => (int) $row->user_level_id,
                 'user_name' => $row->user_name ?? '',
                 'email' => $row->email ?? '',
                 'phone' => $row->phone ?? '',
@@ -259,7 +261,6 @@ class UserController extends Controller
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
-            'user_name' => ['nullable', 'string', 'max:255', Rule::unique('user', 'user_name')->ignore($user->id)],
             'email' => ['required', 'email', 'max:255', Rule::unique('user', 'email')->ignore($user->id)],
             'phone' => ['nullable', 'string', 'max:30'],
             'landline_phone' => ['nullable', 'string', 'max:30'],
@@ -294,10 +295,6 @@ class UserController extends Controller
 
         $user->first_name = $validated['first_name'];
         $user->last_name = $validated['last_name'] ?? '';
-        $userName = trim((string) ($validated['user_name'] ?? ''));
-        if ($userName !== '') {
-            $user->user_name = $userName;
-        }
         $user->email = $validated['email'];
         $user->phone = $validated['phone'] ?? '';
         $user->landline_phone = $validated['landline_phone'] ?? '';
@@ -312,12 +309,12 @@ class UserController extends Controller
             $user->password = Hash::make($validated['password']);
         }
 
+        $photoUpdated = false;
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
-            $extension = $file->getClientOriginalExtension() ?: 'jpg';
-            $filename = 'user_' . $user->id . '_' . time() . '.' . $extension;
-            $file->move(public_path('img/photo_profile'), $filename);
+            $filename = $this->processProfilePhoto($file, (int) $user->id);
             $user->photo = $filename;
+            $photoUpdated = true;
         }
 
         $user->save();
@@ -344,9 +341,14 @@ class UserController extends Controller
             $addressRecord->save();
         }
 
+        $statusMessage = 'Perfil actualizado correctamente.';
+        if ($photoUpdated) {
+            $statusMessage .= ' Foto actualizada en formato WebP (350x350).';
+        }
+
         return redirect()
             ->back()
-            ->with('status', 'Perfil actualizado correctamente.');
+            ->with('status', $statusMessage);
     }
 
     public function toggleStatus(Request $request)
@@ -428,5 +430,72 @@ class UserController extends Controller
         $user->delete();
 
         return response()->json(['status' => 200]);
+    }
+
+    private function processProfilePhoto(\Illuminate\Http\UploadedFile $file, int $userId): string
+    {
+        $source = $this->createImageResourceFromUpload($file);
+        if (! $source) {
+            abort(422, 'No se pudo procesar la imagen subida.');
+        }
+
+        $sourceWidth = imagesx($source);
+        $sourceHeight = imagesy($source);
+        $squareSize = min($sourceWidth, $sourceHeight);
+        $sourceX = (int) floor(($sourceWidth - $squareSize) / 2);
+        $sourceY = (int) floor(($sourceHeight - $squareSize) / 2);
+
+        $canvas = imagecreatetruecolor(350, 350);
+        imagealphablending($canvas, true);
+        imagesavealpha($canvas, true);
+
+        imagecopyresampled(
+            $canvas,
+            $source,
+            0,
+            0,
+            $sourceX,
+            $sourceY,
+            350,
+            350,
+            $squareSize,
+            $squareSize
+        );
+
+        $directory = public_path('img/photo_profile');
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $filename = 'user_' . $userId . '_' . Str::random(12) . '.webp';
+        $destination = $directory . DIRECTORY_SEPARATOR . $filename;
+        $saved = imagewebp($canvas, $destination, 82);
+
+        imagedestroy($canvas);
+        imagedestroy($source);
+
+        if (! $saved) {
+            abort(422, 'No se pudo guardar la imagen en formato WebP.');
+        }
+
+        return $filename;
+    }
+
+    private function createImageResourceFromUpload(\Illuminate\Http\UploadedFile $file): \GdImage|false
+    {
+        $mime = (string) $file->getMimeType();
+        $path = $file->getRealPath();
+
+        if (! $path) {
+            return false;
+        }
+
+        return match ($mime) {
+            'image/jpeg', 'image/jpg' => @imagecreatefromjpeg($path),
+            'image/png' => @imagecreatefrompng($path),
+            'image/gif' => @imagecreatefromgif($path),
+            'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($path) : false,
+            default => false,
+        };
     }
 }

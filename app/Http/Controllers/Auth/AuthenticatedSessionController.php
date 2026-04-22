@@ -36,11 +36,12 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        $request->session()->forget('url.intended');
 
         $user = $request->user();
         $redirectPath = $user ? $this->redirectPathForUser($user) : route('dashboard', absolute: false);
 
-        return redirect()->intended($redirectPath);
+        return redirect()->to($redirectPath);
     }
 
     /**
@@ -69,6 +70,10 @@ class AuthenticatedSessionController extends Controller
 
     private function redirectPathForUser(User $user): string
     {
+        if ($this->requiresEmailVerification($user) && ! $user->hasVerifiedEmail()) {
+            return route('verification.notice', absolute: false);
+        }
+
         if ($user->isAdmin()) {
             return route('dashboard', absolute: false);
         }
@@ -82,5 +87,13 @@ class AuthenticatedSessionController extends Controller
         }
 
         return route('dashboard', absolute: false);
+    }
+
+    private function requiresEmailVerification(User $user): bool
+    {
+        return in_array((int) $user->user_level_id, [
+            User::LEVEL_SERVICE_PROVIDER,
+            User::LEVEL_AGENT,
+        ], true);
     }
 }

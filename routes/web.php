@@ -23,7 +23,7 @@ Route::get('/login/close_session', [PageController::class, 'logout']);
 Route::get('/blogs', [BlogController::class, 'showAll']);
 Route::get('/blogs/{slug}', [BlogController::class, 'showArticle']);
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'provider_or_agent_verified'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('dashboard');
 
     Route::get('/post/index', [PostController::class, 'index']);

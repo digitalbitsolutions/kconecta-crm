@@ -629,7 +629,7 @@ class PageController extends Controller
         $item['cover_image'] = $coverImage ? $coverImage->toArray() : [];
         $item['more_images'] = MoreImage::where('service_id', $service->id)->get()->toArray();
 
-        $item['videos'] = Video::where('property_id', $service->id)->get()->toArray();
+        $item['videos'] = Video::where('service_id', $service->id)->get()->toArray();
         $item['address'] = UserAddress::where('user_id', $service->user_id)->get()->toArray();
         $item['user'] = User::find($service->user_id)?->toArray() ?? [];
 

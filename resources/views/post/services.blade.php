@@ -37,19 +37,40 @@
             $mapEmbed = $landing['map_embed'] ?? '';
             $whatsappLink = $landing['whatsapp_link'] ?? '';
             $videoUrl = $landing['video_url'] ?? '';
+            $landingImages = $landing['images'] ?? [$heroImage];
         @endphp
         <section class="service-landing">
             <div class="service-landing-grid">
                 <div class="service-main">
                     <div class="card service-media">
-                        <div class="service-media-frame">
-                            <img src="{{ $heroImage }}" alt="Servicio destacado" loading="lazy">
+                        <div class="service-media-frame" data-service-slider>
+                            @foreach ($landingImages as $index => $imageUrl)
+                                <img
+                                    src="{{ $imageUrl }}"
+                                    alt="Servicio destacado {{ $index + 1 }}"
+                                    loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                                    class="service-slide {{ $index === 0 ? 'is-active' : '' }}"
+                                    style="{{ $index === 0 ? 'display:block;' : 'display:none;' }}"
+                                    data-service-slide
+                                >
+                            @endforeach
+                            @if (count($landingImages) > 1)
+                                <button type="button" class="service-media-control is-prev" data-service-prev aria-label="Imagen anterior">&#10094;</button>
+                                <button type="button" class="service-media-control is-next" data-service-next aria-label="Imagen siguiente">&#10095;</button>
+                            @endif
                         </div>
-                        <div class="service-media-dots">
-                            <span class="service-media-dot is-active"></span>
-                            <span class="service-media-dot"></span>
-                            <span class="service-media-dot"></span>
-                        </div>
+                        @if (count($landingImages) > 1)
+                            <div class="service-media-dots" data-service-dots>
+                                @foreach ($landingImages as $index => $imageUrl)
+                                    <button
+                                        type="button"
+                                        class="service-media-dot {{ $index === 0 ? 'is-active' : '' }}"
+                                        data-service-dot="{{ $index }}"
+                                        aria-label="Ir a imagen {{ $index + 1 }}"
+                                    ></button>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
 
                     <div class="service-location">
@@ -58,16 +79,21 @@
                                 <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"/>
                                 <circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/>
                             </svg>
-                            <span>{{ $landingAddress !== '' ? $landingAddress : 'Direcci&oacute;n por confirmar' }}</span>
+                            <span>{{ $landingAddress !== '' ? $landingAddress : 'Dirección por confirmar' }}</span>
                         </div>
-                        @if ($mapLink !== '')
-                            <a class="service-map-link" href="{{ $mapLink }}" target="_blank" rel="noopener">Ver en el mapa</a>
-                        @endif
+                        <div class="service-location-actions">
+                            @if ($mapLink !== '')
+                                <a class="service-map-link" href="{{ $mapLink }}" target="_blank" rel="noopener">Ver en el mapa</a>
+                            @endif
+                            @if ($videoUrl !== '')
+                                <a class="service-video-link" href="{{ $videoUrl }}" target="_blank" rel="noopener">Ver vídeo</a>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="card service-description">
-                        <h3>Descripci&oacute;n</h3>
-                        <p>{{ $landingDescription !== '' ? $landingDescription : 'Sin descripci&oacute;n disponible.' }}</p>
+                        <h3>Descripción</h3>
+                        <p>{{ $landingDescription !== '' ? $landingDescription : 'Sin descripción disponible.' }}</p>
                         @if ($landingPageUrl !== '')
                             <a class="service-website" href="{{ $landingPageUrl }}" target="_blank" rel="noopener">Visita nuestra pagina web</a>
                         @endif
@@ -86,7 +112,7 @@
                                     <div class="service-item-header">
                                         <div>
                                             <h4>{{ $service['title'] }}</h4>
-                                            <p>{{ $service['description'] ?: 'Sin descripcion.' }}</p>
+                                            <p>{{ $service['description'] ?: 'Sin descripción.' }}</p>
                                         </div>
                                         <div class="entity-actions icon-actions">
                                             <a class="icon-action accent" href="{{ url('/post/services/update_form/' . $service['id']) }}" title="Editar" aria-label="Editar">
@@ -103,7 +129,7 @@
                                                     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 11v6M14 11v6"/>
                                                 </svg>
                                             </button>
-                                            <a class="icon-action neutral" href="{{ url('/result_service/' . $service['id']) }}" title="Ver servicio" aria-label="Ver servicio">
+                                            <a class="icon-action neutral" href="{{ url('/result_service/' . $service['id']) }}" title="Ver servicio" aria-label="Ver servicio" target="_blank" rel="noopener">
                                                 <svg viewBox="0 0 24 24" aria-hidden="true">
                                                     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14 3h7v7"/>
                                                     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 14L21 3"/>
@@ -120,7 +146,7 @@
                                                     <span>{{ $type }}</span>
                                                 @endforeach
                                             @else
-                                                <span>Sin categoria</span>
+                                                <span>Sin categoría</span>
                                             @endif
                                         </div>
                                         <div class="service-item-details">
@@ -133,7 +159,7 @@
                                 </article>
                             @empty
                                 <div class="empty-state">
-                                    <h3>Sin servicios registrados</h3>
+                                <h3>Sin servicios registrados</h3>
                                     <p>Agrega tu primer servicio para mostrarlo en tu landing.</p>
                                     <a class="primary" href="{{ url('/post/create_form/service') }}">
                                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -156,7 +182,7 @@
                                 <strong class="service-contact-value">{{ $providerProfile['name'] ?? 'Proveedor' }}</strong>
                             </div>
                             <div class="service-contact-item">
-                                <span class="service-contact-label">Ultima actualizacion</span>
+                            <span class="service-contact-label">Última actualización</span>
                                 <strong class="service-contact-value">{{ $landingUpdated !== '' ? $landingUpdated : 'Sin datos' }}</strong>
                             </div>
                             <div class="service-contact-item">
@@ -165,7 +191,7 @@
                             </div>
                             <div class="service-contact-item">
                                 <span class="service-contact-label">Contacto</span>
-                                <strong class="service-contact-value">{{ $providerProfile['phone'] ?? 'Sin telefono' }}</strong>
+                                <strong class="service-contact-value">{{ $providerProfile['phone'] ?? 'Sin teléfono' }}</strong>
                             </div>
                         </div>
                         @if ($whatsappLink !== '')
@@ -189,12 +215,12 @@
                                 @endforeach
                             </ul>
                         @else
-                            <p class="service-offered-empty">Sin categorias registradas.</p>
+                            <p class="service-offered-empty">Sin categorías registradas.</p>
                         @endif
                     </div>
 
                     <div class="card service-map-card">
-                        <h3>Ubicaci&oacute;n</h3>
+                        <h3>Ubicación</h3>
                         <div class="service-map-frame">
                             @if ($mapEmbed !== '')
                                 <iframe src="{{ $mapEmbed }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -205,9 +231,9 @@
                     </div>
                 </aside>
 
-                <div class="card service-video-wide">
+                <div class="card service-video-wide" id="service-video-section">
                     <div class="service-video-header">
-                        <h3>Video de presentaci&oacute;n</h3>
+                        <h3>Vídeo de presentación</h3>
                     </div>
                     <div class="service-video-frame">
                         @if ($videoUrl !== '')
@@ -218,7 +244,7 @@
                                     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M4 4h16v16H4z"/>
                                     <path fill="currentColor" d="M10 8.5l6 3.5-6 3.5V8.5z"/>
                                 </svg>
-                                <p>A&uacute;n no hay video disponible.</p>
+                                <p>Aún no hay vídeo disponible.</p>
                             </div>
                         @endif
                     </div>
@@ -237,7 +263,7 @@
         <form class="filter-bar" method="GET" action="{{ url('/post/services') }}">
             <label class="filter-group">
                 <span>Buscar</span>
-                <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Titulo o descripcion">
+                <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Título o descripción">
             </label>
             <label class="filter-group">
                 <span>Tipo de servicio</span>
@@ -281,11 +307,11 @@
                                 <span>{{ $type }}</span>
                             @endforeach
                         @else
-                            <span>Sin categoria</span>
+                            <span>Sin categoría</span>
                         @endif
                     </div>
                     <h3>{{ $service['title'] }}</h3>
-                    <p class="entity-description">{{ $service['description'] ?: 'Sin descripcion.' }}</p>
+                    <p class="entity-description">{{ $service['description'] ?: 'Sin descripción.' }}</p>
                     <div class="entity-stats">
                         <span>{{ $service['availability'] ? 'Disponibilidad: ' . $service['availability'] : 'Disponibilidad por confirmar' }}</span>
                         @if ($service['phone'])
@@ -319,7 +345,7 @@
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 11v6M14 11v6"/>
                         </svg>
                     </button>
-                    <a class="icon-action neutral" href="{{ url('/result_service/' . $service['id']) }}" title="Ver servicio" aria-label="Ver servicio">
+                    <a class="icon-action neutral" href="{{ url('/result_service/' . $service['id']) }}" title="Ver servicio" aria-label="Ver servicio" target="_blank" rel="noopener">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14 3h7v7"/>
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 14L21 3"/>
@@ -331,7 +357,7 @@
             </article>
         @empty
             <div class="empty-state">
-                <h3>Sin servicios a&uacute;n</h3>
+                <h3>Sin servicios aún</h3>
                 <p>Agrega tu primer servicio desde el panel.</p>
                 <a class="primary" href="{{ url('/post/create_form/service') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -349,7 +375,7 @@
             <a class="pager-link {{ $services->onFirstPage() ? 'is-disabled' : '' }}" href="{{ $services->previousPageUrl() ?? '#' }}" aria-disabled="{{ $services->onFirstPage() ? 'true' : 'false' }}">
                 Anterior
             </a>
-            <span class="pager-meta">Pagina {{ $services->currentPage() }} de {{ $services->lastPage() }}</span>
+            <span class="pager-meta">Página {{ $services->currentPage() }} de {{ $services->lastPage() }}</span>
             <a class="pager-link {{ $services->currentPage() === $services->lastPage() ? 'is-disabled' : '' }}" href="{{ $services->nextPageUrl() ?? '#' }}" aria-disabled="{{ $services->currentPage() === $services->lastPage() ? 'true' : 'false' }}">
                 Siguiente
             </a>
@@ -360,6 +386,48 @@
 @section('scripts')
     <script>
         (() => {
+            const sliderRoot = document.querySelector('[data-service-slider]');
+            if (sliderRoot) {
+                const slides = Array.from(sliderRoot.querySelectorAll('[data-service-slide]'));
+                const dotsContainer = document.querySelector('[data-service-dots]');
+                const dots = dotsContainer ? Array.from(dotsContainer.querySelectorAll('[data-service-dot]')) : [];
+                const prevBtn = sliderRoot.querySelector('[data-service-prev]');
+                const nextBtn = sliderRoot.querySelector('[data-service-next]');
+                let current = 0;
+
+                const renderSlide = (index) => {
+                    current = index;
+                    slides.forEach((slide, idx) => {
+                        slide.classList.toggle('is-active', idx === current);
+                        slide.style.display = idx === current ? 'block' : 'none';
+                    });
+                    dots.forEach((dot, idx) => {
+                        dot.classList.toggle('is-active', idx === current);
+                    });
+                };
+
+                if (slides.length > 1) {
+                    prevBtn?.addEventListener('click', () => {
+                        const nextIndex = current === 0 ? slides.length - 1 : current - 1;
+                        renderSlide(nextIndex);
+                    });
+
+                    nextBtn?.addEventListener('click', () => {
+                        const nextIndex = current === slides.length - 1 ? 0 : current + 1;
+                        renderSlide(nextIndex);
+                    });
+
+                    dots.forEach((dot) => {
+                        dot.addEventListener('click', () => {
+                            const index = Number(dot.dataset.serviceDot);
+                            if (!Number.isNaN(index)) {
+                                renderSlide(index);
+                            }
+                        });
+                    });
+                }
+            }
+
             const deleteButtons = document.querySelectorAll('[data-delete-service]');
 
             deleteButtons.forEach((button) => {
@@ -392,5 +460,3 @@
         })();
     </script>
 @endsection
-
-

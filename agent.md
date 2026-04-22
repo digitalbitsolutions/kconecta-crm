@@ -211,6 +211,22 @@ Operate and evolve `kconecta-crm` with focus on:
 - `Superficie edificable` (`plot_meters`)
 - `Superficie minima vende/alquila` (`useful_meters`)
 - local validation reported successful in create and edit after fixing a Blade variable scope error in `form_5_update`
+- Provider/services module (round `2026-04-22`):
+- provider registration and profile flow aligned to business rules:
+- allowed user types for signup constrained to `Proveedor de servicios` and `Agente inmobiliario`
+- CIF/DNI/NIE validation hardened in register flow
+- `username` aligned with `Razon social` and locked in profile update
+- provider profile photo upload now processed server-side to `350x350` WebP
+- services create form for providers simplified:
+- removed duplicated user-data block
+- service address now resolved from provider profile (`user_address`) instead of form input
+- provider landing (`/post/services`) improved:
+- gallery slider supports multiple images with prev/next controls and dots
+- first render stabilized to avoid post-login visual glitch before full style hydration
+- service detail public page fix:
+- `result_service` video lookup corrected from `property_id` to `service_id`
+- map markers branding update:
+- result maps now use `kconecta` icon on both Google Maps and Leaflet in property/service result pages
 
 ## Known Risks
 - Existing fallback login logic still accepts plaintext and rehashes on login.
@@ -226,3 +242,4 @@ Operate and evolve `kconecta-crm` with focus on:
 - Future Dokploy service changes must preserve the configured media volume mounts or the same class of incident can return.
 - Legacy dumps may override expected Laravel schema if imported without review.
 - Production data can drift from local if sync is repeated without controls.
+- Some backoffice/service views still show legacy mojibake text (`Ã...`) and require final UTF-8 cleanup pass.
