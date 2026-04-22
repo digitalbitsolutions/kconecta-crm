@@ -83,6 +83,7 @@ Se agrego una migracion para asegurar compatibilidad de hashes de password:
 - Persistencia de media en produccion corregida en Dokploy con volumenes para:
 - `/var/www/html/public/img/uploads`
 - `/var/www/html/public/video/uploads`
+- `/var/www/html/public/img/photo_profile`
 - La restauracion de media desde backup fue validada.
 - Un redeploy posterior mantuvo las imagenes existentes.
 - Una subida nueva posterior al fix tambien persistio tras redeploy.
@@ -184,6 +185,7 @@ Notas:
 - Las rutas de media que deben mantenerse persistentes en produccion son:
 - `/var/www/html/public/img/uploads`
 - `/var/www/html/public/video/uploads`
+- `/var/www/html/public/img/photo_profile`
 
 ## Version Tags
 - Usar tags anotados sobre commits importantes ya listos en `main`.

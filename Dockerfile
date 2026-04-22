@@ -46,9 +46,9 @@ COPY . .
 COPY --from=node-build /app/public/build /var/www/html/public/build
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
-RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs public/img/uploads public/video/uploads \
-    && chown -R www-data:www-data storage bootstrap/cache public/img/uploads public/video/uploads \
-    && chmod -R ug+rwX storage bootstrap/cache public/img/uploads public/video/uploads \
+RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs public/img/uploads public/video/uploads public/img/photo_profile \
+    && chown -R www-data:www-data storage bootstrap/cache public/img/uploads public/video/uploads public/img/photo_profile \
+    && chmod -R ug+rwX storage bootstrap/cache public/img/uploads public/video/uploads public/img/photo_profile \
     && chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
