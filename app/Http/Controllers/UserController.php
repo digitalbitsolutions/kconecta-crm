@@ -173,7 +173,7 @@ class UserController extends Controller
             ? 0
             : ServiceTypeLink::whereIn('service_id', $serviceIds)
                 ->distinct()
-                ->count('id_type');
+                ->count('service_type_id');
 
         return view('users.view', [
             'user' => $user,
