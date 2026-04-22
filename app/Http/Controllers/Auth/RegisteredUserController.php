@@ -104,7 +104,7 @@ class RegisteredUserController extends Controller
             if (! $this->isValidSpanishDocument($documentType, $documentNumber)) {
                 $validator->errors()->add(
                     'document_number',
-                    'El n\u00famero de documento no es v\u00e1lido para el tipo seleccionado.'
+                    'El número de documento no es válido para el tipo seleccionado.'
                 );
             }
 
@@ -120,15 +120,15 @@ class RegisteredUserController extends Controller
                     'label' => 'Documento',
                     'value' => $documentNumber,
                 ];
-                $validator->errors()->add('document_number', 'Ya existe un registro con este n\u00famero de documento.');
+                $validator->errors()->add('document_number', 'Ya existe un registro con este número de documento.');
             }
 
             if ($companyName !== '' && User::whereRaw('LOWER(TRIM(user_name)) = ?', [mb_strtolower($companyName)])->exists()) {
                 $duplicates['company_name'] = [
-                    'label' => 'Raz\u00f3n social',
+                    'label' => 'Razón social',
                     'value' => $companyName,
                 ];
-                $validator->errors()->add('company_name', 'Ya existe un registro con esta raz\u00f3n social.');
+                $validator->errors()->add('company_name', 'Ya existe un registro con esta razón social.');
             }
 
             if ($email !== '' && User::whereRaw('LOWER(email) = ?', [$email])->exists()) {
@@ -149,10 +149,10 @@ class RegisteredUserController extends Controller
 
             if ($landlinePhone !== '' && User::whereRaw("REPLACE(REPLACE(REPLACE(REPLACE(landline_phone,' ',''),'-',''),'.',''),'+','') = ?", [$landlinePhone])->exists()) {
                 $duplicates['landline_phone'] = [
-                    'label' => 'Tel\u00e9fono',
+                    'label' => 'Teléfono',
                     'value' => trim((string) $request->input('landline_phone')),
                 ];
-                $validator->errors()->add('landline_phone', 'Ya existe un registro con este tel\u00e9fono.');
+                $validator->errors()->add('landline_phone', 'Ya existe un registro con este teléfono.');
             }
 
             if (! empty($duplicates)) {

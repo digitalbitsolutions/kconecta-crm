@@ -38,9 +38,11 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
+  height: auto;
   margin: 0;
-  padding: 0;
+  padding: 1rem 0;
+  overflow-y: auto;
 }
 
 .container-main h1.title-main-section {
@@ -96,6 +98,7 @@ body {
   overflow: hidden;
   width: 55rem;
   max-width: 100%;
+  height: min(95vh, 48rem);
   min-height: 38rem;
 }
 
@@ -138,7 +141,7 @@ body {
 }
 .container-main .form-container form button[type='submit']{
     margin-top: .8rem;
-    margin-bottom: .8rem;
+    margin-bottom: .3rem;
 }
 .container-main .social-container {
   margin: 20px 0;
@@ -246,6 +249,12 @@ body {
   left: 0;
   width: 50%;
   z-index: 1;
+}
+
+.container-main .sign-up-container form {
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding-bottom: 1.2rem;
 }
 
 .container-main .overlay-container {
