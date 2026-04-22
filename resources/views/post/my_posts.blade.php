@@ -21,30 +21,69 @@
 
 @section('styles')
     <style>
-        .filter-bar--my-posts {
-            display: flex;
+        .page-card .filter-bar.filter-bar--my-posts {
+            display: flex !important;
             flex-direction: column;
             gap: .9rem;
+            width: 100%;
         }
 
-        .filter-bar--my-posts .partner-filter-row {
+        .page-card .filter-bar.filter-bar--my-posts .list-and-partner-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .page-card .filter-bar.filter-bar--my-posts .list-and-partner-row .section-header {
+            margin: 0;
+        }
+
+        .page-card .filter-bar.filter-bar--my-posts .partner-filter-row {
             display: grid;
             grid-template-columns: repeat(2, minmax(220px, 340px));
-            justify-content: center;
+            justify-content: end;
             gap: .9rem;
+            width: auto;
         }
 
-        .filter-bar--my-posts .main-filter-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        .page-card .filter-bar.filter-bar--my-posts .main-filter-row {
+            display: grid !important;
+            grid-template-columns: repeat(7, minmax(140px, 1fr));
             gap: .9rem;
             align-items: end;
+            width: 100%;
+        }
+
+        .page-card .filter-bar.filter-bar--my-posts .main-filter-row .filter-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: .6rem;
+            white-space: nowrap;
         }
 
         @media (max-width: 900px) {
-            .filter-bar--my-posts .partner-filter-row {
+            .page-card .filter-bar.filter-bar--my-posts .list-and-partner-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .page-card .filter-bar.filter-bar--my-posts .partner-filter-row {
                 grid-template-columns: 1fr;
                 justify-content: stretch;
+                width: 100%;
+            }
+
+            .page-card .filter-bar.filter-bar--my-posts .main-filter-row {
+                grid-template-columns: repeat(2, minmax(160px, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .page-card .filter-bar.filter-bar--my-posts .main-filter-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -52,35 +91,38 @@
 
 @section('content')
     <div class="page-card">
-        <div class="section-header">
-            <div>
-                <h2>Listado</h2>
-                <p>{{ $properties->total() }} anuncios en total</p>
-            </div>
-        </div>
-
         <form class="filter-bar filter-bar--my-posts" method="GET" action="{{ url('/post/my_posts') }}">
-            @if ($isAdmin)
-                <div class="partner-filter-row">
-                    <label class="filter-group">
-                        <span>Tipo de partner</span>
-                        <select name="partner_type" id="partner_type_filter">
-                            <option value="all">Todos</option>
-                            @foreach ($partnerTypeOptions as $partnerType)
-                                <option value="{{ $partnerType->id }}" {{ ($filters['partner_type'] ?? '') === (string) $partnerType->id ? 'selected' : '' }}>
-                                    {{ (int) $partnerType->id === \App\Models\User::LEVEL_SERVICE_PROVIDER ? 'Proveedor de servicios' : $partnerType->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </label>
-                    <label class="filter-group">
-                        <span>Partner</span>
-                        <select name="partner_id" id="partner_filter" data-selected="{{ $filters['partner_id'] ?? '' }}">
-                            <option value="all">Todos</option>
-                        </select>
-                    </label>
+            <div class="list-and-partner-row">
+                <div class="section-header">
+                    <div>
+                        <h2>Listado</h2>
+                        <p>{{ $properties->total() }} anuncios en total</p>
+                    </div>
                 </div>
-            @endif
+
+                @if ($isAdmin)
+                    <div class="partner-filter-row">
+                        <label class="filter-group">
+                            <span>Tipo de partner</span>
+                            <select name="partner_type" id="partner_type_filter">
+                                <option value="all">Todos</option>
+                                @foreach ($partnerTypeOptions as $partnerType)
+                                    <option value="{{ $partnerType->id }}" {{ ($filters['partner_type'] ?? '') === (string) $partnerType->id ? 'selected' : '' }}>
+                                        {{ (int) $partnerType->id === \App\Models\User::LEVEL_SERVICE_PROVIDER ? 'Proveedor de servicios' : $partnerType->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="filter-group">
+                            <span>Partner</span>
+                            <select name="partner_id" id="partner_filter" data-selected="{{ $filters['partner_id'] ?? '' }}">
+                                <option value="all">Todos</option>
+                            </select>
+                        </label>
+                    </div>
+                @endif
+            </div>
+
             <div class="main-filter-row">
                 <label class="filter-group">
                     <span>Buscar</span>
