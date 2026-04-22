@@ -167,7 +167,13 @@ class UserController extends Controller
         $levelName = $roleLabels[$profileUser->user_level_id]
             ?? (UserLevel::find($profileUser->user_level_id)?->name ?? 'Usuario');
         $propertyCount = Property::where('user_id', $profileUser->id)->count();
-        $serviceCount = Service::where('user_id', $profileUser->id)->count();
+        $serviceIds = Service::where('user_id', $profileUser->id)->pluck('id')->all();
+        $serviceCount = count($serviceIds);
+        $serviceTypeCount = empty($serviceIds)
+            ? 0
+            : ServiceTypeLink::whereIn('service_id', $serviceIds)
+                ->distinct()
+                ->count('id_type');
 
         return view('users.view', [
             'user' => $user,
@@ -180,6 +186,7 @@ class UserController extends Controller
             'levelName' => $levelName,
             'propertyCount' => $propertyCount,
             'serviceCount' => $serviceCount,
+            'serviceTypeCount' => $serviceTypeCount,
             'isActive' => (int) ($profileUser->is_active ?? 1) === 1,
         ]);
     }

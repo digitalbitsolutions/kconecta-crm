@@ -92,8 +92,12 @@
             <div class="stat-value">{{ number_format($propertyCount) }}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Servicios</div>
+            <div class="stat-label">Publicaciones de servicio</div>
             <div class="stat-value">{{ number_format($serviceCount) }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Tipos de servicio</div>
+            <div class="stat-value">{{ number_format($serviceTypeCount ?? 0) }}</div>
         </div>
     </section>
 @endsection

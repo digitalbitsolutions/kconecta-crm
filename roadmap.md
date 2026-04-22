@@ -52,6 +52,10 @@
 - fix de carga de video por `service_id`
 - mapas de resultados:
 - icono legacy reemplazado por icono Kconecta
+- Produccion (`2026-04-22`):
+- verificacion de email estabilizada con redireccion directa por rol tras confirmacion
+- persistencia de media de logos completada con volumen:
+- `/var/www/html/public/img/photo_profile`
 
 ## Phase 1 - Stabilize Production
 - Investigar drift entre referencias en BD y archivos fisicos de media.

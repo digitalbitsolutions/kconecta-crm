@@ -154,6 +154,13 @@ Operate and evolve `kconecta-crm` with focus on:
 - redeploy after restore
 - new upload after fix
 - redeploy after new upload
+- Additional production hardening validated on `2026-04-22`:
+- email verification flow fixed after adding missing `user.email_verified_at` in production
+- post-verification redirect now sends users directly to role-specific destination
+- Dokploy persistent volume added for provider profile logos:
+- `/var/www/html/public/img/photo_profile`
+- backup and restore drill validated for DB + media at:
+- `/root/kconecta_backups/20260422_1739_pre_persist_media`
 
 ## Known Recent Incidents
 - Incomplete `Piso` draft records were created on `2026-04-07` when the form submitted literal `Seleccione` into integer fields such as `emissions_rating_id` and `power_consumption_rating_id`.

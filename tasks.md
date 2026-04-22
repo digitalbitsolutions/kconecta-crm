@@ -163,6 +163,15 @@
 - [x] icono de marcador migrado a branding Kconecta (`kconecta_icon.webp`)
 - [x] UX proveedor:
 - [x] boton `Ver video` retirado de cabecera de `/post/services` (video queda en bloque inferior)
+- [x] Verificacion por email en produccion:
+- [x] columna `user.email_verified_at` creada en produccion para evitar `500` en `/verify-email/...`
+- [x] redireccion post-verificacion ajustada por rol (proveedor -> `/post/services`)
+- [x] Persistencia de logos de perfil:
+- [x] volumen Dokploy agregado para `/var/www/html/public/img/photo_profile`
+- [x] restore de logo desde backup validado
+- [x] smoke deploy validado sin perdida de media en rutas persistentes
+- [x] Backup pre-persistencia creado en host:
+- [x] `/root/kconecta_backups/20260422_1739_pre_persist_media`
 
 ### Next
 - [ ] Respaldar BD local.
