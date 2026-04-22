@@ -19,6 +19,37 @@
     </a>
 @endsection
 
+@section('styles')
+    <style>
+        .filter-bar--my-posts {
+            display: flex;
+            flex-direction: column;
+            gap: .9rem;
+        }
+
+        .filter-bar--my-posts .partner-filter-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(220px, 340px));
+            justify-content: center;
+            gap: .9rem;
+        }
+
+        .filter-bar--my-posts .main-filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: .9rem;
+            align-items: end;
+        }
+
+        @media (max-width: 900px) {
+            .filter-bar--my-posts .partner-filter-row {
+                grid-template-columns: 1fr;
+                justify-content: stretch;
+            }
+        }
+    </style>
+@endsection
+
 @section('content')
     <div class="page-card">
         <div class="section-header">
@@ -28,55 +59,78 @@
             </div>
         </div>
 
-        <form class="filter-bar" method="GET" action="{{ url('/post/my_posts') }}">
-            <label class="filter-group">
-                <span>Buscar</span>
-                <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Titulo o referencia">
-            </label>
-            <label class="filter-group">
-                <span>Estado</span>
-                <select name="status">
-                    <option value="all">Todos</option>
-                    @foreach ($statusOptions as $value => $label)
-                        <option value="{{ $value }}" {{ ($filters['status'] ?? '') === (string) $value ? 'selected' : '' }}>
-                            {{ $label }}
-                        </option>
-                    @endforeach
-                </select>
-            </label>
-            <label class="filter-group">
-                <span>Categoria</span>
-                <select name="category">
-                    <option value="all">Todas</option>
-                    @foreach ($categoryOptions as $category)
-                        <option value="{{ $category->id }}" {{ ($filters['category'] ?? '') === (string) $category->id ? 'selected' : '' }}>
-                            {{ $category->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </label>
-            <label class="filter-group">
-                <span>Tipo</span>
-                <select name="type">
-                    <option value="all">Todos</option>
-                    @foreach ($typeOptions as $type)
-                        <option value="{{ $type->id }}" {{ ($filters['type'] ?? '') === (string) $type->id ? 'selected' : '' }}>
-                            {{ $type->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </label>
-            <label class="filter-group">
-                <span>Desde</span>
-                <input type="date" name="ds" value="{{ $filters['ds'] ?? '' }}">
-            </label>
-            <label class="filter-group">
-                <span>Hasta</span>
-                <input type="date" name="de" value="{{ $filters['de'] ?? '' }}">
-            </label>
-            <div class="filter-actions">
-                <button type="submit">Filtrar</button>
-                <a class="secondary" href="{{ url('/post/my_posts') }}">Limpiar</a>
+        <form class="filter-bar filter-bar--my-posts" method="GET" action="{{ url('/post/my_posts') }}">
+            @if ($isAdmin)
+                <div class="partner-filter-row">
+                    <label class="filter-group">
+                        <span>Tipo de partner</span>
+                        <select name="partner_type" id="partner_type_filter">
+                            <option value="all">Todos</option>
+                            @foreach ($partnerTypeOptions as $partnerType)
+                                <option value="{{ $partnerType->id }}" {{ ($filters['partner_type'] ?? '') === (string) $partnerType->id ? 'selected' : '' }}>
+                                    {{ (int) $partnerType->id === \App\Models\User::LEVEL_SERVICE_PROVIDER ? 'Proveedor de servicios' : $partnerType->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="filter-group">
+                        <span>Partner</span>
+                        <select name="partner_id" id="partner_filter" data-selected="{{ $filters['partner_id'] ?? '' }}">
+                            <option value="all">Todos</option>
+                        </select>
+                    </label>
+                </div>
+            @endif
+            <div class="main-filter-row">
+                <label class="filter-group">
+                    <span>Buscar</span>
+                    <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Titulo o referencia">
+                </label>
+                <label class="filter-group">
+                    <span>Estado</span>
+                    <select name="status">
+                        <option value="all">Todos</option>
+                        @foreach ($statusOptions as $value => $label)
+                            <option value="{{ $value }}" {{ ($filters['status'] ?? '') === (string) $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="filter-group">
+                    <span>Categoria</span>
+                    <select name="category">
+                        <option value="all">Todas</option>
+                        @foreach ($categoryOptions as $category)
+                            <option value="{{ $category->id }}" {{ ($filters['category'] ?? '') === (string) $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="filter-group">
+                    <span>Tipo</span>
+                    <select name="type">
+                        <option value="all">Todos</option>
+                        @foreach ($typeOptions as $type)
+                            <option value="{{ $type->id }}" {{ ($filters['type'] ?? '') === (string) $type->id ? 'selected' : '' }}>
+                                {{ $type->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="filter-group">
+                    <span>Desde</span>
+                    <input type="date" name="ds" value="{{ $filters['ds'] ?? '' }}">
+                </label>
+                <label class="filter-group">
+                    <span>Hasta</span>
+                    <input type="date" name="de" value="{{ $filters['de'] ?? '' }}">
+                </label>
+                <div class="filter-actions">
+                    <button type="submit">Filtrar</button>
+                    <a class="secondary" href="{{ url('/post/my_posts') }}">Limpiar</a>
+                </div>
             </div>
         </form>
     </div>
@@ -192,6 +246,53 @@
 @section('scripts')
     <script>
         (() => {
+            const partnerTypeFilter = document.getElementById('partner_type_filter');
+            const partnerFilter = document.getElementById('partner_filter');
+
+            if (partnerTypeFilter && partnerFilter) {
+                const partnerUsersByType = @json($partnerUsersByType ?? []);
+                const initialSelectedPartner = String(partnerFilter.dataset.selected || '');
+
+                const getAllPartners = () => {
+                    const all = [];
+                    Object.values(partnerUsersByType).forEach((items) => {
+                        (items || []).forEach((item) => all.push(item));
+                    });
+                    all.sort((a, b) => String(a.name).localeCompare(String(b.name), 'es', { sensitivity: 'base' }));
+                    return all;
+                };
+
+                const buildPartnerOptions = (selectedValue) => {
+                    const selectedType = String(partnerTypeFilter.value || 'all');
+                    const baseOptions = selectedType !== 'all'
+                        ? (partnerUsersByType[selectedType] || [])
+                        : getAllPartners();
+
+                    partnerFilter.innerHTML = '';
+                    const allOption = document.createElement('option');
+                    allOption.value = 'all';
+                    allOption.textContent = 'Todos';
+                    partnerFilter.appendChild(allOption);
+
+                    baseOptions.forEach((partner) => {
+                        const option = document.createElement('option');
+                        option.value = String(partner.id);
+                        option.textContent = partner.name;
+                        partnerFilter.appendChild(option);
+                    });
+
+                    if (selectedValue && selectedValue !== 'all') {
+                        const exists = baseOptions.some((partner) => String(partner.id) === String(selectedValue));
+                        partnerFilter.value = exists ? String(selectedValue) : 'all';
+                    } else {
+                        partnerFilter.value = 'all';
+                    }
+                };
+
+                buildPartnerOptions(initialSelectedPartner);
+                partnerTypeFilter.addEventListener('change', () => buildPartnerOptions('all'));
+            }
+
             const deleteButtons = document.querySelectorAll('[data-delete-property]');
             const toggleButtons = document.querySelectorAll('[data-toggle-status]');
 
