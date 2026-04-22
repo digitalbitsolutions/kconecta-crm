@@ -100,4 +100,15 @@
             <div class="stat-value">{{ number_format($serviceTypeCount ?? 0) }}</div>
         </div>
     </section>
+
+    @if (!empty($serviceTypeNames))
+        <div class="page-card user-service-types-card">
+            <h3>Servicios que ofrece</h3>
+            <div class="user-service-types-tags">
+                @foreach ($serviceTypeNames as $serviceTypeName)
+                    <span>{{ $serviceTypeName }}</span>
+                @endforeach
+            </div>
+        </div>
+    @endif
 @endsection

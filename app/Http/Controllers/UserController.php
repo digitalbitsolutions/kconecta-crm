@@ -6,6 +6,7 @@ use App\Models\Property;
 use App\Models\Service;
 use App\Models\ServiceAddress;
 use App\Models\ServiceTypeLink;
+use App\Models\ServiceType;
 use App\Models\User;
 use App\Models\UserAddress;
 use App\Models\UserLevel;
@@ -169,11 +170,24 @@ class UserController extends Controller
         $propertyCount = Property::where('user_id', $profileUser->id)->count();
         $serviceIds = Service::where('user_id', $profileUser->id)->pluck('id')->all();
         $serviceCount = count($serviceIds);
-        $serviceTypeCount = empty($serviceIds)
-            ? 0
+        $serviceTypeIds = empty($serviceIds)
+            ? []
             : ServiceTypeLink::whereIn('service_id', $serviceIds)
-                ->distinct()
-                ->count('service_type_id');
+                ->pluck('service_type_id')
+                ->map(fn ($id) => (int) $id)
+                ->filter(fn ($id) => $id > 0)
+                ->unique()
+                ->values()
+                ->all();
+        $serviceTypeNames = empty($serviceTypeIds)
+            ? []
+            : ServiceType::whereIn('id', $serviceTypeIds)
+                ->orderBy('name')
+                ->pluck('name')
+                ->filter()
+                ->values()
+                ->all();
+        $serviceTypeCount = count($serviceTypeNames);
 
         return view('users.view', [
             'user' => $user,
@@ -187,6 +201,7 @@ class UserController extends Controller
             'propertyCount' => $propertyCount,
             'serviceCount' => $serviceCount,
             'serviceTypeCount' => $serviceTypeCount,
+            'serviceTypeNames' => $serviceTypeNames,
             'isActive' => (int) ($profileUser->is_active ?? 1) === 1,
         ]);
     }

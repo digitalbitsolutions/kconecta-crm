@@ -1617,6 +1617,35 @@ body {
   font-weight: 700;
 }
 
+.user-service-types-card {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.user-service-types-card h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.user-service-types-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.user-service-types-tags span {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(99, 196, 202, 0.45);
+  background: rgba(99, 196, 202, 0.14);
+  color: #0d5a63;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .entity-card {
   background: var(--dash-card);
   border-radius: 1rem;
