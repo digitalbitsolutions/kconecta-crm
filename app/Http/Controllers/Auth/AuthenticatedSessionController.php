@@ -36,7 +36,10 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
-        $request->session()->forget('url.intended');
+        $intendedUrl = (string) $request->session()->pull('url.intended', '');
+        if ($this->isEmailVerificationUrl($intendedUrl)) {
+            return redirect()->to($intendedUrl);
+        }
 
         $user = $request->user();
         $redirectPath = $user ? $this->redirectPathForUser($user) : route('dashboard', absolute: false);
@@ -95,5 +98,14 @@ class AuthenticatedSessionController extends Controller
             User::LEVEL_SERVICE_PROVIDER,
             User::LEVEL_AGENT,
         ], true);
+    }
+
+    private function isEmailVerificationUrl(string $url): bool
+    {
+        if ($url === '') {
+            return false;
+        }
+
+        return str_contains($url, '/verify-email/');
     }
 }

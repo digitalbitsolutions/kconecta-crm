@@ -73,7 +73,32 @@ class RegisteredUserController extends Controller
             $rules['last_name'] = 'required|string|max:50';
         }
 
-        $validator = Validator::make($request->all(), $rules);
+        $messages = [
+            'required' => 'El campo :attribute es obligatorio.',
+            'numeric' => 'El campo :attribute debe ser numérico.',
+            'email' => 'El campo :attribute debe ser un correo electrónico válido.',
+            'confirmed' => 'La confirmación de :attribute no coincide.',
+            'min' => 'El campo :attribute debe tener al menos :min caracteres.',
+        ];
+
+        $attributes = [
+            'user_level_id' => 'tipo de usuario',
+            'document_type' => 'tipo de documento',
+            'document_number' => 'número de documento',
+            'first_name' => 'nombre',
+            'last_name' => 'apellidos',
+            'company_name' => 'razón social',
+            'phone' => 'móvil (WhatsApp)',
+            'landline_phone' => 'teléfono fijo',
+            'address' => 'dirección',
+            'address_place_id' => 'dirección (selecciona una sugerencia de Google)',
+            'address_lat' => 'coordenada de latitud (dirección)',
+            'address_lng' => 'coordenada de longitud (dirección)',
+            'email' => 'e-mail',
+            'password' => 'contraseña',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages, $attributes);
         $validator->after(function ($validator) use ($documentType, $request) {
             $documentNumber = $this->normalizeDocumentNumber((string) $request->input('document_number'));
             if (! $this->isValidSpanishDocument($documentType, $documentNumber)) {

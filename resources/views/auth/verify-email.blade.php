@@ -56,7 +56,10 @@
         <div class="verify-card">
             <h1>Verifica tu correo electr&oacute;nico</h1>
             <p>Revisa tu bandeja y confirma tu cuenta desde el enlace enviado.</p>
-            <a class="verify-btn" href="{{ route('home') }}">Aceptar</a>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="verify-btn">Aceptar</button>
+            </form>
         </div>
     </body>
 </html>
