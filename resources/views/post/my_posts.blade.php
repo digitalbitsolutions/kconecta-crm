@@ -151,6 +151,7 @@
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 20h9"/>
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
                         </svg>
+                        <span class="icon-action-label">Editar</span>
                     </a>
                     <button type="button" class="icon-action warning" data-toggle-status="{{ $property['id'] }}" title="{{ $toggleLabel }}" aria-label="{{ $toggleLabel }}">
                         @if ($property['state_id'] === 5)
@@ -166,6 +167,7 @@
                                 <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.12 6.12A10.94 10.94 0 0 1 22 12s-1.64 2.87-4.5 5"/>
                             </svg>
                         @endif
+                        <span class="icon-action-label">{{ $property['state_id'] === 5 ? 'Activar' : 'Ocultar' }}</span>
                     </button>
                     <button type="button" class="icon-action danger" data-delete-property="{{ $property['id'] }}" title="Eliminar" aria-label="Eliminar">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -174,6 +176,7 @@
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 6l-1 14H6L5 6"/>
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 11v6M14 11v6"/>
                         </svg>
+                        <span class="icon-action-label">Eliminar</span>
                     </button>
                     <a class="icon-action neutral" href="{{ url('/result/' . $property['reference']) }}" target="_blank" rel="noopener noreferrer" title="Ver anuncio" aria-label="Ver anuncio">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -182,6 +185,7 @@
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 14v7a2 2 0 0 1-2 2h-7"/>
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10v11a2 2 0 0 0 2 2h11"/>
                         </svg>
+                        <span class="icon-action-label">Ver</span>
                     </a>
                 </div>
             </article>

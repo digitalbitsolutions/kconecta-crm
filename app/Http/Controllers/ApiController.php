@@ -306,11 +306,15 @@ class ApiController extends Controller
         foreach ($addresses as $row) {
             $userId = $row->user_id;
             $userName = '';
+            $userLogoUrl = '';
             $user = User::find($userId);
             if ($user) {
                 $userName = $user->first_name;
                 if (! empty($user->last_name)) {
                     $userName .= ', ' . $user->last_name;
+                }
+                if (! empty($user->photo)) {
+                    $userLogoUrl = '/img/photo_profile/' . ltrim($user->photo, '/');
                 }
             }
 
@@ -324,6 +328,7 @@ class ApiController extends Controller
                 $dataProperties[] = [
                     'id' => $service->id,
                     'title' => $userName,
+                    'logo_url' => $userLogoUrl,
                     'lat' => $row->latitude,
                     'lng' => $row->longitude,
                 ];

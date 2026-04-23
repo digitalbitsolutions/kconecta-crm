@@ -815,7 +815,11 @@ body {
 .properties-list-page {
   display: grid;
   gap: 1.25rem;
-  --my-post-columns: 6;
+  --my-post-columns: 7;
+  --my-post-gap: 1.15rem;
+  --my-post-card-width: calc(
+    (100% - (var(--my-post-gap) * (var(--my-post-columns) - 1))) / var(--my-post-columns)
+  );
 }
 
 .properties-list-page .page-card--properties-filters {
@@ -960,9 +964,10 @@ body {
 
 .properties-list-page .catalog-grid.properties-list-grid {
   display: grid;
-  grid-template-columns: repeat(var(--my-post-columns), minmax(0, 1fr));
+  grid-template-columns: repeat(var(--my-post-columns), var(--my-post-card-width));
   align-items: stretch;
-  gap: 1.4rem;
+  gap: var(--my-post-gap);
+  justify-content: flex-start;
 }
 
 .properties-list-page .catalog-grid.properties-list-grid .entity-card {
@@ -1003,8 +1008,41 @@ body {
 .properties-list-page .properties-list-grid .entity-actions.icon-actions {
   background: var(--dash-surface-subtle);
   border-top: 1px solid var(--dash-card-border-strong);
-  justify-content: space-between;
-  padding: 0.85rem 1rem 0.95rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+  justify-content: initial;
+  padding: 0.65rem 0.7rem 0.72rem;
+}
+
+.properties-list-page .properties-list-grid .entity-actions.icon-actions .icon-action {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.35rem 0.3rem;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  border-radius: 0.65rem;
+}
+
+.properties-list-page .properties-list-grid .entity-actions.icon-actions .icon-action svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.properties-list-page .properties-list-grid .entity-actions.icon-actions .icon-action .icon-action-label {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .properties-list-page .properties-list-grid .status-pill {
@@ -1053,6 +1091,10 @@ body {
 }
 
 @media (max-width: 1700px) {
+  .properties-list-page { --my-post-columns: 6; }
+}
+
+@media (max-width: 1540px) {
   .properties-list-page { --my-post-columns: 5; }
 }
 

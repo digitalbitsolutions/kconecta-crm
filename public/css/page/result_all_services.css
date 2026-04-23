@@ -135,6 +135,18 @@
     text-align: center;
     margin-bottom: .2rem;
 }
+.container-map-details-info-app-main .map-service-logo{
+    width: 100%;
+    max-width: 4rem;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+    border-radius: .5rem;
+    border: 1px solid #d8deea;
+    margin: .1rem auto .25rem;
+    display: block;
+}
 .container-map-details-info-app-main .a-redirect-view{
     background-color: var(--color-main-1);
     color: white;

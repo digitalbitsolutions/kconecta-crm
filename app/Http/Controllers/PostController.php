@@ -689,7 +689,7 @@ class PostController extends Controller
             $query->whereDate('created_at', '<=', $filters['de']);
         }
 
-        $properties = $query->orderByDesc('id')->paginate(30)->withQueryString();
+        $properties = $query->orderByDesc('id')->paginate(35)->withQueryString();
 
         $propertyIds = $properties->pluck('id')->map(fn ($id) => (int) $id)->all();
         $coverImages = empty($propertyIds)
