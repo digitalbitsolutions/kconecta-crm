@@ -623,14 +623,13 @@ class PostController extends Controller
             'status' => (string) $request->query('status', ''),
             'category' => (string) $request->query('category', ''),
             'type' => (string) $request->query('type', ''),
-            'partner_type' => (string) $request->query('partner_type', ''),
             'partner_id' => (string) $request->query('partner_id', ''),
             'ds' => (string) $request->query('ds', ''),
             'de' => (string) $request->query('de', ''),
         ];
 
         $query = Property::query();
-        $partnerLevelIds = [User::LEVEL_AGENT, User::LEVEL_SERVICE_PROVIDER];
+        $partnerLevelIds = [User::LEVEL_AGENT];
         if (! $isAdmin && $user) {
             $query->where('user_id', $user->id);
         }
@@ -656,16 +655,16 @@ class PostController extends Controller
         }
 
         if ($isAdmin) {
-            if (
-                $filters['partner_type'] !== ''
-                && $filters['partner_type'] !== 'all'
-                && in_array((int) $filters['partner_type'], $partnerLevelIds, true)
-            ) {
-                $query->whereIn('user_id', User::query()
-                    ->where('user_level_id', (int) $filters['partner_type'])
-                    ->pluck('id')
-                    ->map(fn ($id) => (int) $id)
-                    ->all());
+            $agentUserIds = User::query()
+                ->where('user_level_id', User::LEVEL_AGENT)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            if (! empty($agentUserIds)) {
+                $query->whereIn('user_id', $agentUserIds);
+            } else {
+                $query->whereRaw('1 = 0');
             }
 
             if ($filters['partner_id'] !== '' && $filters['partner_id'] !== 'all') {
@@ -750,16 +749,10 @@ class PostController extends Controller
             }
         }
 
-        $partnerTypeOptions = collect();
-        $partnerUsersByType = [];
+        $partnerAgentOptions = collect();
         if ($isAdmin) {
-            $partnerTypeOptions = UserLevel::query()
-                ->whereIn('id', $partnerLevelIds)
-                ->orderBy('id')
-                ->get(['id', 'name']);
-
             $partnerUsers = User::query()
-                ->whereIn('user_level_id', $partnerLevelIds)
+                ->where('user_level_id', User::LEVEL_AGENT)
                 ->orderBy('user_name')
                 ->orderBy('first_name')
                 ->orderBy('last_name')
@@ -774,15 +767,10 @@ class PostController extends Controller
                     $partnerName = trim((string) ($partnerUser->email ?? ''));
                 }
 
-                $levelKey = (string) ((int) $partnerUser->user_level_id);
-                if (! isset($partnerUsersByType[$levelKey])) {
-                    $partnerUsersByType[$levelKey] = [];
-                }
-
-                $partnerUsersByType[$levelKey][] = [
+                $partnerAgentOptions->push([
                     'id' => (int) $partnerUser->id,
                     'name' => $partnerName,
-                ];
+                ]);
             }
         }
 
@@ -797,8 +785,7 @@ class PostController extends Controller
             'categoryOptions' => $categoryOptions,
             'typeOptions' => $typeOptions,
             'statusOptions' => $statusOptions,
-            'partnerTypeOptions' => $partnerTypeOptions,
-            'partnerUsersByType' => $partnerUsersByType,
+            'partnerAgentOptions' => $partnerAgentOptions,
         ]);
     }
 

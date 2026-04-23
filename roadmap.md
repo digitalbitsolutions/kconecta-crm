@@ -87,6 +87,14 @@
 
 ## Closed In This Round
 - `Terreno` quedo alineado en datos, formularios y detalle publico.
+- `Admin -> Usuario detalle` estabilizado:
+- fix de `500` en `/users/{id}`.
+- desglose de servicios de proveedor validado con tags no clicables.
+- recorrido online final validado como correcto.
+- `Backoffice -> Mis propiedades` refinado visualmente:
+- filtros en dos filas segun referencia objetivo
+- placeholders y labels alineados
+- acciones `Filtrar/Limpiar` y responsive ajustados
 
 ## Phase 5 - Operational Reliability
 - Mejorar health checks y observabilidad de app + DB.

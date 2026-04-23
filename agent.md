@@ -236,6 +236,17 @@ Operate and evolve `kconecta-crm` with focus on:
 - result maps now use `kconecta` icon on both Google Maps and Leaflet in property/service result pages
 
 ## Known Risks
+- Context update `2026-04-23`:
+- backoffice `Mis propiedades` (`/post/my_posts`) refinado en UI:
+- bloque de filtros reorganizado en dos filas segun referencia de diseno
+- labels/placeholders normalizados (`Titulo o referencia`, `Categoria`, `dd / mm / aaaa`)
+- acciones `Filtrar` y `Limpiar` alineadas visualmente y comportamiento responsive corregido
+- Context update `2026-04-23`:
+- online recorrido final validado como correcto end-to-end.
+- modulo admin de usuarios:
+- corregido `500` en `GET /users/{id}` por conteo en columna incorrecta.
+- detalle de proveedor muestra correctamente publicaciones de servicio, tipos de servicio y tags no clicables.
+- persistencia de media confirmada en Dokploy para `img/uploads`, `video/uploads` y `img/photo_profile`.
 - Existing fallback login logic still accepts plaintext and rehashes on login.
 - Google Maps address UX depends on keeping both Dokploy env and Google Cloud API enablement aligned.
 - Video upload UX is still inconsistent:

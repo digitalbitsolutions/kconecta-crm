@@ -173,6 +173,19 @@
 - [x] Backup pre-persistencia creado en host:
 - [x] `/root/kconecta_backups/20260422_1739_pre_persist_media`
 
+### Session Update (2026-04-23)
+- [x] Admin -> detalle de usuario proveedor:
+- [x] fix de `500` en `GET /users/{id}` por conteo en columna incorrecta.
+- [x] conteos de servicios validados online:
+- [x] `Publicaciones de servicio`
+- [x] `Tipos de servicio`
+- [x] tags no clicables de tipos de servicio agregados bajo metricas.
+- [x] recorrido online final validado como correcto por negocio.
+- [x] Backoffice -> `Mis propiedades` (`/post/my_posts`) refinado:
+- [x] barra de filtros reorganizada en dos filas segun referencia visual aprobada
+- [x] placeholders/labels alineados (`Titulo o referencia`, `Categoria`, `dd / mm / aaaa`)
+- [x] botonera `Filtrar`/`Limpiar` ajustada y responsive estabilizado
+
 ### Next
 - [ ] Respaldar BD local.
 - [ ] Comparar media faltante de referencias con respaldo productivo antes de limpiar archivos no trackeados.

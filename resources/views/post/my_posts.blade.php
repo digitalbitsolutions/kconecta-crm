@@ -19,104 +19,26 @@
     </a>
 @endsection
 
-@section('styles')
-    <style>
-        .page-card .filter-bar.filter-bar--my-posts {
-            display: flex !important;
-            flex-direction: column;
-            gap: .9rem;
-            width: 100%;
-        }
-
-        .page-card .filter-bar.filter-bar--my-posts .list-and-partner-row {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 1rem;
-            width: 100%;
-        }
-
-        .page-card .filter-bar.filter-bar--my-posts .list-and-partner-row .section-header {
-            margin: 0;
-        }
-
-        .page-card .filter-bar.filter-bar--my-posts .partner-filter-row {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(220px, 340px));
-            justify-content: end;
-            gap: .9rem;
-            width: auto;
-        }
-
-        .page-card .filter-bar.filter-bar--my-posts .main-filter-row {
-            display: grid !important;
-            grid-template-columns: repeat(7, minmax(140px, 1fr));
-            gap: .9rem;
-            align-items: end;
-            width: 100%;
-        }
-
-        .page-card .filter-bar.filter-bar--my-posts .main-filter-row .filter-actions {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: .6rem;
-            white-space: nowrap;
-        }
-
-        @media (max-width: 900px) {
-            .page-card .filter-bar.filter-bar--my-posts .list-and-partner-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .page-card .filter-bar.filter-bar--my-posts .partner-filter-row {
-                grid-template-columns: 1fr;
-                justify-content: stretch;
-                width: 100%;
-            }
-
-            .page-card .filter-bar.filter-bar--my-posts .main-filter-row {
-                grid-template-columns: repeat(2, minmax(160px, 1fr));
-            }
-        }
-
-        @media (max-width: 640px) {
-            .page-card .filter-bar.filter-bar--my-posts .main-filter-row {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-@endsection
-
 @section('content')
-    <div class="page-card">
-        <form class="filter-bar filter-bar--my-posts" method="GET" action="{{ url('/post/my_posts') }}">
-            <div class="list-and-partner-row">
-                <div class="section-header">
-                    <div>
-                        <h2>Listado</h2>
-                        <p>{{ $properties->total() }} anuncios en total</p>
-                    </div>
+    <section class="properties-list-page">
+    <div class="page-card page-card--properties-filters">
+        <form class="filter-bar filter-bar--my-posts properties-list-filters" method="GET" action="{{ url('/post/my_posts') }}">
+            <div class="list-and-partner-row{{ $isAdmin ? '' : ' list-and-partner-row--compact' }}">
+                <div class="list-header-compact">
+                    <h2>Listado</h2>
+                    <p>{{ $properties->total() }} anuncios en total</p>
                 </div>
-
                 @if ($isAdmin)
-                    <div class="partner-filter-row">
+                    <div class="partner-filter-row partner-filter-row--single">
                         <label class="filter-group">
-                            <span>Tipo de partner</span>
-                            <select name="partner_type" id="partner_type_filter">
+                            <span>Agente inmobiliario</span>
+                            <select name="partner_id" id="partner_filter">
                                 <option value="all">Todos</option>
-                                @foreach ($partnerTypeOptions as $partnerType)
-                                    <option value="{{ $partnerType->id }}" {{ ($filters['partner_type'] ?? '') === (string) $partnerType->id ? 'selected' : '' }}>
-                                        {{ (int) $partnerType->id === \App\Models\User::LEVEL_SERVICE_PROVIDER ? 'Proveedor de servicios' : $partnerType->name }}
+                                @foreach ($partnerAgentOptions as $partnerAgent)
+                                    <option value="{{ $partnerAgent['id'] }}" {{ ($filters['partner_id'] ?? '') === (string) $partnerAgent['id'] ? 'selected' : '' }}>
+                                        {{ $partnerAgent['name'] }}
                                     </option>
                                 @endforeach
-                            </select>
-                        </label>
-                        <label class="filter-group">
-                            <span>Partner</span>
-                            <select name="partner_id" id="partner_filter" data-selected="{{ $filters['partner_id'] ?? '' }}">
-                                <option value="all">Todos</option>
                             </select>
                         </label>
                     </div>
@@ -124,9 +46,9 @@
             </div>
 
             <div class="main-filter-row">
-                <label class="filter-group">
+                <label class="filter-group filter-group--search">
                     <span>Buscar</span>
-                    <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Titulo o referencia">
+                    <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Título o referencia">
                 </label>
                 <label class="filter-group">
                     <span>Estado</span>
@@ -140,7 +62,7 @@
                     </select>
                 </label>
                 <label class="filter-group">
-                    <span>Categoria</span>
+                    <span>Categoría</span>
                     <select name="category">
                         <option value="all">Todas</option>
                         @foreach ($categoryOptions as $category)
@@ -161,13 +83,13 @@
                         @endforeach
                     </select>
                 </label>
-                <label class="filter-group">
+                <label class="filter-group filter-group--date">
                     <span>Desde</span>
-                    <input type="date" name="ds" value="{{ $filters['ds'] ?? '' }}">
+                    <input type="date" name="ds" value="{{ $filters['ds'] ?? '' }}" placeholder="dd / mm / aaaa">
                 </label>
-                <label class="filter-group">
+                <label class="filter-group filter-group--date">
                     <span>Hasta</span>
-                    <input type="date" name="de" value="{{ $filters['de'] ?? '' }}">
+                    <input type="date" name="de" value="{{ $filters['de'] ?? '' }}" placeholder="dd / mm / aaaa">
                 </label>
                 <div class="filter-actions">
                     <button type="submit">Filtrar</button>
@@ -177,7 +99,7 @@
         </form>
     </div>
 
-    <div class="catalog-grid{{ !empty($isCompanyUser) ? ' properties-grid' : '' }}">
+    <div class="catalog-grid{{ !empty($isCompanyUser) ? ' properties-grid' : '' }} properties-list-grid">
         @forelse ($properties as $property)
             @php
                 $imageUrl = $property['image'] ? asset('img/uploads/' . $property['image']) : asset('img/image-icon-1280x960.png');
@@ -283,58 +205,12 @@
             </a>
         </div>
     @endif
+    </section>
 @endsection
 
 @section('scripts')
     <script>
         (() => {
-            const partnerTypeFilter = document.getElementById('partner_type_filter');
-            const partnerFilter = document.getElementById('partner_filter');
-
-            if (partnerTypeFilter && partnerFilter) {
-                const partnerUsersByType = @json($partnerUsersByType ?? []);
-                const initialSelectedPartner = String(partnerFilter.dataset.selected || '');
-
-                const getAllPartners = () => {
-                    const all = [];
-                    Object.values(partnerUsersByType).forEach((items) => {
-                        (items || []).forEach((item) => all.push(item));
-                    });
-                    all.sort((a, b) => String(a.name).localeCompare(String(b.name), 'es', { sensitivity: 'base' }));
-                    return all;
-                };
-
-                const buildPartnerOptions = (selectedValue) => {
-                    const selectedType = String(partnerTypeFilter.value || 'all');
-                    const baseOptions = selectedType !== 'all'
-                        ? (partnerUsersByType[selectedType] || [])
-                        : getAllPartners();
-
-                    partnerFilter.innerHTML = '';
-                    const allOption = document.createElement('option');
-                    allOption.value = 'all';
-                    allOption.textContent = 'Todos';
-                    partnerFilter.appendChild(allOption);
-
-                    baseOptions.forEach((partner) => {
-                        const option = document.createElement('option');
-                        option.value = String(partner.id);
-                        option.textContent = partner.name;
-                        partnerFilter.appendChild(option);
-                    });
-
-                    if (selectedValue && selectedValue !== 'all') {
-                        const exists = baseOptions.some((partner) => String(partner.id) === String(selectedValue));
-                        partnerFilter.value = exists ? String(selectedValue) : 'all';
-                    } else {
-                        partnerFilter.value = 'all';
-                    }
-                };
-
-                buildPartnerOptions(initialSelectedPartner);
-                partnerTypeFilter.addEventListener('change', () => buildPartnerOptions('all'));
-            }
-
             const deleteButtons = document.querySelectorAll('[data-delete-property]');
             const toggleButtons = document.querySelectorAll('[data-toggle-status]');
 

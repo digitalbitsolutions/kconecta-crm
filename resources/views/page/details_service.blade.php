@@ -15,10 +15,10 @@
 @endsection
 
 @section('content')
-<div class="container-main-body">
+<div class="container-main-body is-service-detail">
     <div class="container-column-1">
         <div class="container-image">
-            <div class="swiper">
+            <div class="swiper swiper-main">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide">
                         <img src="<?= $coverImageUrl ?>" alt="Placeholder image" />
@@ -36,17 +36,35 @@
 
                 <!-- Paginación -->
                 <div class="swiper-pagination"></div>
-            </div>            
+            </div>
+            <div class="gallery-toolbar">
+                <div class="swiper swiper-thumbs" aria-label="Miniaturas de la galeria del servicio">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <img src="<?= $coverImageUrl ?>" alt="Miniatura principal" />
+                        </div>
+                        <?php foreach($property["more_images"] as $im){ ?>
+                        <div class="swiper-slide">
+                            <img src="<?= base_url()."img/uploads/".$im["url"] ?>" alt="Miniatura de servicio" />
+                        </div>
+                        <?php } ?>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="container-details-1">
-            <h1 class="h1-service">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#666666" d="M12 2c-4.4 0-8 3.6-8 8c0 5.4 7 11.5 7.3 11.8c.2.1.5.2.7.2s.5-.1.7-.2C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8m0 17.7c-2.1-2-6-6.3-6-9.7c0-3.3 2.7-6 6-6s6 2.7 6 6s-3.9 7.7-6 9.7M12 6c-2.2 0-4 1.8-4 4s1.8 4 4 4s4-1.8 4-4s-1.8-4-4-4m0 6c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2"/></svg>  
-                <?= !empty($property["address"]) ? $property["address"][0]["address"] : "" ?> 
-            </h1>
+            <?php
+                $serviceSeoTitle = trim(strip_tags((string) ($property["description"] ?? "")));
+                if ($serviceSeoTitle === "") {
+                    $serviceSeoTitle = !empty($property["address"]) ? $property["address"][0]["address"] : "";
+                }
+            ?>
+            <h1 class="h1-service"><?= $serviceSeoTitle ?></h1>
             <span class="container-address">
-                <span>
-                    
+                <span class="service-address-line">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24"><path fill="none" stroke="#6a7b95" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 13.5a3.5 3.5 0 1 0 0-7a3.5 3.5 0 0 0 0 7"/><path fill="none" stroke="#6a7b95" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 10.5c0 6-7 11-7 11s-7-5-7-11a7 7 0 1 1 14 0"/></svg>
+                    <?= !empty($property["address"]) ? $property["address"][0]["address"] : "" ?>
                 </span>
                 <div class="container-main-map-video-btn">
                     <button class="button is-small btn-open-maps-view" id="btn-open-modal-view-map-coord" data-latitude="<?= !empty($property["address"]) ? $property["address"][0]["latitude"] : "" ?>" data-longitude="<?= !empty($property["address"]) ? $property["address"][0]["longitude"] : "" ?>">
@@ -61,6 +79,12 @@
                             </button>
                         </div>
                     <?php } ?>
+                    <?php if (!empty($property["page_url"])){ ?>
+                        <a href="<?= $property["page_url"] ?>" class="button is-small btn-service-web-link" target="_blank" rel="noopener">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 16 16"><path fill="currentColor" d="M6.01 10.49a.47.47 0 0 1-.35-.15c-.2-.2-.2-.51 0-.71l8.49-8.48c.2-.2.51-.2.71 0s.2.51 0 .71l-8.5 8.48c-.1.1-.23.15-.35.15"/><path fill="currentColor" d="M14.5 7c-.28 0-.5-.22-.5-.5V2H9.5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5h5c.28 0 .5.22.5.5v5c0 .28-.22.5-.5.5m-3 8H2.49C1.67 15 1 14.33 1 13.51V4.49C1 3.67 1.67 3 2.49 3H7.5c.28 0 .5.22.5.5s-.22.5-.5.5H2.49a.49.49 0 0 0-.49.49v9.02c0 .27.22.49.49.49h9.01c.27 0 .49-.22.49-.49V8.5c0-.28.22-.5.5-.5s.5.22.5.5v5.01c0 .82-.67 1.49-1.49 1.49"/></svg>
+                            Visita nuestra página web
+                        </a>
+                    <?php } ?>
                 </div>
             </span>
             
@@ -73,18 +97,12 @@
                 $text_with_html_breaks = nl2br($text_with_breaks);
                 echo $text_with_html_breaks;
             ?></p>
-            <?php if (!empty($property["page_url"])){ ?>
-            <a href="<?= $property["page_url"] ?>" class="tag is-link" target="_blank">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 16 16"><path fill="#ffffff" d="M6.01 10.49a.47.47 0 0 1-.35-.15c-.2-.2-.2-.51 0-.71l8.49-8.48c.2-.2.51-.2.71 0s.2.51 0 .71l-8.5 8.48c-.1.1-.23.15-.35.15"/><path fill="#ffffff" d="M14.5 7c-.28 0-.5-.22-.5-.5V2H9.5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5h5c.28 0 .5.22.5.5v5c0 .28-.22.5-.5.5m-3 8H2.49C1.67 15 1 14.33 1 13.51V4.49C1 3.67 1.67 3 2.49 3H7.5c.28 0 .5.22.5.5s-.22.5-.5.5H2.49a.49.49 0 0 0-.49.49v9.02c0 .27.22.49.49.49h9.01c.27 0 .49-.22.49-.49V8.5c0-.28.22-.5.5-.5s.5.22.5.5v5.01c0 .82-.67 1.49-1.49 1.49"/></svg>
-                Visita nuestra página web
-            </a>
-            <?php } ?>
         </div>
         <div class="container-more-data">
             <?php 
                 if (!empty($property["service_types"])){
             ?>    
-                <article class="message">
+                <article class="message service-types-card">
                     <div class="message-body">
                         <div class="container-row-free-s">
                             <?php foreach($property["service_types"] as $st){ ?>  
@@ -102,6 +120,7 @@
         </div>
     </div>
     <div class="container-column-2">
+        <div class="container-details-contact-owner">
         <div class="title-block">
             <h3>Pregunta al anunciante</h3>
         </div>
@@ -158,6 +177,7 @@
                 
             </div>
         </div>
+        </div>
     </div>
 </div>
 <div class="modal" id="modal-view-map-coord">
@@ -190,11 +210,17 @@
 <script src="<?= base_url()."js/index_func.js" ?>"></script>
 <script>
 
-    const swiper = new Swiper('.swiper', {
-        // Configuración básica
-        loop: true, // Permite bucle infinito
+    const thumbsSwiper = new Swiper('.swiper-thumbs', {
+        spaceBetween: 10,
+        slidesPerView: 'auto',
+        freeMode: true,
+        watchSlidesProgress: true,
+    });
+
+    const swiper = new Swiper('.swiper-main', {
+        loop: true,
         autoplay: {
-        delay: 3000, // Cambia automáticamente cada 3 segundos
+        delay: 3000,
         },
         navigation: {
         nextEl: '.swiper-button-next',
@@ -204,6 +230,9 @@
         el: '.swiper-pagination',
         clickable: true,
         },
+        thumbs: {
+            swiper: thumbsSwiper,
+        },
     });
 </script>
 <script>
@@ -211,39 +240,44 @@
     const btn_control_play_pause = document.getElementById("control-play-pause");
     const btn_close_modal = document.querySelector(".btn-close-modal-video");
     const btn_open_modal_map = document.getElementById("btn-open-modal-view-map-coord");
-    btn_control_play_pause.addEventListener("click", ()=>{
-        if (video_app.dataset.state === "play"){
+    if (video_app && btn_control_play_pause && btn_close_modal){
+        btn_control_play_pause.addEventListener("click", ()=>{
+            if (video_app.dataset.state === "play"){
+                video_app.pause();
+                video_app.dataset.state = "pause";
+                btn_control_play_pause.querySelector(".svg-play").style.display = "none";
+                btn_control_play_pause.querySelector(".svg-pause").removeAttribute("style");
+            }else{
+                video_app.play();
+                video_app.dataset.state = "play";
+                btn_control_play_pause.querySelector(".svg-play").removeAttribute("style");
+                btn_control_play_pause.querySelector(".svg-pause").style.display = "none";
+            }
+        })
+        document.querySelector(".modal-background-video").addEventListener("click", ()=>{
             video_app.pause();
             video_app.dataset.state = "pause";
             btn_control_play_pause.querySelector(".svg-play").style.display = "none";
             btn_control_play_pause.querySelector(".svg-pause").removeAttribute("style");
-        }else{
-            video_app.play();
-            video_app.dataset.state = "play";
-            btn_control_play_pause.querySelector(".svg-play").removeAttribute("style");
-            btn_control_play_pause.querySelector(".svg-pause").style.display = "none";
-        }
-    })
-    document.querySelector(".modal-background-video").addEventListener("click", ()=>{
-        video_app.pause();
-        video_app.dataset.state = "pause";
-        btn_control_play_pause.querySelector(".svg-play").style.display = "none";
-        btn_control_play_pause.querySelector(".svg-pause").removeAttribute("style");
-        closeModal(document.getElementById('modal-view-video'))
-    })
-    btn_close_modal.addEventListener("click", ()=>{
-        video_app.pause();
-        video_app.dataset.state = "pause";
-        btn_control_play_pause.querySelector(".svg-play").style.display = "none";
-        btn_control_play_pause.querySelector(".svg-pause").removeAttribute("style");
-        closeModal(document.getElementById('modal-view-video'))
-    })
-    btn_open_modal_map.addEventListener("click", ()=>{
-        openModal(document.getElementById("modal-view-map-coord"));
-    })
-    video_app.addEventListener("contextmenu", function(e) {
-        e.preventDefault(); // Bloquea el clic derecho en el video
-    });
+            closeModal(document.getElementById('modal-view-video'))
+        })
+        btn_close_modal.addEventListener("click", ()=>{
+            video_app.pause();
+            video_app.dataset.state = "pause";
+            btn_control_play_pause.querySelector(".svg-play").style.display = "none";
+            btn_control_play_pause.querySelector(".svg-pause").removeAttribute("style");
+            closeModal(document.getElementById('modal-view-video'))
+        })
+        video_app.addEventListener("contextmenu", function(e) {
+            e.preventDefault(); // Bloquea el clic derecho en el video
+        });
+    }
+
+    if (btn_open_modal_map){
+        btn_open_modal_map.addEventListener("click", ()=>{
+            openModal(document.getElementById("modal-view-map-coord"));
+        })
+    }
 
     document.addEventListener("keydown", function(e) {
         if (e.ctrlKey && (e.key === "s" || e.key === "S" || e.key === "u" || e.key === "U")) {

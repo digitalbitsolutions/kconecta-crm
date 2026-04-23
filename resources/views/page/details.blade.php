@@ -28,7 +28,7 @@
     <input type="hidden" id="app-ref-main" value="<?= $property["id"] ?>">
     <div class="container-column-1">
         <div class="container-image">
-            <div class="swiper">
+            <div class="swiper swiper-main">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide">
                         <img src="<?= $coverImageUrl ?>" alt="Placeholder image" />
@@ -46,17 +46,31 @@
 
                 <!-- Paginación -->
                 <div class="swiper-pagination"></div>
-            </div>            
+            </div>
+            <div class="gallery-toolbar">
+                <div class="swiper swiper-thumbs" aria-label="Miniaturas de la galeria">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <img src="<?= $coverImageUrl ?>" alt="Miniatura principal" />
+                        </div>
+                        <?php foreach($property["more_images"] as $im){ ?>
+                        <div class="swiper-slide">
+                            <img src="<?= base_url()."img/uploads/".$im["url"] ?>" alt="Miniatura de imagen" />
+                        </div>
+                        <?php } ?>
+                    </div>
+                </div>
+                <div class="container-main-share-options container-main-share-options--gallery">
+                    <div class="container-block-share">
+                        <button id="btn-share">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 20 20"><path fill="#ffffff" d="M12 6V2l7 7l-7 7v-4c-5 0-8.5 1.5-11 5l.8-3l.2-.4A12 12 0 0 1 12 6"/></svg>
+                            Compartir
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="container-details-1">
-            <div class="container-main-share-options">
-                <div class="container-block-share">
-                    <button id="btn-share">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 20 20"><path fill="#ffffff" d="M12 6V2l7 7l-7 7v-4c-5 0-8.5 1.5-11 5l.8-3l.2-.4A12 12 0 0 1 12 6"/></svg>
-                        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="#ffffff" d="M17 22q-1.25 0-2.125-.875T14 19q0-.15.075-.7L7.05 14.2q-.4.375-.925.588T5 15q-1.25 0-2.125-.875T2 12t.875-2.125T5 9q.6 0 1.125.213t.925.587l7.025-4.1q-.05-.175-.062-.337T14 5q0-1.25.875-2.125T17 2t2.125.875T20 5t-.875 2.125T17 8q-.6 0-1.125-.213T14.95 7.2l-7.025 4.1q.05.175.063.338T8 12t-.012.363t-.063.337l7.025 4.1q.4-.375.925-.587T17 16q1.25 0 2.125.875T20 19t-.875 2.125T17 22"/></svg> -->
-                        Compartir</button>
-                </div> 
-            </div>
             <h1>
                 <?= $property["title"] ?>
             </h1>
@@ -186,7 +200,7 @@
             <?php 
                 if (intval($property["type_id"]) != 9){
             ?>
-            <article class="message">
+                <article class="message details-section-main details-top-card">
                 <div class="message-body">
                     <div class="container-row-free">
                         <?php if(!empty($property["state_conservation"])){ ?>
@@ -207,7 +221,7 @@
             <?php } ?>
             <?php if (intval($property["category_id"]) == 1 && intval($property["type_id"]) != 9){ ?>
                 <?php if(!empty($property["rental_type"]) || !empty($property["rental_price"])){ ?>
-                <article class="message">
+                <article class="message details-section-main details-top-card">
                     <div class="message-body">
                         <div class="container-row-free">
                             <?php if(!empty($property["rental_type"])){ ?>
@@ -227,7 +241,7 @@
                 </article>
                 <?php } ?>
                 <?php if (intval($property["type_id"]) === 1 || intval($property["type_id"]) === 13){ ?>
-                <article class="message">
+                <article class="message details-section-main details-top-card">
                     <div class="message-body">
                         <div class="container-row-free">
                             <?php if(!empty($property["max_num_tenants"])){ ?>
@@ -261,7 +275,7 @@
             <?php 
                 if (intval($property["category_id"]) == 2){
             ?>    
-                <article class="message">
+                <article class="message details-section-main">
                     <div class="message-body">
                         <div class="container-row-free">
                             <?php if (!empty($property["type_of_terrain"])){ ?>
@@ -327,7 +341,7 @@
                 }
             ?>
             <?php if (!empty($property["community_expenses"] || !empty($property["useful_meters"]) || !empty($property["plot_meters"]) || !empty($property["number_of_plants"]) || !empty($property["bathrooms"]))){ ?>
-                <article class="message">
+                <article class="message details-section-main">
                     <div class="message-body">
                         <div class="container-row-free">
                             <?php if (!empty($property["plaza_capacity"])){ ?>
@@ -459,8 +473,17 @@
                     </div>
                 </article>
             <?php } ?>
+            <?php
+                $hasDetailsSideStack = !empty($property["features"])
+                    || ((int) ($property["type_id"] ?? 0) === 9 && !empty($property["terrain_qualifications"]))
+                    || !empty($property["equipments"])
+                    || !empty($property["power_consumption_rating"]);
+            ?>
+            <?php if ($hasDetailsSideStack){ ?>
+                <div class="details-side-stack">
+            <?php } ?>
             <?php if (!empty($property["features"])){ ?>
-                <article class="message">
+                <article class="message details-section-features">
                     <div class="message-header">
                         <p>Características básicas</p>
                     </div>
@@ -476,7 +499,7 @@
                 </article>
             <?php } ?>
             <?php if ((int) ($property["type_id"] ?? 0) === 9 && !empty($property["terrain_qualifications"])) { ?>
-                <article class="message">
+                <article class="message details-section-features">
                     <div class="message-header">
                         <p>Tipo de calificación</p>
                     </div>
@@ -494,7 +517,7 @@
             <div class="container-two-col-flex">
             </div>
             <?php if (!empty($property["equipments"])){ ?>
-                <article class="message">
+                <article class="message details-section-equipments">
                     <div class="message-header">
                         <p>Equipamientos</p>
                     </div>
@@ -510,7 +533,7 @@
                 </article>
             <?php } ?>
             <?php if (!empty($property["power_consumption_rating"])){ ?>
-                <article class="message">
+                <article class="message details-section-energy">
                     <div class="message-header">
                         <p>Certificado energético</p>
                     </div>
@@ -580,8 +603,11 @@
                     </div>
                 </article>
             <?php } ?>
+            <?php if ($hasDetailsSideStack){ ?>
+                </div>
+            <?php } ?>
             <?php if (!empty($property["interior_wheelchair"]) || !empty($property["outdoor_wheelchair"])){ ?>
-                <article class="message">
+                <article class="message details-section-accessibility">
                     <div class="message-header">
                         <p>Adaptado a personas con movilidad reducida</p>
                     </div>
@@ -1002,19 +1028,28 @@
 <script src="<?= base_url()."js/visits_control.js" ?>"></script>
 
 <script>
-    const swiper = new Swiper('.swiper', {
-        // Configuración básica
-        loop: true, // Permite bucle infinito
+    const thumbsSwiper = new Swiper('.swiper-thumbs', {
+        spaceBetween: 10,
+        slidesPerView: 'auto',
+        freeMode: true,
+        watchSlidesProgress: true,
+    });
+
+    const swiper = new Swiper('.swiper-main', {
+        loop: true,
         autoplay: {
-        delay: 3000, // Cambia automáticamente cada 3 segundos
+            delay: 3000,
         },
         navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
         },
         pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        thumbs: {
+            swiper: thumbsSwiper,
         },
     });
 </script>

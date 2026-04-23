@@ -1,0 +1,27 @@
+HTTP/1.1 100 Continue
+Alt-Svc: h3=":443"; ma=2592000
+
+HTTP/1.1 302 Found
+Cache-Control: no-cache, private
+Content-Type: text/html; charset=utf-8
+Date: Tue, 07 Apr 2026 16:15:52 GMT
+Location: https://kconecta.com/post/my_posts
+Server: Apache/2.4.66 (Debian)
+Set-Cookie: XSRF-TOKEN=eyJpdiI6IkxBamNDVm9iWmVUZnJDNjczQnRab2c9PSIsInZhbHVlIjoiT3BuRmJXd2NOS1RiRVcvbUs3c1ZVL0ZzN1ZCQVpTNkxnWXZ4U1VwMzAyc010RG82eWRHZGdLdSs1bWN4YVFUMTNjem15SFdjdGF0a2ovWjBHQlB1bGJlME02V0VudU1EQWRFdkYxZ1c5Uy9oZXk0NVBYKzdIQmVpS2l6U3F3eGQiLCJtYWMiOiJiMWY3NWNkZTViYTE0Nzc3NmJmMjJiNGI0MDE3ZjI3MDhjODgyZWNiOTU2ZjJlZmI2YTNmNTI5NzkwOThlYzU2IiwidGFnIjoiIn0%3D; expires=Tue, 07 Apr 2026 18:15:54 GMT; Max-Age=7200; path=/; secure; samesite=lax
+Set-Cookie: kconecta-session=eyJpdiI6IjdHeGkydFhHT2hOOVR4eXZpRGpacVE9PSIsInZhbHVlIjoiNkd1bms1Q2RCd3ZuSmcwMlhzQlI2eDRDbnBYQ0xpWjhBN2FkbGdtK1NZNU1xd3BsRXY4V3BuUzJFZmFrQndNZ1B6cnZKKzVETmV0c1VWbVdVWXNJZDlGRjBKSDF3anRHVUttNmkxOW54RkZRTmhFbTI5RmpLa01SS0lpMjR0QkwiLCJtYWMiOiI1NDYxNTA3M2YwZWZmMTk0NmUzNmJhMDQyYTE0M2QzMmU5MmY2YWE4ZWRmZDEyOWRlNzk5MmZmMmNjZDA4MDRjIiwidGFnIjoiIn0%3D; expires=Tue, 07 Apr 2026 18:15:54 GMT; Max-Age=7200; path=/; secure; httponly; samesite=lax
+Vary: X-Inertia
+X-Powered-By: PHP/8.2.30
+Transfer-Encoding: chunked
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="refresh" content="0;url='https://kconecta.com/post/my_posts'" />
+
+        <title>Redirecting to https://kconecta.com/post/my_posts</title>
+    </head>
+    <body>
+        Redirecting to <a href="https://kconecta.com/post/my_posts">https://kconecta.com/post/my_posts</a>.
+    </body>
+</html>
