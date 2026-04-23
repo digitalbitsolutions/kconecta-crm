@@ -8,6 +8,21 @@ if (main_loader_page){
     document.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', function(event) {
             const href = link.getAttribute('href');
+            const target = (link.getAttribute('target') || '').toLowerCase();
+            const opensNewTab = target === '_blank';
+            const usesModifiedClick = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
+            const isMiddleClick = event.button === 1;
+            const isDownloadLink = link.hasAttribute('download');
+            let isExternalNavigation = false;
+
+            if (href) {
+                try {
+                    const parsedHref = new URL(href, window.location.href);
+                    isExternalNavigation = parsedHref.origin !== window.location.origin;
+                } catch (error) {
+                    isExternalNavigation = false;
+                }
+            }
 
             if (!href || 
                 href.startsWith('tel:') ||
@@ -15,6 +30,11 @@ if (main_loader_page){
                 href.startsWith('#') ||
                 href.startsWith('javascript:') ||
                 href.startsWith('https://wa.me') ||
+                opensNewTab ||
+                usesModifiedClick ||
+                isMiddleClick ||
+                isDownloadLink ||
+                isExternalNavigation ||
                 link.classList.contains("__no-loader")
                 ) {
                 return  
@@ -36,7 +56,9 @@ if (main_loader_page){
 
 }
 window.addEventListener("DOMContentLoaded", ()=>{
-    main_loader_page.style.display = "none";
+    if (main_loader_page) {
+        main_loader_page.style.display = "none";
+    }
 })
 
 const details_userfree = localStorage.getItem("userfree");
