@@ -197,8 +197,9 @@
             <?php } ?>
         </div>
         <div class="container-more-data">
-            <?php 
-                if (intval($property["type_id"]) != 9){
+            <?php
+                $hasStateOrFacade = !empty($property["state_conservation"]) || !empty($property["facade"]);
+                if (intval($property["type_id"]) != 9 && $hasStateOrFacade){
             ?>
                 <article class="message details-section-main details-top-card">
                 <div class="message-body">
