@@ -261,3 +261,9 @@ Operate and evolve `kconecta-crm` with focus on:
 - Legacy dumps may override expected Laravel schema if imported without review.
 - Production data can drift from local if sync is repeated without controls.
 - Some backoffice/service views still show legacy mojibake text (`Ã...`) and require final UTF-8 cleanup pass.
+
+- Context update `2026-04-23`:
+- `details.blade.php` estabilizado para evitar cards vacias en detalle publico (garaje/nave y casos sin datos).
+- bloque superior de metadatos ahora incluye fallback `N/A` en cards clave cuando no hay valor.
+- `Fianza` y `Estado de conservacion` movidos al grid superior junto a `M2 construidos`.
+- eliminada duplicidad visual de `Estado de conservacion` y `Fianza` en cards inferiores.

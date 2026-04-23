@@ -106,55 +106,55 @@
         <div class="container-details-2">
             <div class="btn-dec">
                 <span class="">Tipo</span>
-                <span><?= $property["type_name"] ?></span>
+                <span><?= !empty($property["type_name"]) ? $property["type_name"] : "N/A" ?></span>
             </div>
             
-            <?php if(!empty($property["plant"])){ ?>
             <div class="btn-dec">
                 <span class="">Planta</span>
-                <span><?= $property["plant"][0]["name"] ?></span>
+                <span><?= !empty($property["plant"]) ? $property["plant"][0]["name"] : "N/A" ?></span>
             </div>
-            <?php } ?>
-            <?php if(!empty($property["types_floors"])){ ?>
             <div class="btn-dec">
                 <span class="">Tipo de piso</span>
                 <span><?php 
-                $ctn = 1;
-                foreach($property["types_floors"] as $tf){
-                    if (count($property["types_floors"]) == $ctn){
-                        if (count($property["types_floors"]) === 1){
-                            echo $tf["name"];
+                if(!empty($property["types_floors"])){
+                    $ctn = 1;
+                    foreach($property["types_floors"] as $tf){
+                        if (count($property["types_floors"]) == $ctn){
+                            if (count($property["types_floors"]) === 1){
+                                echo $tf["name"];
+                            }else{
+                                echo " y ".$tf["name"];
+                            }
                         }else{
-                            echo " y ".$tf["name"];
+                            if ($ctn < count($property["types_floors"]) -1 ){
+                                echo $tf["name"] .", " ;
+                            }else{
+                                echo $tf["name"];
+                            }
                         }
-                    }else{
-                        if ($ctn < count($property["types_floors"]) -1 ){
-                            echo $tf["name"] .", " ;
-                        }else{
-                            echo $tf["name"];
-                        }
+                        $ctn += 1;
                     }
-                    $ctn += 1;
+                }else{
+                    echo "N/A";
                 }
                 ?></span>
             </div>
-            <?php } ?>
 
             <div class="btn-dec">
                 <span class="">Categoría</span>
-                <span><?= $property["category_name"] ?></span>
+                <span><?= !empty($property["category_name"]) ? $property["category_name"] : "N/A" ?></span>
             </div>
             <div class="btn-dec">
                 <span class="">Precio</span>
                 <span><?php
+                    $priceValue = "";
                     if (intval($property["category_id"]) == 1){
-                        echo ($property["rental_price"]);
+                        $priceValue = $property["rental_price"] ?? "";
                     }else if (intval($property["category_id"]) == 2){
-                        echo ($property["sale_price"]);
-                    }else{
-                        echo "";
+                        $priceValue = $property["sale_price"] ?? "";
                     }
-                    ?> €
+                    echo !empty($priceValue) ? $priceValue . " &euro;" : "N/A";
+                    ?>
                 </span>
             </div>
             <?php if ((int) ($property["type_id"] ?? 0) === 9 && !empty($property["type_of_terrain"])) { ?>
@@ -175,10 +175,18 @@
                 <span><?= implode(', ', array_column($property["terrain_qualifications"], "name")) ?></span>
             </div>
             <?php } ?>
-            <?php if (!empty($property["meters_built"])){ ?>
             <div class="btn-dec">
                 <span class="">M<sup>2</sup> Construidos</span>
-                <span><?= $property["meters_built"] ?> m<sup>2</sup></span>
+                <span><?= !empty($property["meters_built"]) ? $property["meters_built"] . " m<sup>2</sup>" : "N/A" ?></span>
+            </div>
+            <?php if ((int) ($property["type_id"] ?? 0) !== 9) { ?>
+            <div class="btn-dec">
+                <span class="">Fianza</span>
+                <span><?= !empty($property["rental_price"]) ? $property["rental_price"] . " &euro;" : "N/A" ?></span>
+            </div>
+            <div class="btn-dec">
+                <span class="">Estado de conservación</span>
+                <span><?= !empty($property["state_conservation"]) ? $property["state_conservation"][0]["name"] : "N/A" ?></span>
             </div>
             <?php } ?>
         </div>
@@ -198,18 +206,12 @@
         </div>
         <div class="container-more-data">
             <?php
-                $hasStateOrFacade = !empty($property["state_conservation"]) || !empty($property["facade"]);
-                if (intval($property["type_id"]) != 9 && $hasStateOrFacade){
+                $hasFacadeSummary = !empty($property["facade"]);
+                if (intval($property["type_id"]) != 9 && $hasFacadeSummary){
             ?>
                 <article class="message details-section-main details-top-card">
                 <div class="message-body">
                     <div class="container-row-free">
-                        <?php if(!empty($property["state_conservation"])){ ?>
-                        <div class="box-li">
-                            <h3 class="text-title-h">Estado de conservación</h3>
-                            <span class="text-span"><?= $property["state_conservation"][0]["name"] ?></span>
-                        </div>
-                        <?php } ?>
                         <?php if (!empty($property["facade"])){ ?>
                         <div class="box-li">
                             <h3 class="text-title-h">Fachada del inmueble</h3>
@@ -222,7 +224,30 @@
             <?php } ?>
             <?php if (intval($property["category_id"]) == 1 && intval($property["type_id"]) != 9){ ?>
                 <?php
-                    $hasRentalSummary = !empty($property["rental_type"]) || !empty($property["rental_price"]);
+                    $showHasTenantsTopCard = intval($property["type_id"]) !== 1
+                        && intval($property["type_id"]) !== 13
+                        && !empty($property["has_tenants"]);
+                ?>
+                <?php if($showHasTenantsTopCard){ ?>
+                <article class="message details-section-main details-top-card">
+                    <div class="message-body">
+                        <div class="container-row-free">
+                            <div class="box-li">
+                                <h3 class="text-title-h">Inquilinos</h3>
+                                <?php if (strval($property["has_tenants"]) === "1"){ ?>
+                                    <span class="text-span">Si tiene</span>
+                                <?php }else if (strval($property["has_tenants"]) === "2"){ ?>
+                                    <span class="text-span">No tiene</span>
+                                <?php }else{ ?>
+                                    <span class="text-span">Preguntar</span>
+                                <?php } ?>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                <?php } ?>
+                <?php
+                    $hasRentalSummary = !empty($property["rental_type"]);
                     if($hasRentalSummary){
                 ?>
                 <article class="message details-section-main details-top-card">
@@ -232,12 +257,6 @@
                             <div class="box-li">
                                 <h3 class="text-title-h">Tipo de arquiler</h3>
                                 <span class="text-span"><?= $property["rental_type"][0]["name"] ?></span>
-                            </div>
-                            <?php } ?>
-                            <?php if (!empty($property["rental_price"])){ ?>
-                            <div class="box-li">
-                                <h3 class="text-title-h">Fianza</h3>
-                                <span class="text-span"><?= $property["rental_price"] ?> €</span>
                             </div>
                             <?php } ?>
                         </div>
@@ -387,7 +406,7 @@
                                 <span class="text-span"><?= $property["plaza_capacity"][0]["name"] ?></span>
                             </div>
                             <?php } ?>            
-                            <?php if (!empty($property["has_tenants"])){ ?>
+                            <?php if (!empty($property["has_tenants"]) && empty($showHasTenantsTopCard)){ ?>
                             <div class="box-li">
                                 <h3 class="text-title-h">Inquilinos</h3>
                                 <?php if (strval($property["has_tenants"]) === "1"){

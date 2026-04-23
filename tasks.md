@@ -226,3 +226,8 @@
 - `kconecta-kconectacrm-5oikfs.1.8j4e7feeo9l3yxw5hap9vhw8k`
 - Referencias `sadtgnab`, `6ckhqztv` y `cyj5uxrv` tienen media en BD local pero sus archivos no existen en `public/img/uploads`.
 - La persistencia productiva de media ya no esta pendiente: quedo resuelta en Dokploy y validada con redeploy mas subida nueva.
+
+- Context update `2026-04-23`:
+- [x] Corregir cards vacias en `resources/views/page/details.blade.php` (garaje/nave).
+- [x] Reubicar `Fianza` y `Estado de conservacion` al bloque superior de cards pequenas.
+- [x] Aplicar fallback `N/A` en cards superiores cuando falten datos.

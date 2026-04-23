@@ -100,3 +100,8 @@
 - Mejorar health checks y observabilidad de app + DB.
 - Vigilar drift entre migraciones del repo y runtime productivo.
 - Documentar incident response y rollback operativo.
+
+- `Detalle publico de propiedades` pulido visual/funcional:
+- cards vacias eliminadas por render condicional estricto.
+- metadatos superiores con `N/A` para datos faltantes.
+- jerarquia de cards ajustada (Fianza/Estado junto a M2 construidos).
