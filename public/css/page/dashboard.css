@@ -815,7 +815,7 @@ body {
 .properties-list-page {
   display: grid;
   gap: 1.25rem;
-  --my-post-card-width: 510px;
+  --my-post-card-width: 340px;
 }
 
 .properties-list-page .page-card--properties-filters {
@@ -959,13 +959,15 @@ body {
 }
 
 .properties-list-page .properties-list-grid {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--my-post-card-width)), var(--my-post-card-width)));
+  display: flex;
+  flex-wrap: wrap;
   justify-content: flex-start;
-  justify-items: start;
+  align-items: stretch;
   gap: 1.4rem;
 }
 
 .properties-list-page .properties-list-grid .entity-card {
+  flex: 0 0 var(--my-post-card-width);
   width: min(100%, var(--my-post-card-width));
   max-width: var(--my-post-card-width);
   border-radius: 0.75rem;
@@ -1047,7 +1049,7 @@ body {
 
 @media (max-width: 1100px) {
   .properties-list-page {
-    --my-post-card-width: 430px;
+    --my-post-card-width: 320px;
   }
 
   .properties-list-page .properties-list-filters .list-and-partner-row {
@@ -1075,7 +1077,7 @@ body {
 
 @media (max-width: 760px) {
   .properties-list-page {
-    --my-post-card-width: 320px;
+    --my-post-card-width: 280px;
   }
 
   .properties-list-page .properties-list-filters .list-header-compact h2 {
@@ -1106,6 +1108,10 @@ body {
 }
 
 @media (max-width: 560px) {
+  .properties-list-page {
+    --my-post-card-width: 100%;
+  }
+
   .properties-list-page .page-card--properties-filters {
     padding: 1rem;
   }
