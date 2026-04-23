@@ -29,3 +29,9 @@ Thumbs.db
 # Media uploads
 /public/img/uploads/
 /public/video/uploads/
+/public/img/photo_profile/user_*
+
+# Local agent/codex temp files
+/.codex_tmp/
+/.codex_tmp_write_test.txt
+/todo.md
