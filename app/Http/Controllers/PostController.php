@@ -629,7 +629,7 @@ class PostController extends Controller
         ];
 
         $query = Property::query();
-        $partnerLevelIds = [User::LEVEL_AGENT];
+        $partnerLevelIds = [User::LEVEL_AGENT, User::LEVEL_ADMIN];
         if (! $isAdmin && $user) {
             $query->where('user_id', $user->id);
         }
@@ -655,14 +655,14 @@ class PostController extends Controller
         }
 
         if ($isAdmin) {
-            $agentUserIds = User::query()
-                ->where('user_level_id', User::LEVEL_AGENT)
+            $partnerUserIds = User::query()
+                ->whereIn('user_level_id', $partnerLevelIds)
                 ->pluck('id')
                 ->map(fn ($id) => (int) $id)
                 ->all();
 
-            if (! empty($agentUserIds)) {
-                $query->whereIn('user_id', $agentUserIds);
+            if (! empty($partnerUserIds)) {
+                $query->whereIn('user_id', $partnerUserIds);
             } else {
                 $query->whereRaw('1 = 0');
             }
@@ -752,7 +752,7 @@ class PostController extends Controller
         $partnerAgentOptions = collect();
         if ($isAdmin) {
             $partnerUsers = User::query()
-                ->where('user_level_id', User::LEVEL_AGENT)
+                ->whereIn('user_level_id', $partnerLevelIds)
                 ->orderBy('user_name')
                 ->orderBy('first_name')
                 ->orderBy('last_name')

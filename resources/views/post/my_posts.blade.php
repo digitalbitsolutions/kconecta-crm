@@ -31,7 +31,7 @@
                 @if ($isAdmin)
                     <div class="partner-filter-row partner-filter-row--single">
                         <label class="filter-group">
-                            <span>Agente inmobiliario</span>
+                            <span>Propietario</span>
                             <select name="partner_id" id="partner_filter">
                                 <option value="all">Todos</option>
                                 @foreach ($partnerAgentOptions as $partnerAgent)
