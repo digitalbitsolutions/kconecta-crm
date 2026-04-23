@@ -221,7 +221,10 @@
             </article>
             <?php } ?>
             <?php if (intval($property["category_id"]) == 1 && intval($property["type_id"]) != 9){ ?>
-                <?php if(!empty($property["rental_type"]) || !empty($property["rental_price"])){ ?>
+                <?php
+                    $hasRentalSummary = !empty($property["rental_type"]) || !empty($property["rental_price"]);
+                    if($hasRentalSummary){
+                ?>
                 <article class="message details-section-main details-top-card">
                     <div class="message-body">
                         <div class="container-row-free">
@@ -241,7 +244,12 @@
                     </div>
                 </article>
                 <?php } ?>
-                <?php if (intval($property["type_id"]) === 1 || intval($property["type_id"]) === 13){ ?>
+                <?php
+                    $hasAppropriateForChildren = array_key_exists("appropriate_for_children", $property) && $property["appropriate_for_children"] !== "" && $property["appropriate_for_children"] !== null;
+                    $hasPetFriendly = array_key_exists("pet_friendly", $property) && $property["pet_friendly"] !== "" && $property["pet_friendly"] !== null;
+                    $hasTenantConditions = !empty($property["max_num_tenants"]) || $hasAppropriateForChildren || $hasPetFriendly;
+                    if ((intval($property["type_id"]) === 1 || intval($property["type_id"]) === 13) && $hasTenantConditions){
+                ?>
                 <article class="message details-section-main details-top-card">
                     <div class="message-body">
                         <div class="container-row-free">
@@ -250,7 +258,7 @@
                                 <h3 class="text-title-h">Número máximo de inquilinos</h3>
                                 <span class="text-span"><?= $property["max_num_tenants"] ?></span>
                             </div>
-                            <?php } if(!empty($property["appropriate_for_children"])){ ?>
+                            <?php } if($hasAppropriateForChildren){ ?>
                             <div class="box-li">
                                 <?php if($property["appropriate_for_children"]){
                                     echo "<h3 class='text-title-h'>Apropiado para niños</h3>";
@@ -259,6 +267,7 @@
                                  } ?>
                             </div>
                             <?php } ?>
+                            <?php if($hasPetFriendly){ ?>
                             <div class="box-li">
                                 <?php if($property["pet_friendly"]){
                                     echo "<h3 class='text-title-h'>Se admiten mascotas</h3>";
@@ -266,6 +275,7 @@
                                     echo "<h3 class='text-title-h'>No se admiten mascotas</h3>";
                                  } ?>
                             </div>
+                            <?php } ?>
                         </div>
                     </div>
                 </article>
@@ -273,8 +283,17 @@
             <?php
                 }
             ?>
-            <?php 
-                if (intval($property["category_id"]) == 2){
+            <?php
+                $hasSaleDetails = !empty($property["type_of_terrain"])
+                    || !empty($property["wheeled_access"])
+                    || !empty($property["nearest_municipality_distance"])
+                    || !empty($property["land_size"])
+                    || !empty($property["typology"])
+                    || !empty($property["community_expenses"])
+                    || !empty($property["ibi"])
+                    || !empty($property["mortgage_rate"])
+                    || !empty($property["reason_for_sale"]);
+                if (intval($property["category_id"]) == 2 && $hasSaleDetails){
             ?>    
                 <article class="message details-section-main">
                     <div class="message-body">
@@ -341,7 +360,24 @@
             <?php
                 }
             ?>
-            <?php if (!empty($property["community_expenses"] || !empty($property["useful_meters"]) || !empty($property["plot_meters"]) || !empty($property["number_of_plants"]) || !empty($property["bathrooms"]))){ ?>
+            <?php
+                $hasMainDetailRows = !empty($property["plaza_capacity"])
+                    || !empty($property["has_tenants"])
+                    || !empty($property["bank_owned_property"])
+                    || !empty($property["useful_meters"])
+                    || !empty($property["plot_meters"])
+                    || !empty($property["number_of_plants"])
+                    || !empty($property["bathrooms"])
+                    || !empty($property["bedrooms"])
+                    || !empty($property["linear_meters_of_facade"])
+                    || !empty($property["stays"])
+                    || !empty($property["number_of_shop_windows"])
+                    || !empty($property["year_of_construction"])
+                    || !empty($property["type_heating"])
+                    || !empty($property["orientations"])
+                    || !empty($property["elevator"]);
+                if ($hasMainDetailRows){
+            ?>
                 <article class="message details-section-main">
                     <div class="message-body">
                         <div class="container-row-free">
@@ -515,8 +551,6 @@
                     </div>
                 </article>
             <?php } ?>
-            <div class="container-two-col-flex">
-            </div>
             <?php if (!empty($property["equipments"])){ ?>
                 <article class="message details-section-equipments">
                     <div class="message-header">
