@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'provider_or_agent_verified' => \App\Http\Middleware\EnsureProviderOrAgentEmailIsVerified::class,
+            'orchestrator.key' => \App\Http\Middleware\EnsureOrchestratorKey::class,
         ]);
 
         //

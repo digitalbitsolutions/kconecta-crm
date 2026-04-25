@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Internal\OrchestratorController;
 use App\Http\Controllers\Api\PropertyApiController;
 use App\Http\Controllers\ApiController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,12 @@ Route::post('/property_stats/register', [ApiController::class, 'propertyStatsCon
 // Mobile app auth + agent endpoints
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/test-now', fn () => response()->json(['message' => 'API is working']));
+
+Route::middleware('orchestrator.key')->prefix('orchestrate')->group(function () {
+    Route::post('/plan', [OrchestratorController::class, 'plan']);
+    Route::post('/run', [OrchestratorController::class, 'run']);
+    Route::post('/merge', [OrchestratorController::class, 'merge']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);

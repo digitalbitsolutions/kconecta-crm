@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Orchestration\Contracts\WorkerDriver;
+use App\Services\Orchestration\LocalWorkerDriver;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -13,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(WorkerDriver::class, LocalWorkerDriver::class);
     }
 
     /**
