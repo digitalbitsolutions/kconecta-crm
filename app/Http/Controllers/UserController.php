@@ -221,6 +221,7 @@ class UserController extends Controller
             'user' => $user,
             'address' => $address,
             'documentTypes' => $documentTypes,
+            'addressRequired' => (int) $user->user_level_id !== User::LEVEL_SERVICE_PROVIDER,
             'activeNav' => 'profile',
             'isAdmin' => (int) $user->user_level_id === 1,
             'mapsKey' => config('services.google.maps_key'),
@@ -252,6 +253,7 @@ class UserController extends Controller
             'user' => $profileUser,
             'address' => $address,
             'documentTypes' => $documentTypes,
+            'addressRequired' => (int) $profileUser->user_level_id !== User::LEVEL_SERVICE_PROVIDER,
             'activeNav' => 'users',
             'isAdmin' => $isAdmin,
             'mapsKey' => config('services.google.maps_key'),
@@ -289,7 +291,7 @@ class UserController extends Controller
             'landline_phone' => ['nullable', 'string', 'max:30'],
             'document_type' => ['nullable', 'string', 'max:25'],
             'document_number' => ['nullable', 'string', 'max:50'],
-            'address' => ['required', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:255'],
             'address_place_id' => ['nullable', 'string', 'max:255'],
             'address_street_name' => ['nullable', 'string', 'max:255'],
             'address_street_number' => ['nullable', 'string', 'max:50'],
@@ -309,8 +311,14 @@ class UserController extends Controller
         $addressInput = trim((string) ($validated['address'] ?? ''));
         $placeId = trim((string) ($validated['address_place_id'] ?? ''));
         $currentAddress = trim((string) ($addressRecord->address ?? $user->address ?? ''));
+        $isServiceProvider = (int) $user->user_level_id === User::LEVEL_SERVICE_PROVIDER;
+        $addressRequired = ! $isServiceProvider;
 
-        if ($addressInput !== '' && $addressInput !== $currentAddress && $placeId === '') {
+        if (! $addressRequired && $placeId === '') {
+            $addressInput = '';
+        }
+
+        if ($addressRequired && $addressInput !== '' && $addressInput !== $currentAddress && $placeId === '') {
             return back()
                 ->withErrors(['address' => 'Selecciona una direccion sugerida por Google.'])
                 ->withInput();
@@ -324,9 +332,7 @@ class UserController extends Controller
         $user->document_type = $validated['document_type'] ?? '';
         $user->document_number = $validated['document_number'] ?? '';
 
-        if ($addressInput !== '') {
-            $user->address = $addressInput;
-        }
+        $user->address = $addressInput !== '' ? $addressInput : null;
 
         if (! empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
@@ -350,26 +356,27 @@ class UserController extends Controller
 
         $user->save();
 
-        if ($addressInput !== '') {
-            $addressRecord->address = $addressInput;
-        }
+        $addressRecord->address = $addressInput !== '' ? $addressInput : null;
+        $addressRecord->street_name = $placeId !== '' ? ($validated['address_street_name'] ?? null) : null;
+        $addressRecord->street_number = $placeId !== '' ? ($validated['address_street_number'] ?? null) : null;
+        $addressRecord->neighborhood = $placeId !== '' ? ($validated['address_neighborhood'] ?? null) : null;
+        $addressRecord->city = $placeId !== '' ? ($validated['address_city'] ?? null) : null;
+        $addressRecord->province = $placeId !== '' ? ($validated['address_province'] ?? null) : null;
+        $addressRecord->state = $placeId !== '' ? ($validated['address_state'] ?? null) : null;
+        $addressRecord->postal_code = $placeId !== '' ? ($validated['address_postal_code'] ?? null) : null;
+        $addressRecord->country = $placeId !== '' ? ($validated['address_country'] ?? null) : null;
+        $addressRecord->latitude = $placeId !== '' ? ($validated['address_lat'] ?? null) : null;
+        $addressRecord->longitude = $placeId !== '' ? ($validated['address_lng'] ?? null) : null;
 
-        if ($placeId !== '') {
-            $addressRecord->street_name = $validated['address_street_name'] ?? '';
-            $addressRecord->street_number = $validated['address_street_number'] ?? '';
-            $addressRecord->neighborhood = $validated['address_neighborhood'] ?? '';
-            $addressRecord->city = $validated['address_city'] ?? '';
-            $addressRecord->province = $validated['address_province'] ?? '';
-            $addressRecord->state = $validated['address_state'] ?? '';
-            $addressRecord->postal_code = $validated['address_postal_code'] ?? '';
-            $addressRecord->country = $validated['address_country'] ?? '';
-            $addressRecord->latitude = $validated['address_lat'] ?? null;
-            $addressRecord->longitude = $validated['address_lng'] ?? null;
-        }
+        $hasAddressData = $addressRecord->address !== null
+            || $addressRecord->latitude !== null
+            || $addressRecord->longitude !== null;
 
-        if ($addressRecord->address || $placeId !== '') {
+        if ($hasAddressData) {
             $addressRecord->user_id = $user->id;
             $addressRecord->save();
+        } elseif ($addressRecord->exists) {
+            $addressRecord->delete();
         }
 
         $statusMessage = 'Perfil actualizado correctamente.';

@@ -20,6 +20,7 @@
         $addressValue = old('address', $address?->address ?? $user->address ?? '');
         $addressValidated = $addressValidated ?? false;
         $targetUserId = $targetUserId ?? null;
+        $addressRequired = $addressRequired ?? true;
     @endphp
 
     @if (session('status'))
@@ -77,9 +78,14 @@
                         </div>
                     </label>
                     <label class="profile-field profile-field--full">
-                        <span>Direcci&oacute;n *</span>
-                        <input id="address-input" type="text" name="address" value="{{ $addressValue }}" placeholder="Escribe y selecciona una sugerencia" autocomplete="off" required>
-                        <small>Selecciona una direcci&oacute;n sugerida por Google para validar la ubicaci&oacute;n.</small>
+                        <span>Direcci&oacute;n {{ $addressRequired ? '*' : '' }}</span>
+                        <input id="address-input" type="text" name="address" value="{{ $addressValue }}" placeholder="Escribe y selecciona una sugerencia" autocomplete="off" {{ $addressRequired ? 'required' : '' }}>
+                        <small>
+                            {{ $addressRequired
+                                ? 'Selecciona una dirección sugerida por Google para validar la ubicación.'
+                                : 'Opcional. Si no seleccionas una dirección validada, no aparecerás en el mapa.'
+                            }}
+                        </small>
                         <div class="address-status {{ $addressValidated ? 'is-valid' : '' }}" id="address-status">
                             {!! $addressValidated ? 'Direcci&oacute;n validada' : 'Direcci&oacute;n pendiente' !!}
                         </div>
@@ -167,6 +173,7 @@
             const loader = document.getElementById('profile-loader');
             const loaderText = document.getElementById('profile-loader-text');
             const initialAddress = addressInput ? addressInput.value.trim() : '';
+            const addressRequired = {{ $addressRequired ? 'true' : 'false' }};
 
             const updateStatus = (isValid, message) => {
                 if (!statusBadge) {
@@ -244,7 +251,7 @@
             if (form) {
                 form.addEventListener('submit', (event) => {
                     const currentAddress = addressInput ? addressInput.value.trim() : '';
-                    if (currentAddress && currentAddress !== initialAddress && !placeIdInput.value) {
+                    if (addressRequired && currentAddress && currentAddress !== initialAddress && !placeIdInput.value) {
                         event.preventDefault();
                         alert('Selecciona una direcci\u00f3n sugerida por Google.');
                     }
