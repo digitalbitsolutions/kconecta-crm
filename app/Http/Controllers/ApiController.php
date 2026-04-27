@@ -102,6 +102,10 @@ class ApiController extends Controller
 
         if (mb_strlen($text) >= 3) {
             $provinceRows = UserAddress::query()
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->where('latitude', '<>', '')
+                ->where('longitude', '<>', '')
                 ->where('province', 'like', '%' . $text . '%')
                 ->get(['province']);
 
@@ -119,6 +123,10 @@ class ApiController extends Controller
         }
 
         $addressRows = UserAddress::query()
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->where('latitude', '<>', '')
+            ->where('longitude', '<>', '')
             ->where('address', 'like', '%' . $text . '%')
             ->get();
 
@@ -188,10 +196,12 @@ class ApiController extends Controller
         } elseif (! empty($address)) {
             $addressParts = explode(',', $address);
             $addressSeed = trim($addressParts[0]);
-            $addressQuery->where('address', 'like', '%' . trim($address) . '%')
-                ->orWhere('address', 'like', '%' . $addressSeed . '%')
-                ->orWhere('province', 'like', '%' . $addressSeed . '%')
-                ->orWhere('city', 'like', '%' . $addressSeed . '%');
+            $addressQuery->where(function ($query) use ($address, $addressSeed) {
+                $query->where('address', 'like', '%' . trim($address) . '%')
+                    ->orWhere('address', 'like', '%' . $addressSeed . '%')
+                    ->orWhere('province', 'like', '%' . $addressSeed . '%')
+                    ->orWhere('city', 'like', '%' . $addressSeed . '%');
+            });
             $addresses = $addressQuery->get();
         } else {
             $addresses = collect();
@@ -282,7 +292,11 @@ class ApiController extends Controller
                 ->all();
         }
 
-        $addressQuery = UserAddress::query();
+        $addressQuery = UserAddress::query()
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->where('latitude', '<>', '')
+            ->where('longitude', '<>', '');
         if (! empty($city) || ! empty($province)) {
             if (! empty($province) && empty($city)) {
                 $addressQuery->where('province', trim($province));

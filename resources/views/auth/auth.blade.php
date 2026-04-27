@@ -27,9 +27,6 @@
 
         <div class="container-main {{ $mode === 'register' ? 'right-panel-active' : '' }}" id="container-main">
             <div class="form-container sign-up-container">
-                @php
-                    $isCifSelected = old('document_type') === 'CIF';
-                @endphp
                 <form method="POST" action="{{ route('register') }}">
                     @csrf
                     <div class="container-logo-image-dml-redirect-start">
@@ -51,39 +48,24 @@
                         </select>
                     </label>
 
-                    <div class="container-two-col">
-                        <label>
-                        <span>Tipo de documento *</span>
-                            <select name="document_type" id="document_type" required>
-                                <option value="">Seleccione</option>
-                                @foreach ($documentTypes as $documentType)
-                                    <option value="{{ $documentType }}" {{ old('document_type') === $documentType ? 'selected' : '' }}>
-                                        {{ $documentType }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </label>
-                        <label>
-                            <span>N&uacute;mero de documento *</span>
-                            <input type="text" name="document_number" value="{{ old('document_number') }}" required>
-                        </label>
-                    </div>
+                    <input type="hidden" name="document_type" value="">
+                    <input type="hidden" name="document_number" value="">
 
                     <div id="company_name_row" class="full-width-row">
                         <label>
-                            <span>Raz&oacute;n social *</span>
-                            <input type="text" id="company_name" name="company_name" value="{{ old('company_name') }}" required>
+                            <span>Raz&oacute;n social</span>
+                            <input type="text" id="company_name" name="company_name" value="{{ old('company_name') }}">
                         </label>
                     </div>
 
-                    <div class="container-two-col" id="person_name_row" style="{{ $isCifSelected ? 'display:none;' : '' }}">
+                    <div class="container-two-col" id="person_name_row">
                         <label>
-                            <span>Nombre *</span>
-                            <input type="text" id="first_name" name="first_name" value="{{ old('first_name') }}" {{ $isCifSelected ? '' : 'required' }}>
+                            <span>Nombre</span>
+                            <input type="text" id="first_name" name="first_name" value="{{ old('first_name') }}">
                         </label>
                         <label>
-                            <span>Apellido *</span>
-                            <input type="text" id="last_name" name="last_name" value="{{ old('last_name') }}" {{ $isCifSelected ? '' : 'required' }}>
+                            <span>Apellido</span>
+                            <input type="text" id="last_name" name="last_name" value="{{ old('last_name') }}">
                         </label>
                     </div>
 
@@ -99,8 +81,8 @@
                     </div>
 
                     <label>
-                        <span>Direcci&oacute;n *</span>
-                        <input type="text" id="address_input" name="address" value="{{ old('address') }}" required autocomplete="off">
+                        <span>Direcci&oacute;n</span>
+                        <input type="text" id="address_input" name="address" value="{{ old('address') }}" autocomplete="off">
                     </label>
                     <div class="container-two-col">
                         <label>
@@ -239,7 +221,6 @@
         @endif
         <script>
             (() => {
-                const documentType = document.getElementById('document_type');
                 const companyRow = document.getElementById('company_name_row');
                 const personRow = document.getElementById('person_name_row');
                 const companyName = document.getElementById('company_name');
@@ -260,38 +241,25 @@
                 const addressLatInput = document.getElementById('address_lat');
                 const addressLngInput = document.getElementById('address_lng');
 
-                if (!documentType) {
-                    return;
-                }
-
                 const syncDocumentTypeFields = () => {
-                    const isCif = documentType.value === 'CIF';
-
                     if (companyRow) {
                         companyRow.style.display = '';
                     }
                     if (personRow) {
-                        personRow.style.display = isCif ? 'none' : '';
+                        personRow.style.display = '';
                     }
 
                     if (companyName) {
-                        companyName.required = true;
+                        companyName.required = false;
                     }
                     if (firstName) {
-                        firstName.required = !isCif;
-                        if (isCif) {
-                            firstName.value = '';
-                        }
+                        firstName.required = false;
                     }
                     if (lastName) {
-                        lastName.required = !isCif;
-                        if (isCif) {
-                            lastName.value = '';
-                        }
+                        lastName.required = false;
                     }
                 };
 
-                documentType.addEventListener('change', syncDocumentTypeFields);
                 syncDocumentTypeFields();
 
                 const createSecurePassword = (length = 14) => {

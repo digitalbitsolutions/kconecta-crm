@@ -39,22 +39,19 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $documentType = strtoupper(trim((string) $request->input('document_type')));
-        $isCif = $documentType === 'CIF';
-
         $rules = [
             'user_level_id' => 'required|integer|in:' . User::LEVEL_SERVICE_PROVIDER . ',' . User::LEVEL_AGENT,
-            'document_type' => 'required|string|max:25',
-            'document_number' => 'required|string|max:25',
-            'first_name' => ($isCif ? 'nullable' : 'required') . '|string|max:50',
+            'document_type' => 'nullable|string|max:25',
+            'document_number' => 'nullable|string|max:25',
+            'first_name' => 'nullable|required_without:company_name|string|max:50',
             'last_name' => 'nullable|string|max:50',
-            'company_name' => 'required|string|max:100',
+            'company_name' => 'nullable|required_without:first_name|string|max:100',
             'phone' => 'required|string|max:20',
             'landline_phone' => 'nullable|string|max:100',
-            'address' => 'required|string|max:255',
+            'address' => 'nullable|string|max:255',
             'address_floor' => 'nullable|string|max:50',
             'address_door' => 'nullable|string|max:50',
-            'address_place_id' => 'required|string|max:255',
+            'address_place_id' => 'nullable|string|max:255',
             'address_street_name' => 'nullable|string|max:255',
             'address_street_number' => 'nullable|string|max:50',
             'address_neighborhood' => 'nullable|string|max:255',
@@ -63,51 +60,40 @@ class RegisteredUserController extends Controller
             'address_state' => 'nullable|string|max:255',
             'address_postal_code' => 'nullable|string|max:20',
             'address_country' => 'nullable|string|max:255',
-            'address_lat' => 'required|numeric',
-            'address_lng' => 'required|numeric',
+            'address_lat' => 'nullable|numeric',
+            'address_lng' => 'nullable|numeric',
             'email' => 'required|string|lowercase|email|max:50',
             'password' => ['required', 'confirmed', 'min:6'],
         ];
 
-        if (! $isCif) {
-            $rules['last_name'] = 'required|string|max:50';
-        }
-
         $messages = [
             'required' => 'El campo :attribute es obligatorio.',
-            'numeric' => 'El campo :attribute debe ser numérico.',
-            'email' => 'El campo :attribute debe ser un correo electrónico válido.',
-            'confirmed' => 'La confirmación de :attribute no coincide.',
+            'required_without' => 'Debes completar al menos uno de estos campos: :attribute.',
+            'numeric' => 'El campo :attribute debe ser numerico.',
+            'email' => 'El campo :attribute debe ser un correo electronico valido.',
+            'confirmed' => 'La confirmacion de :attribute no coincide.',
             'min' => 'El campo :attribute debe tener al menos :min caracteres.',
         ];
 
         $attributes = [
             'user_level_id' => 'tipo de usuario',
             'document_type' => 'tipo de documento',
-            'document_number' => 'número de documento',
+            'document_number' => 'numero de documento',
             'first_name' => 'nombre',
             'last_name' => 'apellidos',
-            'company_name' => 'razón social',
-            'phone' => 'móvil (WhatsApp)',
-            'landline_phone' => 'teléfono fijo',
-            'address' => 'dirección',
-            'address_place_id' => 'dirección (selecciona una sugerencia de Google)',
-            'address_lat' => 'coordenada de latitud (dirección)',
-            'address_lng' => 'coordenada de longitud (dirección)',
+            'company_name' => 'razon social',
+            'phone' => 'movil (WhatsApp)',
+            'landline_phone' => 'telefono fijo',
+            'address' => 'direccion',
+            'address_place_id' => 'direccion validada',
+            'address_lat' => 'coordenada de latitud',
+            'address_lng' => 'coordenada de longitud',
             'email' => 'e-mail',
-            'password' => 'contraseña',
+            'password' => 'contrasena',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages, $attributes);
-        $validator->after(function ($validator) use ($documentType, $request) {
-            $documentNumber = $this->normalizeDocumentNumber((string) $request->input('document_number'));
-            if (! $this->isValidSpanishDocument($documentType, $documentNumber)) {
-                $validator->errors()->add(
-                    'document_number',
-                    'El número de documento no es válido para el tipo seleccionado.'
-                );
-            }
-
+        $validator->after(function ($validator) use ($request) {
             $email = mb_strtolower(trim((string) $request->input('email')));
             $companyName = $this->normalizeCompanyName((string) $request->input('company_name'));
             $phone = $this->normalizePhone((string) $request->input('phone'));
@@ -115,20 +101,12 @@ class RegisteredUserController extends Controller
 
             $duplicates = [];
 
-            if ($documentNumber !== '' && User::where('document_number', $documentNumber)->exists()) {
-                $duplicates['document_number'] = [
-                    'label' => 'Documento',
-                    'value' => $documentNumber,
-                ];
-                $validator->errors()->add('document_number', 'Ya existe un registro con este número de documento.');
-            }
-
             if ($companyName !== '' && User::whereRaw('LOWER(TRIM(user_name)) = ?', [mb_strtolower($companyName)])->exists()) {
                 $duplicates['company_name'] = [
-                    'label' => 'Razón social',
+                    'label' => 'Razon social',
                     'value' => $companyName,
                 ];
-                $validator->errors()->add('company_name', 'Ya existe un registro con esta razón social.');
+                $validator->errors()->add('company_name', 'Ya existe un registro con esta razon social.');
             }
 
             if ($email !== '' && User::whereRaw('LOWER(email) = ?', [$email])->exists()) {
@@ -149,10 +127,10 @@ class RegisteredUserController extends Controller
 
             if ($landlinePhone !== '' && User::whereRaw("REPLACE(REPLACE(REPLACE(REPLACE(landline_phone,' ',''),'-',''),'.',''),'+','') = ?", [$landlinePhone])->exists()) {
                 $duplicates['landline_phone'] = [
-                    'label' => 'Teléfono',
+                    'label' => 'Telefono',
                     'value' => trim((string) $request->input('landline_phone')),
                 ];
-                $validator->errors()->add('landline_phone', 'Ya existe un registro con este teléfono.');
+                $validator->errors()->add('landline_phone', 'Ya existe un registro con este telefono.');
             }
 
             if (! empty($duplicates)) {
@@ -164,29 +142,46 @@ class RegisteredUserController extends Controller
                     'Ya existe un registro con estos valores: ' . $details
                 );
             }
+
+            $firstName = trim((string) $request->input('first_name'));
+            $companyNameValue = trim((string) $request->input('company_name'));
+            if ($firstName === '' && $companyNameValue === '') {
+                $validator->errors()->add('first_name', 'Completa Nombre o Razon social.');
+                $validator->errors()->add('company_name', 'Completa Nombre o Razon social.');
+            }
         });
         $validator->validate();
 
         $email = (string) $request->email;
         $userName = $this->normalizeCompanyName((string) $request->input('company_name'));
+        $documentType = strtoupper(trim((string) $request->input('document_type')));
         $documentNumber = $this->normalizeDocumentNumber((string) $request->input('document_number'));
-        $firstName = $isCif ? $userName : trim((string) $request->first_name);
-        $lastName = $isCif ? null : trim((string) $request->last_name);
-        $addressValue = $this->composeRegistrationAddress(
-            (string) $request->input('address'),
-            (string) $request->input('address_floor'),
-            (string) $request->input('address_door')
-        );
+        $firstNameInput = trim((string) $request->input('first_name'));
+        $firstName = $firstNameInput !== '' ? $firstNameInput : $userName;
+        $lastName = trim((string) $request->input('last_name'));
+        $phone = trim((string) $request->input('phone'));
+        $landlinePhone = trim((string) $request->input('landline_phone'));
+
+        $addressPlaceId = trim((string) $request->input('address_place_id'));
+        $addressValue = null;
+        if ($addressPlaceId !== '') {
+            $addressValue = $this->composeRegistrationAddress(
+                (string) $request->input('address'),
+                (string) $request->input('address_floor'),
+                (string) $request->input('address_door')
+            );
+            $addressValue = trim((string) $addressValue) !== '' ? $addressValue : null;
+        }
 
         $user = User::create([
             'first_name' => $firstName,
             'last_name' => $lastName !== '' ? $lastName : null,
-            'user_name' => $userName,
+            'user_name' => $userName !== '' ? $userName : $firstName,
             'email' => $email,
-            'phone' => $request->phone,
-            'landline_phone' => $request->landline_phone,
-            'document_type' => $documentType,
-            'document_number' => $documentNumber,
+            'phone' => $phone !== '' ? $phone : null,
+            'landline_phone' => $landlinePhone !== '' ? $landlinePhone : null,
+            'document_type' => $documentType !== '' ? $documentType : null,
+            'document_number' => $documentNumber !== '' ? $documentNumber : null,
             'address' => $addressValue,
             'user_level_id' => (int) $request->user_level_id,
             'password' => Hash::make($request->password),
@@ -195,20 +190,20 @@ class RegisteredUserController extends Controller
         UserAddress::create([
             'user_id' => $user->id,
             'address' => $addressValue,
-            'street_name' => (string) $request->input('address_street_name', ''),
-            'street_number' => (string) $request->input('address_street_number', ''),
-            'neighborhood' => (string) $request->input('address_neighborhood', ''),
-            'city' => (string) $request->input('address_city', ''),
-            'province' => (string) $request->input('address_province', ''),
-            'postal_code' => (string) $request->input('address_postal_code', ''),
-            'state' => (string) $request->input('address_state', ''),
-            'country' => (string) $request->input('address_country', ''),
-            'latitude' => (string) $request->input('address_lat', ''),
-            'longitude' => (string) $request->input('address_lng', ''),
+            'street_name' => $addressPlaceId !== '' ? $this->nullableTrim((string) $request->input('address_street_name', '')) : null,
+            'street_number' => $addressPlaceId !== '' ? $this->nullableTrim((string) $request->input('address_street_number', '')) : null,
+            'neighborhood' => $addressPlaceId !== '' ? $this->nullableTrim((string) $request->input('address_neighborhood', '')) : null,
+            'city' => $addressPlaceId !== '' ? $this->nullableTrim((string) $request->input('address_city', '')) : null,
+            'province' => $addressPlaceId !== '' ? $this->nullableTrim((string) $request->input('address_province', '')) : null,
+            'postal_code' => $addressPlaceId !== '' ? $this->nullableTrim((string) $request->input('address_postal_code', '')) : null,
+            'state' => $addressPlaceId !== '' ? $this->nullableTrim((string) $request->input('address_state', '')) : null,
+            'country' => $addressPlaceId !== '' ? $this->nullableTrim((string) $request->input('address_country', '')) : null,
+            'latitude' => $addressPlaceId !== '' ? $this->nullableTrim((string) $request->input('address_lat', '')) : null,
+            'longitude' => $addressPlaceId !== '' ? $this->nullableTrim((string) $request->input('address_lng', '')) : null,
             'additional_info' => trim(implode(', ', array_filter([
                 trim((string) $request->input('address_floor', '')) !== '' ? 'Piso: ' . trim((string) $request->input('address_floor', '')) : null,
                 trim((string) $request->input('address_door', '')) !== '' ? 'Puerta: ' . trim((string) $request->input('address_door', '')) : null,
-            ]))),
+            ]))) ?: null,
         ]);
 
         event(new Registered($user));
@@ -265,6 +260,13 @@ class RegisteredUserController extends Controller
         }
 
         return $baseAddress . ' (' . implode(', ', $parts) . ')';
+    }
+
+    private function nullableTrim(string $value): ?string
+    {
+        $trimmed = trim($value);
+
+        return $trimmed !== '' ? $trimmed : null;
     }
 
     private function isValidSpanishDocument(string $documentType, string $documentNumber): bool

@@ -358,7 +358,11 @@ class PageController extends Controller
         }
 
         if (! empty($city) || ! empty($province)) {
-            $addressQuery = UserAddress::query();
+            $addressQuery = UserAddress::query()
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->where('latitude', '<>', '')
+                ->where('longitude', '<>', '');
             if (! empty($province) && empty($city)) {
                 $addressQuery->where('province', trim($province));
             } elseif (! empty($city)) {
@@ -376,10 +380,16 @@ class PageController extends Controller
             $addressSeed = trim($addressParts[0]);
 
             $ids = UserAddress::query()
-                ->where('address', 'like', '%' . trim($address) . '%')
-                ->orWhere('address', 'like', '%' . $addressSeed . '%')
-                ->orWhere('province', 'like', '%' . $addressSeed . '%')
-                ->orWhere('city', 'like', '%' . $addressSeed . '%')
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->where('latitude', '<>', '')
+                ->where('longitude', '<>', '')
+                ->where(function ($query) use ($address, $addressSeed) {
+                    $query->where('address', 'like', '%' . trim($address) . '%')
+                        ->orWhere('address', 'like', '%' . $addressSeed . '%')
+                        ->orWhere('province', 'like', '%' . $addressSeed . '%')
+                        ->orWhere('city', 'like', '%' . $addressSeed . '%');
+                })
                 ->pluck('user_id')
                 ->map(fn ($id) => (int) $id)
                 ->all();
@@ -391,9 +401,15 @@ class PageController extends Controller
             }
         } else {
             $ids = UserAddress::query()
-                ->where('address', 'like', '%barcelona%')
-                ->orWhere('province', 'like', '%barcelona%')
-                ->orWhere('city', 'like', '%barcelona%')
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->where('latitude', '<>', '')
+                ->where('longitude', '<>', '')
+                ->where(function ($query) {
+                    $query->where('address', 'like', '%barcelona%')
+                        ->orWhere('province', 'like', '%barcelona%')
+                        ->orWhere('city', 'like', '%barcelona%');
+                })
                 ->pluck('user_id')
                 ->map(fn ($id) => (int) $id)
                 ->all();
@@ -418,6 +434,10 @@ class PageController extends Controller
 
         $provinces = UserAddress::query()
             ->select('province', DB::raw('COUNT(*) as total'))
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->where('latitude', '<>', '')
+            ->where('longitude', '<>', '')
             ->groupBy('province')
             ->orderByDesc('total')
             ->get()
@@ -425,6 +445,10 @@ class PageController extends Controller
 
         $cities = UserAddress::query()
             ->select('city', DB::raw('COUNT(*) as total'))
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->where('latitude', '<>', '')
+            ->where('longitude', '<>', '')
             ->groupBy('city')
             ->orderByDesc('total')
             ->get()
@@ -432,6 +456,10 @@ class PageController extends Controller
 
         $provinceCitiesList = UserAddress::query()
             ->select('province', 'city', DB::raw('COUNT(*) as total'))
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->where('latitude', '<>', '')
+            ->where('longitude', '<>', '')
             ->groupBy('province', 'city')
             ->orderBy('province')
             ->orderByDesc('total')

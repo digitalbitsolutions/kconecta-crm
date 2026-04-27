@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\User;
 use App\Models\UserLevel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -20,24 +21,27 @@ class RegistrationTest extends TestCase
     public function test_new_users_can_register(): void
     {
         $level = UserLevel::create([
-            'name' => 'Administrador',
+            'id' => User::LEVEL_SERVICE_PROVIDER,
+            'name' => 'Proveedor de servicio',
         ]);
 
-        $response = $this->withCsrfToken()->post('/register', [
-            '_token' => 'test-csrf-token',
+        $response = $this->post('/register', [
             'user_level_id' => $level->id,
-            'document_type' => 'DNI',
-            'document_number' => '12345678',
+            'document_type' => '',
+            'document_number' => '',
             'first_name' => 'Test',
-            'last_name' => 'User',
+            'last_name' => '',
+            'company_name' => '',
             'phone' => '600000000',
-            'address' => 'Barcelona',
+            'landline_phone' => '',
+            'address' => '',
+            'address_place_id' => '',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('verification.notice', absolute: false));
     }
 }
