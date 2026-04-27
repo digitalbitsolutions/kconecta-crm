@@ -2163,21 +2163,11 @@ class PostController extends Controller
 
         $providerAddress = UserAddress::where('user_id', (int) $user->id)->first();
         $resolvedAddress = trim((string) ($providerAddress?->address ?? $user->address ?? ''));
-        if ($resolvedAddress === '') {
-            return redirect()
-                ->back()
-                ->with('error', 'Debes completar la direccion en Mi perfil antes de publicar un servicio.')
-                ->withInput();
-        }
-
-        $resolvedLatitude = $providerAddress?->latitude;
-        $resolvedLongitude = $providerAddress?->longitude;
-        if ($resolvedLatitude === null || $resolvedLongitude === null || $resolvedLatitude === '' || $resolvedLongitude === '') {
-            return redirect()
-                ->back()
-                ->with('error', 'Debes validar tu direccion en Mi perfil antes de publicar un servicio.')
-                ->withInput();
-        }
+        $resolvedAddress = $resolvedAddress !== '' ? $resolvedAddress : null;
+        $resolvedLatitude = trim((string) ($providerAddress?->latitude ?? ''));
+        $resolvedLongitude = trim((string) ($providerAddress?->longitude ?? ''));
+        $resolvedLatitude = $resolvedLatitude !== '' ? $resolvedLatitude : null;
+        $resolvedLongitude = $resolvedLongitude !== '' ? $resolvedLongitude : null;
 
         CoverImage::create([
             'url' => $storedCover['file_name'],
@@ -2191,16 +2181,24 @@ class PostController extends Controller
             ]);
         }
 
-        ServiceAddress::create([
+        $serviceAddressPayload = [
             'service_id' => (int) $service->id,
             'address' => $resolvedAddress,
-            'city' => (string) ($providerAddress?->city ?? ''),
-            'province' => (string) ($providerAddress?->province ?? ''),
-            'postal_code' => (string) ($providerAddress?->postal_code ?? ''),
-            'country' => (string) ($providerAddress?->country ?? ''),
-            'latitude' => (string) $resolvedLatitude,
-            'longitude' => (string) $resolvedLongitude,
-        ]);
+            'city' => ! empty($providerAddress?->city) ? (string) $providerAddress->city : null,
+            'province' => ! empty($providerAddress?->province) ? (string) $providerAddress->province : null,
+            'postal_code' => ! empty($providerAddress?->postal_code) ? (string) $providerAddress->postal_code : null,
+            'country' => ! empty($providerAddress?->country) ? (string) $providerAddress->country : null,
+            'latitude' => $resolvedLatitude,
+            'longitude' => $resolvedLongitude,
+        ];
+
+        $hasServiceAddressData = collect($serviceAddressPayload)
+            ->except('service_id')
+            ->contains(fn ($value) => $value !== null && $value !== '');
+
+        if ($hasServiceAddressData) {
+            ServiceAddress::create($serviceAddressPayload);
+        }
 
         $moreImages = $request->file('more_images', []);
         if (! empty($moreImages)) {
