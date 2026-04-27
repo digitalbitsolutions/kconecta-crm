@@ -17,6 +17,8 @@
 - [x] Fondo estatico integrado con `public/img/mapa-calculator.webp`.
 - [x] UI V1 implementada sin logica de calculo:
 - [x] input unico de direccion (`#cadastral-address-input`)
+- [x] input de m2 requerido para habilitar calculo
+- [x] validacion de direccion por Google integrada en home (place_id + codigo postal)
 - [x] boton preparado para fase 2 (`#cadastral-submit-btn`)
 - [x] script dedicado conectado en home: `public/js/cadastral_calculator.js`
 - [ ] Fase 2 pendiente:

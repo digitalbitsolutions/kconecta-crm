@@ -183,6 +183,8 @@
                     autocomplete="off"
                     required
                 >
+                <input type="hidden" id="cadastral-address-place-id" name="cadastral_address_place_id" value="">
+                <input type="hidden" id="cadastral-address-postal-code" name="cadastral_address_postal_code" value="">
                 <label for="cadastral-area-input" class="cadastral-calculator-label">M<sup>2</sup> construidos</label>
                 <input
                     id="cadastral-area-input"
@@ -462,6 +464,7 @@
 @endsection
 
 @section('js')   
+    <script src="https://maps.googleapis.com/maps/api/js?key=<?= config('services.google.maps_key') ?>&libraries=places"></script>
     <script src="<?= base_url()."js/index_func.js" ?>"></script>
     <script src="<?= base_url()."js/cadastral_calculator.js" ?>"></script>
     <script src="<?= base_url()."js/search_data.js" ?>"></script>
