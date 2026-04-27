@@ -169,6 +169,39 @@
         </section>
     </div>
 
+    <section id="cadastral-calculator-section" class="cadastral-calculator-section">
+        <div class="cadastral-calculator-overlay">
+            <div class="cadastral-calculator-card">
+                <h2>Analiza una vivienda</h2>
+                <p>Indica la direccion de la vivienda</p>
+                <label for="cadastral-address-input" class="cadastral-calculator-label">Direccion</label>
+                <input
+                    id="cadastral-address-input"
+                    type="text"
+                    name="cadastral_address"
+                    placeholder="Direccion"
+                    autocomplete="off"
+                    required
+                >
+                <label for="cadastral-area-input" class="cadastral-calculator-label">M<sup>2</sup> construidos</label>
+                <input
+                    id="cadastral-area-input"
+                    type="number"
+                    name="cadastral_area_m2"
+                    placeholder="Ej. 85"
+                    min="1"
+                    step="1"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    required
+                >
+                <button id="cadastral-submit-btn" type="button" disabled aria-disabled="true">
+                    Ver informacion vivienda
+                </button>
+            </div>
+        </div>
+    </section>
+
     <main>
         <div class="container-button-hogar">
             <!-- <button>Hogar</button> -->
@@ -430,6 +463,7 @@
 
 @section('js')   
     <script src="<?= base_url()."js/index_func.js" ?>"></script>
+    <script src="<?= base_url()."js/cadastral_calculator.js" ?>"></script>
     <script src="<?= base_url()."js/search_data.js" ?>"></script>
     <script src="<?= base_url("js/format_input.js") ?>"></script>
     <script src="<?= base_url("js/libraries/swiper-bundle.min.js") ?>"></script>

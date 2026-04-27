@@ -1,5 +1,29 @@
 # Kconecta CRM - Tasks
 
+## Session Update (2026-04-27)
+- [x] Reglas de primera etapa JM aplicadas para proveedor de servicios:
+- [x] alta de proveedor sin campos de tipo/numero de documento en UI de registro
+- [x] WhatsApp obligatorio mantenido
+- [x] telefono fijo opcional mantenido
+- [x] direccion opcional permitida para alta/edicion de perfil
+- [x] guardado de servicios proveedor sin bloqueo por direccion faltante
+- [x] Validacion operativa reportada:
+- [x] edicion de perfil online OK
+- [x] flujo de servicios online OK
+- [ ] Pendiente cierre de negocio: pruebas online finales por Gala y JM
+
+## Session Update (2026-04-27) - Frontend Calculador Catastral V1
+- [x] Nueva seccion `Calculador catastral` agregada en home, debajo del HERO.
+- [x] Fondo estatico integrado con `public/img/mapa-calculator.webp`.
+- [x] UI V1 implementada sin logica de calculo:
+- [x] input unico de direccion (`#cadastral-address-input`)
+- [x] boton preparado para fase 2 (`#cadastral-submit-btn`)
+- [x] script dedicado conectado en home: `public/js/cadastral_calculator.js`
+- [ ] Fase 2 pendiente:
+- [ ] tabla de precios por m2
+- [ ] endpoint de calculo catastral
+- [ ] conexion de boton con flujo real de calculo
+
 ## Session Checkpoint (2026-04-21)
 
 ### Done
@@ -187,6 +211,7 @@
 - [x] botonera `Filtrar`/`Limpiar` ajustada y responsive estabilizado
 
 ### Next
+- [ ] Recoger feedback final de Gala/JM tras pruebas online de esta etapa y cerrar acta de validacion.
 - [ ] Respaldar BD local.
 - [ ] Comparar media faltante de referencias con respaldo productivo antes de limpiar archivos no trackeados.
 - [ ] Decidir si se limpiaran mas adelante de `type_of_terrain` los valores legacy `Servicios`, `Industrial` y `Afectado` una vez confirmada la no dependencia historica.
