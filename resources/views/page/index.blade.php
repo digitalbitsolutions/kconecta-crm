@@ -173,33 +173,60 @@
         <div class="cadastral-calculator-overlay">
             <div class="cadastral-calculator-card">
                 <h2>Valorar una propiedad</h2>
-                <p>Indica la direccion de la vivienda</p>
-                <label for="cadastral-address-input" class="cadastral-calculator-label">Direccion</label>
-                <input
-                    id="cadastral-address-input"
-                    type="text"
-                    name="cadastral_address"
-                    placeholder="Direccion"
-                    autocomplete="off"
-                    required
-                >
+                <p class="cadastral-subtitle">Indica la dirección de la vivienda</p>
+                
+                <div class="cadastral-input-group">
+                    <label for="cadastral-address-input" class="cadastral-calculator-label">Dirección Completa</label>
+                    <div class="cadastral-input-wrapper">
+                        <svg class="cadastral-input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <input
+                            id="cadastral-address-input"
+                            type="text"
+                            name="cadastral_address"
+                            placeholder="Dirección"
+                            autocomplete="off"
+                            required
+                        >
+                    </div>
+                </div>
+                
                 <input type="hidden" id="cadastral-address-place-id" name="cadastral_address_place_id" value="">
                 <input type="hidden" id="cadastral-address-postal-code" name="cadastral_address_postal_code" value="">
-                <label for="cadastral-area-input" class="cadastral-calculator-label">M<sup>2</sup> construidos</label>
-                <input
-                    id="cadastral-area-input"
-                    type="number"
-                    name="cadastral_area_m2"
-                    placeholder="Ej. 85"
-                    min="1"
-                    step="1"
-                    inputmode="numeric"
-                    autocomplete="off"
-                    required
-                >
+                
+                <div class="cadastral-input-group">
+                    <label for="cadastral-area-input" class="cadastral-calculator-label">Superficie Útil</label>
+                    <div class="cadastral-input-wrapper">
+                        <svg class="cadastral-input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M9 3v18"></path><path d="M14 8h3"></path><path d="M14 12h3"></path><path d="M14 16h3"></path></svg>
+                        <input
+                            id="cadastral-area-input"
+                            type="number"
+                            name="cadastral_area_m2"
+                            placeholder="Ej. 85"
+                            min="1"
+                            step="1"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            required
+                        >
+                        <span class="cadastral-input-suffix">m²</span>
+                    </div>
+                </div>
+                
                 <button id="cadastral-submit-btn" type="button" disabled aria-disabled="true">
-                    Ver informacion vivienda
+                    Ver información vivienda
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </button>
+
+                <div class="cadastral-badges">
+                    <span class="cadastral-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        KCONECTA CERTIFIED
+                    </span>
+                    <span class="cadastral-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        INSTANT RESULTS
+                    </span>
+                </div>
                 <div id="cadastral-result-container" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0; text-align: center;">
                     <h3 style="margin-top: 0; font-size: 1.2rem; color: #333;">Estimación de Valor</h3>
                     <p style="font-size: 1.8rem; font-weight: bold; color: var(--color-main-1); margin: 10px 0;" id="cadastral-estimated-value"></p>
