@@ -10,6 +10,7 @@
     }
 
     let addressValidated = false;
+    let currentMunicipality = '';
 
     const lockButton = () => {
         button.disabled = true;
@@ -32,6 +33,7 @@
 
     const markAddressInvalid = () => {
         addressValidated = false;
+        currentMunicipality = '';
         placeIdInput.value = '';
         postalCodeInput.value = '';
         if (input.value.trim().length > 0) {
@@ -76,6 +78,9 @@
             const place = autocomplete.getPlace();
             const placeId = place && place.place_id ? String(place.place_id).trim() : '';
             const postalCode = getPostalCodeFromComponents(place ? place.address_components : []);
+            
+            const localityComponent = place && place.address_components ? place.address_components.find((component) => Array.isArray(component.types) && component.types.includes('locality')) : null;
+            currentMunicipality = localityComponent ? localityComponent.long_name : '';
 
             if (placeId !== '' && postalCode !== '') {
                 input.value = place.formatted_address || input.value;
@@ -100,8 +105,52 @@
     });
     areaInput.addEventListener('input', syncButtonState);
 
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
         lockButton();
+        const originalText = button.textContent;
+        button.textContent = 'Calculando...';
+        
+        const resultContainer = document.getElementById('cadastral-result-container');
+        const errorContainer = document.getElementById('cadastral-error-container');
+        
+        if(resultContainer) resultContainer.style.display = 'none';
+        if(errorContainer) errorContainer.style.display = 'none';
+
+        try {
+            const postalCode = postalCodeInput.value;
+            const m2 = areaInput.value;
+            
+            const response = await fetch(`/api/cadastral/estimate?postal_code=${postalCode}&m2=${m2}&municipality=${encodeURIComponent(currentMunicipality)}`);
+            const json = await response.json();
+            
+            if (response.ok && json.success && json.data) {
+                if(resultContainer) {
+                    const formatCurrency = (val) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(val);
+                    
+                    document.getElementById('cadastral-estimated-value').textContent = formatCurrency(json.data.estimated_value);
+                    document.getElementById('cadastral-min-value').textContent = formatCurrency(json.data.min_value);
+                    document.getElementById('cadastral-max-value').textContent = formatCurrency(json.data.max_value);
+                    document.getElementById('cadastral-records-count').textContent = json.data.base_stats.total_areas;
+                    document.getElementById('cadastral-postal-result').textContent = json.data.base_stats.postal_code;
+                    
+                    resultContainer.style.display = 'block';
+                }
+            } else {
+                if(errorContainer) {
+                    errorContainer.textContent = json.message || 'Error al obtener la estimación.';
+                    errorContainer.style.display = 'block';
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching cadastral data:', error);
+            if(errorContainer) {
+                errorContainer.textContent = 'Ocurrió un error al intentar conectar con el servidor.';
+                errorContainer.style.display = 'block';
+            }
+        } finally {
+            button.textContent = originalText;
+            unlockButton();
+        }
     });
 
     markAddressInvalid();

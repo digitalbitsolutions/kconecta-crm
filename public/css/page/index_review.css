@@ -159,6 +159,17 @@
     opacity: 1;
 }
 
+.cadastral-calculator-card #cadastral-submit-btn:not(:disabled) {
+    color: #ffffff;
+    background-color: #0f40cf;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cadastral-calculator-card #cadastral-submit-btn:not(:disabled):hover {
+    background-color: #0c33a6;
+}
+
 @media (max-width: 1024px) {
     .cadastral-calculator-section {
         min-height: 26rem;

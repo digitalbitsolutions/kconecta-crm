@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Internal\OrchestratorController;
 use App\Http\Controllers\Api\PropertyApiController;
+use App\Http\Controllers\Api\CadastralController;
 use App\Http\Controllers\ApiController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,8 @@ Route::post('/google/user/verify_token_google', [ApiController::class, 'verifyTo
 Route::post('/send/message/email_to_provider', [ApiController::class, 'sendEmailContactUser']);
 Route::get('/send/message/email_share', [ApiController::class, 'sendEmailShare']);
 Route::post('/property_stats/register', [ApiController::class, 'propertyStatsConfig']);
+
+Route::get('/cadastral/estimate', [CadastralController::class, 'estimate']);
 
 // Mobile app auth + agent endpoints
 Route::post('/login', [AuthController::class, 'login']);

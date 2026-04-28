@@ -200,6 +200,19 @@
                 <button id="cadastral-submit-btn" type="button" disabled aria-disabled="true">
                     Ver informacion vivienda
                 </button>
+                <div id="cadastral-result-container" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0; text-align: center;">
+                    <h3 style="margin-top: 0; font-size: 1.2rem; color: #333;">Estimación de Valor</h3>
+                    <p style="font-size: 1.8rem; font-weight: bold; color: var(--color-main-1); margin: 10px 0;" id="cadastral-estimated-value"></p>
+                    <p style="font-size: 0.9rem; color: #666; margin: 0;">Rango: <span id="cadastral-min-value"></span> - <span id="cadastral-max-value"></span></p>
+                    <p style="font-size: 0.8rem; color: #999; margin-top: 5px;">*Basado en <span id="cadastral-records-count"></span> propiedades en el código postal <span id="cadastral-postal-result"></span>.</p>
+                    
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                        <a href="/calculadora-avanzada" style="display: inline-block; background-color: #0f40cf; color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; text-decoration: none; margin-bottom: 5px; transition: background-color 0.3s;" onmouseover="this.style.backgroundColor='#0c33a6'" onmouseout="this.style.backgroundColor='#0f40cf'">Obtener estimación exacta</a>
+                        <p style="font-size: 0.8rem; color: #666; margin: 0;">Calcula el valor real añadiendo el estado de tu vivienda, habitaciones, baños y extras.</p>
+                    </div>
+                </div>
+                <div id="cadastral-error-container" style="display: none; margin-top: 15px; padding: 10px; color: #d32f2f; background: #ffebee; border-radius: 8px; font-size: 0.9rem; text-align: center;">
+                </div>
             </div>
         </div>
     </section>

@@ -13,6 +13,7 @@ Operate and evolve `kconecta-crm` with focus on:
 - Active remote: `origin`
 - Main branch: `main`
 - Last operational update: `2026-04-21` (post pushes `703ae94`, `105c0b3`, `9cd087e`)
+- Context checkpoint updated: `2026-04-27` (provider registration/profile/service flows aligned to JM first-stage rules)
 
 ## Working Rules
 - Prefer minimal, testable changes.
@@ -185,6 +186,7 @@ Operate and evolve `kconecta-crm` with focus on:
 
 ## Next Operational Focus
 - Update context files and operational notes after major production validations.
+- Complete online business validation cycle by Gala and JM on latest provider/profile/service behavior.
 - Decide whether to normalize or migrate legacy `type_of_terrain` values in production later, once it is safe to remove compatibility leftovers.
 - Decide whether `createService()` should receive the same backend hardening as property create flow.
 - Implement planned video upload hardening:
@@ -234,6 +236,17 @@ Operate and evolve `kconecta-crm` with focus on:
 - `result_service` video lookup corrected from `property_id` to `service_id`
 - map markers branding update:
 - result maps now use `kconecta` icon on both Google Maps and Leaflet in property/service result pages
+- Provider/profile/services alignment follow-up (round `2026-04-27`):
+- provider registration UI updated for first-stage launch rules:
+  - document type + document number removed from provider signup form
+  - WhatsApp remains required; landline remains optional
+  - provider can register without validated address (saved as `null`)
+- profile update flow for providers no longer blocks save when address is missing
+- service publish/edit flow no longer blocks with "complete address in profile" message
+- current status reported by operator:
+  - profile edit online OK
+  - provider services flow online OK
+  - Gala and JM will execute additional online validation
 
 ## Known Risks
 - Context update `2026-04-23`:

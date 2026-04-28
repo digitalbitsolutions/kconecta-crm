@@ -1,5 +1,16 @@
 # Kconecta CRM - Roadmap
 
+## Status Update (2026-04-27)
+- Provider first-stage business rules (JM) applied in CRM flows:
+- provider signup no longer asks for document type/number
+- provider address is now optional in registration/profile update for this stage
+- provider service publish flow no longer blocks on missing validated address
+- Online smoke result reported:
+- profile edit OK
+- provider services flow OK
+- Remaining closure for this stage:
+- Gala and JM to run online business validation
+
 ## Baseline (2026-04-21)
 - Repository conectado y desplegado en Dokploy.
 - Produccion operativa con autodeploy sobre `main`.
@@ -95,6 +106,10 @@
 - filtros en dos filas segun referencia objetivo
 - placeholders y labels alineados
 - acciones `Filtrar/Limpiar` y responsive ajustados
+- Proveedor (fase 1 reglas JM):
+- registro proveedor adaptado en UI para no solicitar documento en alta
+- edicion de perfil proveedor sin bloqueo por direccion
+- publicacion/guardado de servicios proveedor sin bloqueo por direccion faltante
 
 ## Phase 5 - Operational Reliability
 - Mejorar health checks y observabilidad de app + DB.
@@ -105,3 +120,29 @@
 - cards vacias eliminadas por render condicional estricto.
 - metadatos superiores con `N/A` para datos faltantes.
 - jerarquia de cards ajustada (Fianza/Estado junto a M2 construidos).
+
+## Sub-plan: Backend Calculador Catastral (Precios M2)
+*Plan de implementación asíncrona para la importación y cálculo de precios por metro cuadrado.*
+
+- [x] **1. Migration (`cadastral_prices`)**
+  - Campos: `id`, `province`, `municipality`, `neighborhood`, `postal_code` (string 10), `price_m2_eur` (decimal 10,2), `import_batch_id` (trazabilidad e histórico de cargas), `created_at`, `updated_at`.
+  - Índices simples: `postal_code`, `municipality`.
+  - Índice compuesto: `[postal_code, municipality]`.
+  - Restricción única (evita duplicados): `unique(postal_code, municipality, neighborhood)`.
+- [x] **2. Model (`CadastralPrice`)**
+  - Definir guardeds/fillables.
+  - Setup para soporte de consultas agregadas.
+- [x] **3. Artisan Command (`cadastral:import {path}`)**
+  - Lectura por streaming usando `fgetcsv` para máxima eficiencia de RAM.
+  - Validaciones: trim de strings, normalización UTF-8, `postal_code` obligatorio, `price_m2_eur` numérico positivo.
+  - Gestión de rechazos: logging de filas inválidas.
+  - Persistencia vía `upsert`: Insertar si la clave no existe; si el unique key existe, actualizar `price_m2_eur`.
+  - Trazabilidad de carga: Guardar y emitir el total de filas procesadas/inválidas y el `import_batch_id`.
+- [x] **4. Servicio de Consulta (`CadastralCalculationService`)**
+  - Entrada: `postal_code`.
+  - Salida: Estructura con `avg_price_m2`, `min`, `max`, `count` para cálculo aproximado rápido y robusto.
+- [ ] **5. Testing (PHPUnit/Pest)**
+  - Test: importación inicial correcta.
+  - Test: upsert (re-importación de datos no debe duplicar, sino actualizar precio).
+  - Test: consulta con `postal_code` existente devuelve valores estadísticos.
+  - Test: consulta con `postal_code` inexistente controla respuesta.
