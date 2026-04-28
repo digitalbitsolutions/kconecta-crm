@@ -20,6 +20,7 @@ Route::get('/send/message/email_share', [ApiController::class, 'sendEmailShare']
 Route::post('/property_stats/register', [ApiController::class, 'propertyStatsConfig']);
 
 Route::get('/cadastral/estimate', [CadastralController::class, 'estimate']);
+Route::post('/cadastral/advanced-estimate', [CadastralController::class, 'advancedEstimate']);
 
 // Mobile app auth + agent endpoints
 Route::post('/login', [AuthController::class, 'login']);

@@ -172,7 +172,7 @@
     <section id="cadastral-calculator-section" class="cadastral-calculator-section">
         <div class="cadastral-calculator-overlay">
             <div class="cadastral-calculator-card">
-                <h2>Analiza una vivienda</h2>
+                <h2>Valorar una propiedad</h2>
                 <p>Indica la direccion de la vivienda</p>
                 <label for="cadastral-address-input" class="cadastral-calculator-label">Direccion</label>
                 <input
@@ -207,7 +207,7 @@
                     <p style="font-size: 0.8rem; color: #999; margin-top: 5px;">*Basado en <span id="cadastral-records-count"></span> propiedades en el código postal <span id="cadastral-postal-result"></span>.</p>
                     
                     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                        <a href="/calculadora-avanzada" style="display: inline-block; background-color: #0f40cf; color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; text-decoration: none; margin-bottom: 5px; transition: background-color 0.3s;" onmouseover="this.style.backgroundColor='#0c33a6'" onmouseout="this.style.backgroundColor='#0f40cf'">Obtener estimación exacta</a>
+                        <a href="/calculadora-avanzada" id="advanced-calc-link" style="display: inline-block; background-color: #0f40cf; color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; text-decoration: none; margin-bottom: 5px; transition: background-color 0.3s;" onmouseover="this.style.backgroundColor='#0c33a6'" onmouseout="this.style.backgroundColor='#0f40cf'">Obtener estimación exacta</a>
                         <p style="font-size: 0.8rem; color: #666; margin: 0;">Calcula el valor real añadiendo el estado de tu vivienda, habitaciones, baños y extras.</p>
                     </div>
                 </div>

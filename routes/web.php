@@ -14,6 +14,7 @@ Route::get('/result/services', [PageController::class, 'resultAllServices']);
 Route::get('/result_maps', [PageController::class, 'resultMaps']);
 Route::get('/result/{reference}', [PageController::class, 'result']);
 Route::get('/result_service/{id}', [PageController::class, 'resultService']);
+Route::get('/calculadora-avanzada', [PageController::class, 'advancedCalculator']);
 Route::post('/signup', [PageController::class, 'signup']);
 Route::get('/validate_account', [PageController::class, 'validateAccountPage']);
 Route::post('/validate_code', [PageController::class, 'validateAccount']);

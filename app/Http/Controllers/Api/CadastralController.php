@@ -41,4 +41,34 @@ class CadastralController extends Controller
             'data' => $result
         ]);
     }
+
+    public function advancedEstimate(Request $request)
+    {
+        $validated = $request->validate([
+            'postal_code' => 'required|string|max:10',
+            'm2' => 'required|numeric|min:1',
+            'municipality' => 'nullable|string|max:255',
+            'property_type' => 'nullable|integer',
+            'state_conservation' => 'nullable|integer',
+            'bedrooms' => 'nullable|integer',
+            'bathrooms' => 'nullable|integer',
+            'has_elevator' => 'nullable|boolean',
+            'has_parking' => 'nullable|boolean',
+            'has_pool' => 'nullable|boolean',
+        ]);
+
+        $result = $this->cadastralService->advancedEstimate($validated);
+
+        if (!$result) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontraron datos catastrales suficientes para este código postal/municipio.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $result
+        ]);
+    }
 }

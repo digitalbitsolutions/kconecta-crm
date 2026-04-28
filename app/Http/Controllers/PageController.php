@@ -718,4 +718,9 @@ class PageController extends Controller
 
         return Carbon::parse($value)->translatedFormat('d \\d\\e F \\d\\e Y');
     }
+
+    public function advancedCalculator()
+    {
+        return view('page.calculadora_avanzada');
+    }
 }

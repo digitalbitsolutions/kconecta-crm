@@ -133,6 +133,12 @@
                     document.getElementById('cadastral-records-count').textContent = json.data.base_stats.total_areas;
                     document.getElementById('cadastral-postal-result').textContent = json.data.base_stats.postal_code;
                     
+                    const advancedLink = document.getElementById('advanced-calc-link');
+                    if(advancedLink) {
+                        const addressText = encodeURIComponent(input.value);
+                        advancedLink.href = `/calculadora-avanzada?address=${addressText}&postal_code=${postalCode}&municipality=${encodeURIComponent(currentMunicipality)}&m2=${m2}`;
+                    }
+
                     resultContainer.style.display = 'block';
                 }
             } else {

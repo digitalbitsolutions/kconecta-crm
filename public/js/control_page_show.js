@@ -1,8 +1,10 @@
 const main_loader_page = document.getElementById('loader-page-change');
 if (main_loader_page){
-    document.querySelectorAll('form').forEach(link => {
-        link.addEventListener('submit', function(event) {
-            main_loader_page.style.display = 'flex';
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.classList.contains('__no-loader')) {
+                main_loader_page.style.display = 'flex';
+            }
         });
     });
     document.querySelectorAll('a').forEach(link => {
