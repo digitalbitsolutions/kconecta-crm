@@ -12,8 +12,10 @@ Operate and evolve `kconecta-crm` with focus on:
 - Active GitHub repo: `https://github.com/sttildeveloper/kconecta-crm`
 - Active remote: `origin`
 - Main branch: `main`
+- Latest deployed commit: `6a082b3` (`fix(cadastral): harden API errors and guard migration for existing table`)
 - Last operational update: `2026-04-21` (post pushes `703ae94`, `105c0b3`, `9cd087e`)
 - Context checkpoint updated: `2026-04-27` (provider registration/profile/service flows aligned to JM first-stage rules)
+- Context checkpoint updated: `2026-04-29` (cadastral calculator backend + production import validated online)
 
 ## Working Rules
 - Prefer minimal, testable changes.

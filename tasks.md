@@ -1,5 +1,18 @@
 # Kconecta CRM - Tasks
 
+## Session Update (2026-04-29) - Cadastral Production Go-Live
+- [x] Fix backend desplegado a `main`:
+- [x] `fix(cadastral): harden API errors and guard migration for existing table` (`6a082b3`)
+- [x] Migracion ejecutada en produccion (`cadastral_prices`).
+- [x] Registro manual de migracion aplicado por esquema legacy de tabla `migrations`.
+- [x] Cache Laravel limpiada en produccion (`php artisan optimize:clear`).
+- [x] CSV catastral subido e importado en produccion (`precios_m2_catalunya_detallado.csv`).
+- [x] Validacion funcional online completada:
+- [x] calculo base por direccion + m2 en home
+- [x] paso a calculadora avanzada con estimacion visible
+- [ ] Pendiente operativo recomendado:
+- [ ] ejecutar backup post-deploy y registrar ruta final del dump.
+
 ## Session Update (2026-04-27)
 - [x] Reglas de primera etapa JM aplicadas para proveedor de servicios:
 - [x] alta de proveedor sin campos de tipo/numero de documento en UI de registro

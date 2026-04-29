@@ -1,5 +1,17 @@
 # Kconecta CRM - Roadmap
 
+## Status Update (2026-04-29)
+- Calculadora catastral operativa en produccion (`kconecta.com`) con flujo completo:
+- validacion de direccion por Google en home
+- calculo base por `postal_code` + `m2`
+- navegacion a tasacion avanzada con resultado visible
+- Backend/API desplegado y verificado:
+- `GET /api/cadastral/estimate`
+- `POST /api/cadastral/advanced-estimate`
+- Migracion `cadastral_prices` aplicada en produccion con registro manual en tabla `migrations` legacy.
+- Import de dataset catastral ejecutado en produccion desde CSV (`precios_m2_catalunya_detallado.csv`).
+- Resultado: error de conexion eliminado; ahora la UI muestra calculo o mensaje controlado de datos insuficientes.
+
 ## Status Update (2026-04-27)
 - Provider first-stage business rules (JM) applied in CRM flows:
 - provider signup no longer asks for document type/number
@@ -146,3 +158,11 @@
   - Test: upsert (re-importación de datos no debe duplicar, sino actualizar precio).
   - Test: consulta con `postal_code` existente devuelve valores estadísticos.
   - Test: consulta con `postal_code` inexistente controla respuesta.
+
+## Cadastral Production Closure (2026-04-29)
+- Backend calculadora catastral operativo en produccion.
+- Tabla `cadastral_prices` creada en produccion.
+- Registro manual en tabla legacy `migrations` aplicado para la migracion `2026_04_28_000000_create_cadastral_prices_table`.
+- CSV `precios_m2_catalunya_detallado.csv` importado en produccion.
+- Flujo online validado: home -> calculo base -> tasacion avanzada con valor estimado.
+- Pendiente recomendado: ejecutar backup post-deploy y guardar ruta en `tasks.md`.
